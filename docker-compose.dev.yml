@@ -1,0 +1,26 @@
+services:
+
+  # PgAdmin : https://www.pgadmin.org/
+  # Used to manage the postgres database
+  pgadmin:
+    container_name: ${PROJECT_NAME}-pgadmin
+    hostname: ${PROJECT_NAME}-database
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_LISTEN_PORT: 80
+      TZ: ${APP_TIMEZONE}
+    ports:
+      - "${PGADMIN_HTTP_PORT}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - default
+      - database_network
+
+
+# Declare volumes to mount
+volumes:
+  pgadmin_data: { }

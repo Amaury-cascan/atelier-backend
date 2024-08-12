@@ -1,0 +1,92 @@
+# Use Task to define tasks and run them locally or in CI
+# For more information about Task, see https://taskfile.dev/#/usage?id=usage
+version: '3'
+
+tasks:
+
+    default: # Run the default Symfony tasks
+        cmds:
+            - task: clean
+            - task: install
+            - task: cache-clear
+            - task: lint
+            - task: test
+            - task: assets
+            - task: db-update
+
+    install: # Install Symfony dependencies
+        cmds:
+            - echo "Installing dependencies..."
+            - composer install
+        silent: true
+
+    cache-clear: # Clear Symfony cache
+        cmds:
+            - echo "Clearing cache..."
+            - php bin/console cache:clear
+        silent: true
+
+    lint: # Lint PHP files
+        cmds:
+            - echo "Linting PHP files..."
+            - php bin/console lint:yaml config
+            - php bin/console lint:twig templates
+            - php bin/console lint:container
+        silent: true
+
+    test: # Run Symfony tests
+        cmds:
+            - echo "Running tests..."
+            - php bin/phpunit
+        silent: true
+
+    test-coverage: # Run Symfony tests with coverage
+        cmds:
+            - echo "Generating test coverage..."
+            - php bin/phpunit --coverage-html coverage
+        silent: true
+
+    assets: # Compile Symfony assets
+        cmds:
+            - echo "Compiling assets..."
+            - php bin/console assets:install
+            - yarn encore production
+        silent: true
+
+    db-update: # Update database schema
+        cmds:
+            - echo "Updating database schema..."
+            - php bin/console doctrine:schema:update --force
+        silent: true
+
+    migrations: # Run database migrations
+        cmds:
+            - echo "Running database migrations..."
+            - php bin/console doctrine:migrations:migrate --no-interaction
+        silent: true
+
+    fixtures: # Load data fixtures
+        cmds:
+            - echo "Loading data fixtures..."
+            - php bin/console doctrine:fixtures:load --no-interaction
+        silent: true
+
+    clean: # Clean generated files
+        cmds:
+            - echo "Cleaning..."
+            - rm -rf var/cache/*
+            - rm -rf var/log/*
+            - rm -rf public/build/*
+        silent: true
+
+    update: # Update Symfony dependencies
+        cmds:
+            - echo "Updating dependencies..."
+            - composer update
+        silent: true
+
+    serve: # Run Symfony development server
+        cmds:
+            - echo "Starting Symfony server..."
+            - symfony server:start --no-tls
+        silent: true

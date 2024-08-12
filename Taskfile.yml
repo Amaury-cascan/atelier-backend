@@ -1,0 +1,60 @@
+# Use Task to define tasks and run them locally or in CI
+# For more information about Task, see https://taskfile.dev/#/usage?id=usage
+version: '3'
+
+# Import environment variables from app.env files
+dotenv: ['.env']
+
+# Define variables to use in tasks
+vars:
+    SHORT_ENV_NAME: # The first three characters of the APP_ENV variable, production becomes pro and development becomes dev.
+        sh: echo '{{.APP_ENV}}' | cut -c1-3
+    PROJECT_NAME: # The name of the project. If the APP_ENV is production, the PROJECT_NAME is the same as the PROJECT_NAME. If the APP_ENV is development, the PROJECT_NAME is the PROJECT_NAME with the SHORT_ENV_NAME appended to the end.
+        sh: echo '{{if eq .APP_ENV "production"}}{{.PROJECT_NAME}}{{else}}{{.PROJECT_NAME}}_{{.SHORT_ENV_NAME}}{{end}}' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g'
+    GIT_COMMIT: # The git commit hash of the current commit.
+        sh: git rev-parse --short HEAD
+    GIT_TAG: # The git tag of the current commit.
+        sh: git describe --tags --abbrev=0 2>/dev/null || echo "latest"
+    GIT_TAG_COMMIT: # The last tagged commit.
+        sh: git rev-list --abbrev-commit --tags --max-count=1
+    GIT_BUILD: # The number of commits since the last tag.
+        sh: echo '{{if ne .GIT_COMMIT .GIT_TAG_COMMIT}}-{{.GIT_COMMIT}}{{end}}'
+    GIT_DIRTY: # Whether the git repository is dirty.
+        sh: git diff --quiet || echo "+dirty"
+    VERSION: # The version of the image.
+        sh: echo '{{.GIT_TAG}}{{.GIT_BUILD}}{{.GIT_DIRTY}}'
+    BUILD_DATE: # The date the image was built.
+        sh: git log -1 --format=%cd --date=format:'%Y-%m-%dT%H:%M:%SZ'
+    BUILD_FOLDER: # The folder where the build is happening. Current folder/build
+        sh: echo "build"
+    RELEASE_FOLDER: # The folder where the release is happening. Current folder/dist
+        sh: echo "dist"
+
+#env:
+#    PROJECT_NAME:
+#        sh: echo '{{if eq .APP_ENV "production"}}{{.PROJECT_NAME}}{{else}}{{.PROJECT_NAME}}-{{.SHORT_ENV_NAME}}{{end}}'
+
+# Import tasks from other files
+includes:
+    docker: ./.task/docker.Taskfile.yml
+    symfony: ./.task/symfony.Taskfile.yml
+    
+# Define tasks
+tasks:
+
+    info: # Display information about the project.
+        cmds:
+            - echo "{{.PROJECT_NAME}}"
+            - echo "{{.APP_ENV}}"
+            - echo "{{.PROJECT_NAME}}({{.VERSION}}) will be running in '{{.APP_ENV}}' mode."
+        silent: true
+
+    build: # Build the project.
+        cmds:
+            - task docker:build
+           
+    run: # Run the project.
+        cmds:
+            - task docker:up
+            - task: symfony:serve
+            

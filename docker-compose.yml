@@ -1,0 +1,40 @@
+services:
+
+    # Postgres database
+    database:
+        container_name: ${PROJECT_NAME}-database
+        hostname: ${PROJECT_NAME}-database
+        image: postgres:16
+        restart: always
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_NAME}
+            POSTGRES_CHARSET: ${POSTGRES_CHARSET}
+            TZ: ${APP_TIMEZONE}
+            PGTZ: ${APP_TIMEZONE}
+        ports:
+            - "${POSTGRES_PORT}:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - database_network
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_NAME}" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+
+# Declare volumes to mount
+volumes:
+    postgres_data: { }
+
+
+# Declare networks to attach
+networks:
+    default:
+        name: ${PROJECT_NAME}_default
+    database_network:
+        name: ${PROJECT_NAME}-database-network
+        driver: bridge
