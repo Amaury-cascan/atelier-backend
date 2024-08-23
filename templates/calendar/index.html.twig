@@ -1,0 +1,521 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier des Rendez-vous{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css">
+    <style>
+        #calendar {
+            max-height: 75vh; /* Ajuste la hauteur maximale du calendrier pour le rendre plus lisible */
+        }
+
+        /* styles.css */
+
+/* styles.css */
+.bg-default {
+    background-color: #e0e0e0; /* Couleur par défaut */
+}
+.bg-service-1 {
+    background-color: #d32f2f; /* Rouge vif */
+}
+.bg-service-2 {
+    background-color: #f57c00; /* Orange vif */
+}
+.bg-service-3 {
+    background-color: #fbc02d; /* Jaune vif */
+}
+.bg-service-4 {
+    background-color: #388e3c; /* Vert vif */
+}
+.bg-service-5 {
+    background-color: #1976d2; /* Bleu vif */
+}
+.bg-service-6 {
+    background-color: #7b1fa2; /* Violet vif */
+}
+.bg-service-7 {
+    background-color: #c2185b; /* Rose vif */
+}
+.bg-service-8 {
+    background-color: #8e24aa; /* Lavande vif */
+}
+.bg-service-9 {
+    background-color: #616161; /* Gris foncé */
+}
+.bg-service-10 {
+    background-color: #d32f2f; /* Rouge foncé */
+}
+.bg-service-11 {
+    background-color: #f57c00; /* Orange foncé */
+}
+.bg-service-12 {
+    background-color: #fbc02d; /* Jaune foncé */
+}
+.bg-service-13 {
+    background-color: #388e3c; /* Vert foncé */
+}
+.bg-service-14 {
+    background-color: #1976d2; /* Bleu foncé */
+}
+.bg-service-15 {
+    background-color: #7b1fa2; /* Violet foncé */
+}
+.bg-service-16 {
+    background-color: #c2185b; /* Rose foncé */
+}
+.bg-service-17 {
+    background-color: #8e24aa; /* Lavande foncé */
+}
+.bg-service-18 {
+    background-color: #424242; /* Gris très foncé */
+}
+.bg-service-19 {
+    background-color: #b71c1c; /* Rouge très foncé */
+}
+.bg-service-20 {
+    background-color: #ff6f00; /* Orange très foncé */
+}
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/locales/fr.js"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Calendrier des Rendez-vous</h1>
+        <div id="calendar"></div>
+    </div>
+
+    <!-- Modal pour la création de rendez-vous -->
+    <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appointmentModalLabel">Nouveau Rendez-vous</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="appointmentForm">
+                        <!-- Champ pour la date et l'heure de début -->
+                        <div class="mb-3">
+                            <label for="appointmentDate" class="form-label">Date et heure de début:</label>
+                            <input type="datetime-local" class="form-control" id="appointmentDate" name="date" required>
+                        </div>
+                        <!-- Sélecteur pour le service -->
+                        <div class="mb-3">
+                            <label for="serviceId" class="form-label">Service:</label>
+                            <select class="form-select" id="serviceId" name="serviceId" required>
+                                <option value="">Sélectionnez un service</option>
+                            </select>
+                        </div>
+                        <!-- Affichage de la durée du service sélectionné -->
+                        <div id="serviceDuration" class="mb-3" style="display: none;">
+                            <p class="text-muted">Durée: <span id="durationValue"></span> minutes</p>
+                        </div>
+                        <!-- Sélecteur pour le client -->
+                        <div class="mb-3">
+                            <label for="clientId" class="form-label">Client:</label>
+                            <select class="form-select" id="clientId" name="clientId" required>
+                                <option value="">Sélectionnez un client</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="saveAppointment">Créer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour la modification de rendez-vous -->
+    <div class="modal fade" id="editAppointmentModal" tabindex="-1" aria-labelledby="editAppointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editAppointmentModalLabel">Modifier le Rendez-vous</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editAppointmentForm">
+                        <!-- Champ caché pour l'identifiant du rendez-vous -->
+                        <input type="hidden" id="editAppointmentId" name="id">
+                        <!-- Champ pour la date et l'heure de début -->
+                        <div class="mb-3">
+                            <label for="editAppointmentDate" class="form-label">Date et heure de début:</label>
+                            <input type="datetime-local" class="form-control" id="editAppointmentDate" name="date" required>
+                        </div>
+                        <!-- Sélecteur pour le service -->
+                        <div class="mb-3">
+                            <label for="editServiceId" class="form-label">Service:</label>
+                            <select class="form-select" id="editServiceId" name="serviceId" required>
+                                <option value="">Sélectionnez un service</option>
+                            </select>
+                        </div>
+                        <!-- Affichage de la durée du service sélectionné -->
+                        <div id="editServiceDuration" class="mb-3" style="display: none;">
+                            <p class="text-muted">Durée: <span id="editDurationValue"></span> minutes</p>
+                        </div>
+                        <!-- Sélecteur pour le client -->
+                        <div class="mb-3">
+                            <label for="editClientId" class="form-label">Client:</label>
+                            <select class="form-select" id="editClientId" name="clientId" required>
+                                <option value="">Sélectionnez un client</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="updateAppointment">Modifier</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour afficher les détails d'un rendez-vous -->
+    <div class="modal fade" id="viewAppointmentModal" tabindex="-1" aria-labelledby="viewAppointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewAppointmentModalLabel">Détails du rendez-vous</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Affichage des détails du rendez-vous -->
+                    <p>Prestation: <span id="viewAppointmentService"></span></p>
+                    <p>Client: <span id="viewAppointmentClient"></span></p>
+                    <p>Date: <span id="viewAppointmentDate"></span></p>
+                    <p>Heure de début: <span id="viewAppointmentStartTime"></span></p>
+                    <p>Heure de fin: <span id="viewAppointmentEndTime"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="editAppointmentBtn">Modifier</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="deleteAppointmentBtn">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const modal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+    const editModal = new bootstrap.Modal(document.getElementById('editAppointmentModal'));
+    const form = document.getElementById('appointmentForm');
+    const editForm = document.getElementById('editAppointmentForm');
+    const saveButton = document.getElementById('saveAppointment');
+    const updateButton = document.getElementById('updateAppointment');
+    const serviceColors = [
+        'bg-default', // 0
+        'bg-service-1', // 1
+        'bg-service-2', // 2
+        'bg-service-3', // 3
+        'bg-service-4', // 4
+        'bg-service-5', // 5
+        'bg-service-6', // 6
+        'bg-service-7', // 7
+        'bg-service-8', // 8
+        'bg-service-9', // 9
+        'bg-service-10', // 10
+        'bg-service-11', // 11
+        'bg-service-12', // 12
+        'bg-service-13', // 13
+        'bg-service-14', // 14
+        'bg-service-15', // 15
+        'bg-service-16', // 16
+        'bg-service-17', // 17
+        'bg-service-18', // 18
+        'bg-service-19', // 19
+        'bg-service-20'  // 20
+    ];
+    const services = []; // Stocke les services disponibles
+    let currentEventId;
+    let currentServiceId;
+    let currentClientId;
+    let currentDate;
+
+    // Initialisation du calendrier
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'fr',
+        initialView: 'timeGridWeek',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        slotMinTime: '09:00:00',
+        slotMaxTime: '17:00:00',
+        allDaySlot: false,
+        weekends: true,
+        editable: true,
+        selectable: true,
+        events: '{{ path('app_calendar_events') }}', // URL pour obtenir les événements du calendrier
+        select: function(info) {
+            openModal(info.startStr); // Ouvre le modal de création avec la date sélectionnée
+        },
+        eventClick: function(info) {
+            openViewModal(info.event); // Ouvre le modal de détails lors du clic sur un événement
+        },
+        eventContent: function(info) {
+            const serviceId = info.event.extendedProps.serviceId;
+            const backgroundColor = serviceColors[serviceId] || 'bg-default'; // Utilise la couleur par défaut si le service n'est pas trouvé
+
+            return {
+                html: `<div class="fc-content ${backgroundColor}">
+                    <span class="fc-title">${info.event.extendedProps.clientFirstName} ${info.event.extendedProps.clientName}</span>
+                </div>`
+            };
+        },
+        eventDrop: function(info) {
+            modifierRendezVous({
+                id: info.event.id,
+                date: info.event.start,
+                endDate: info.event.end,
+                serviceId: info.event.extendedProps.serviceId,
+                clientId: info.event.extendedProps.clientId
+            }, true); // Modifie le rendez-vous lorsque l'événement est déplacé
+        },
+        eventResize: function(info) {
+            modifierRendezVous({
+                id: info.event.id,
+                date: info.event.start,
+                endDate: info.event.end,
+                serviceId: info.event.extendedProps.serviceId,
+                clientId: info.event.extendedProps.clientId
+            }, true); // Modifie le rendez-vous lorsque l'événement est redimensionné
+        },
+        eventOverlap: false, // Empêche la superposition des événements
+    });
+
+    calendar.render();
+
+    // Ouvre le modal de création d'un rendez-vous
+    function openModal(start) {
+        document.getElementById('appointmentDate').value = start.slice(0, 16);
+        document.getElementById('serviceId').selectedIndex = 0;
+        document.getElementById('clientId').selectedIndex = 0;
+        document.getElementById('serviceDuration').style.display = 'none';
+        modal.show();
+    }
+
+    // Ouvre le modal de modification avec les détails du rendez-vous sélectionné
+    function openEditModal(event) {
+        const formattedDate = currentDate instanceof Date ? new Date(currentDate.getTime() + (2 * 60 * 60 * 1000)).toISOString().slice(0, 16) : new Date(currentDate).toISOString().slice(0, 16);
+        document.getElementById('editAppointmentId').value = currentEventId;
+        document.getElementById('editAppointmentDate').value = formattedDate;
+        document.getElementById('editServiceId').value = currentServiceId;
+        document.getElementById('editClientId').value = currentClientId;
+        updateServiceDuration('edit'); // Met à jour la durée du service dans le modal de modification
+        editModal.show();
+    }
+
+    // Ouvre le modal d'affichage des détails du rendez-vous
+    function openViewModal(event) {
+        currentEventId = event.id;
+        currentClientId = event.extendedProps.clientId;
+        currentServiceId = event.extendedProps.serviceId;
+        currentDate = event.start;
+        document.getElementById('viewAppointmentService').textContent = event.title;
+        document.getElementById('viewAppointmentClient').textContent = event.extendedProps.clientFirstName + " " + event.extendedProps.clientName;
+        document.getElementById('viewAppointmentDate').textContent = event.start.toLocaleDateString();
+        document.getElementById('viewAppointmentStartTime').textContent = event.start.toLocaleTimeString();
+        document.getElementById('viewAppointmentEndTime').textContent = event.end.toLocaleTimeString();
+
+        const viewAppointmentModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
+        viewAppointmentModal.show();
+        viewAppointmentModal.hide(); // Ferme le modal après affichage des détails
+    }
+
+    // Met à jour la durée du service en fonction de la sélection
+    function updateServiceDuration(prefix) {
+        const serviceId = document.getElementById(prefix + 'ServiceId').value;
+        const selectedService = services.find(s => s.id == serviceId);
+        if (selectedService) {
+            document.getElementById(prefix + 'DurationValue').textContent = selectedService.duration;
+            document.getElementById(prefix + 'ServiceDuration').style.display = 'block';
+        } else {
+            document.getElementById(prefix + 'ServiceDuration').style.display = 'none';
+        }
+    }
+
+    // Charge les options de services et de clients depuis le serveur
+    function loadOptions() {
+        fetch('{{ path('app_get_services') }}')
+            .then(response => response.json())
+            .then(data => {
+                services.push(...data);
+                const serviceSelects = [document.getElementById('serviceId'), document.getElementById('editServiceId')];
+                serviceSelects.forEach(select => {
+                    data.forEach(service => {
+                        const option = document.createElement('option');
+                        option.value = service.id;
+                        option.textContent = service.name;
+                        select.appendChild(option);
+                    });
+                });
+            });
+
+        fetch('{{ path('app_get_clients') }}')
+            .then(response => response.json())
+            .then(clients => {
+                const clientSelects = [document.getElementById('clientId'), document.getElementById('editClientId')];
+                clientSelects.forEach(select => {
+                    clients.forEach(client => {
+                        const option = document.createElement('option');
+                        option.value = client.id;
+                        option.textContent = client.firstName + " " + client.name;
+                        select.appendChild(option);
+                    });
+                });
+            });
+    }
+
+    loadOptions();
+
+    // Met à jour la durée du service lorsqu'un service est sélectionné dans le modal de création
+    document.getElementById('serviceId').addEventListener('change', function(e) {
+        updateServiceDuration('');
+    });
+
+    // Met à jour la durée du service lorsqu'un service est sélectionné dans le modal de modification
+    document.getElementById('editServiceId').addEventListener('change', function(e) {
+        updateServiceDuration('edit');
+    });
+
+    // Crée un nouveau rendez-vous
+    saveButton.addEventListener('click', function() {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+
+        const selectedService = services.find(s => s.id == data.serviceId);
+        const startDate = new Date(data.date);
+        const endDate = new Date(startDate.getTime() + selectedService.duration * 60000);
+
+        data.endDate = endDate.toISOString();
+
+        creerRendezVous(data);
+    });
+
+    // Envoie les données pour créer un rendez-vous
+    function creerRendezVous(data) {
+        fetch('{{ path('app_appointment_create') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                calendar.addEvent({
+                    id: data.id,
+                    title: data.serviceName,
+                    start: data.date,
+                    end: data.endDate,
+                    extendedProps: {
+                        clientName: data.clientName,
+                        clientFirstName: data.clientFirstName,
+                        serviceId: data.serviceId,
+                        clientId: data.clientId
+                    }
+                });
+                modal.hide(); // Cache le modal après création
+            } else {
+                alert('Erreur lors de la création du rendez-vous');
+            }
+        });
+    }
+
+    // Modifie un rendez-vous existant
+    function modifierRendezVous(data, isEdit) {
+        fetch('{{ path('app_appointment_update') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let event = calendar.getEventById(data.id);
+                if (event) {
+                    event.remove(); // Supprime l'événement existant
+                }
+                let startDate = new Date(data.date);
+                if(!isEdit){
+                    startDate.setHours(startDate.getHours() - 2); // Ajuste la date pour l'édition si nécessaire
+                }
+
+                calendar.addEvent({
+                    id: data.id,
+                    title: data.serviceName,
+                    start: startDate.toISOString(),
+                    end: data.endDate,
+                    extendedProps: {
+                        clientName: data.clientName,
+                        clientFirstName: data.clientFirstName,
+                        serviceId: data.serviceId,
+                        clientId: data.clientId
+                    }
+                });
+                editModal.hide(); // Cache le modal après modification
+            } else {
+                alert('Erreur lors de la modification du rendez-vous');
+                calendar.refetchEvents(); // Recharger les événements si la modification échoue
+            }
+        });
+    }
+
+    // Supprime un rendez-vous
+    function supprimerRendezVous(id) {
+        fetch('{{ path('app_appointment_delete') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                calendar.getEventById(id).remove(); // Supprime l'événement du calendrier
+                editModal.hide(); // Cache le modal après suppression
+            } else {
+                alert('Erreur lors de la suppression du rendez-vous');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de la suppression du rendez-vous');
+        });
+    }
+
+    // Gère la modification du rendez-vous lorsque le bouton est cliqué
+    updateButton.addEventListener('click', function() {
+        const formData = new FormData(editForm);
+        const data = Object.fromEntries(formData);
+        const selectedService = services.find(s => s.id == data.serviceId);
+        const startDate = new Date(data.date);
+        const endDate = new Date(startDate.getTime() + selectedService.duration * 60000);
+        data.endDate = endDate.toISOString();
+        modifierRendezVous(data);
+    });
+
+    // Ouvre le modal de modification lorsque le bouton de modification est cliqué
+    document.getElementById('editAppointmentBtn').addEventListener('click', function() {
+        openEditModal(currentEventId);
+    });
+
+    // Supprime le rendez-vous lorsqu'on confirme la suppression
+    document.getElementById('deleteAppointmentBtn').addEventListener('click', function() {
+        if (confirm("Êtes-vous sûr de vouloir supprimer ce rendez-vous ?")) {
+            supprimerRendezVous(currentEventId);
+        }
+    });
+});
+</script>
+{% endblock %}

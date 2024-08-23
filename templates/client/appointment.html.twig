@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rendez-vous de {{ client.firstName }} {{ client.name }}{% endblock %}
+
+{% block body %}
+    <h1>Rendez-vous de {{ client.firstName }} {{ client.name }}</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date et heures</th>
+                        <th>Prestations</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% set today = "now"|date('U') %}
+                {% set jours = {
+                    0: 'Dimanche',
+                    1: 'Lundi',
+                    2: 'Mardi',
+                    3: 'Mercredi',
+                    4: 'Jeudi',
+                    5: 'Vendredi',
+                    6: 'Samedi'
+                } %}
+                {% for appointment in appointments|sort((a, b) => b.date <=> a.date) %}
+                <tr>
+                    <td {% if appointment.date|date('U') < today %}style="background-color: lightgreen;"{% endif %}>
+                        {{ jours[appointment.date|date('w')] }} {{ appointment.date|date('d-m-Y H:i') }}
+                    </td>
+                    <td {% if appointment.date|date('U') < today %}style="background-color: lightgreen;"{% endif %}>
+                        {{ appointment.service.name }}
+                    </td>
+                    <td class="d-flex" {% if appointment.date|date('U') < today %}style="background-color: lightgreen;"{% endif %}>
+                        <a href="#" class="btn btn-sm btn-primary mx-2" data-bs-toggle="modal" data-bs-target="#availableSlotsModal{{ client.id }}" data-appointment-id="{{ appointment.id }}">Modifier</a>
+                        {{ include('client/_delete_app.html.twig') }}
+                    </td>
+                </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center">Aucun rendez-vous trouvé</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_client_index') }}" class="btn btn-secondary">Retour à la liste</a>
+    </div>
+
+<!-- Modal -->
+<div class="modal fade" id="availableSlotsModal{{ client.id }}" tabindex="-1" aria-labelledby="availableSlotsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="availableSlotsModalLabel">Choisissez un créneau : </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <button class="btn btn-secondary" id="prevDay">Précédent</button>
+                    <h6 id="currentDate">{{ currentDate|date('d-m-Y') }}</h6>
+                    <button class="btn btn-secondary" id="nextDay">Suivant</button>
+                </div>
+                <form id="slotSelectionForm" method="POST" action="{{ path('app_appointment_edit', {'id': 'appointmentId'}) }}">
+                    <input type="hidden" name="id" id="appointmentId" value="{{ appointment.id }}"> <!-- ID du rendez-vous à mettre à jour -->
+                    <input type="hidden" name="serviceId" value="{{ appointment.service.id }}"> <!-- ID du service du rendez-vous -->
+                    <input type="hidden" name="clientId" value="{{ appointment.client.id }}">
+                    <div class="list-group" id="availableSlots">
+                        {% for slot in availableSlots %}
+                            <button type="submit" name="date" value="{{ slot|date('Y-m-d H:i') }}" class="list-group-item list-group-item-action">
+                                {{ slot|date('H:i') }}
+                            </button>
+                        {% else %}
+                            <div class="list-group-item">Aucun créneau disponible</div>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDate = new Date("{{ currentDate|date('Y-m-d H:i') }}"); // Date actuelle
+    let appointmentId; // Déclaration de la variable pour l'ID de l'appointment
+
+    // Écoutez les clics sur les boutons "Modifier"
+    document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+        button.addEventListener('click', function() {
+            appointmentId = this.getAttribute('data-appointment-id'); // Récupérer l'ID de l'appointment
+            updateSlots(); // Mettre à jour les créneaux disponibles
+            console.log(appointmentId);
+            const editUrl = "{{ path('app_appointment_edit', {'id': 'placeholder'}) }}".replace('placeholder', appointmentId);
+            document.getElementById('slotSelectionForm').action = editUrl; // Mettre à jour l'action du formulaire
+            document.getElementById('appointmentId').value = appointmentId; // Mettre à jour le champ caché
+        });
+    });
+
+    document.getElementById('prevDay').addEventListener('click', function() {
+        currentDate.setDate(currentDate.getDate() - 1);
+        updateSlots();
+    });
+
+    document.getElementById('nextDay').addEventListener('click', function() {
+        currentDate.setDate(currentDate.getDate() + 1);
+        updateSlots();
+    });
+
+    function updateSlots() {
+    document.getElementById('currentDate').innerText = currentDate.toLocaleDateString('fr-FR');
+
+    // Appel AJAX pour récupérer les créneaux disponibles pour la date actuelle et l'appointment sélectionné
+    fetch(`/client/available-slots/${appointmentId}?date=${currentDate.toISOString()}`)
+        .then(response => response.json())
+        .then(data => {
+            const slotsContainer = document.getElementById('availableSlots');
+            slotsContainer.innerHTML = ''; // Vider les anciens créneaux
+            if (data.slots.length > 0) {
+                data.slots.forEach(slot => {
+                    const button = document.createElement('button');
+                    button.type = 'submit';
+                    button.name = 'date';
+                    button.value = slot.date; // Ne garder que l'heure
+                    button.className = 'list-group-item list-group-item-action';
+                    button.innerText = new Date(slot.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); // Afficher uniquement l'heure
+                    slotsContainer.appendChild(button);
+                });
+            } else {
+                slotsContainer.innerHTML = '<div class="list-group-item">Aucun créneau disponible</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la récupération des créneaux disponibles:', error);
+        });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des prestations{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Liste des prestations</h1>
+        
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ path('app_service_new') }}" class="btn btn-sm btn-outline-secondary">
+             <i class="fas fa-plus"></i> Ajouter une prestation
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prix</th>
+                    <th>Durée</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for service in services %}
+                <tr>
+                    <td>{{ service.name }}</td>
+                    <td>{{ service.price }} €</td>
+                    <td>{{ service.duration }} min</td>
+                    <td>
+                        <a href="{{ path('app_service_show', {'id': service.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                        <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">Aucune prestation trouvé</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

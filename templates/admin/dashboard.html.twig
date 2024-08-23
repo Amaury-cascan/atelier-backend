@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord administrateur{% endblock %}
+
+{% block body %}
+    <h1 class="text-center mb-4">Tableau de bord administrateur</h1>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-4">
+        <div class="col">
+            <div class="card h-100 border-warning shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-warning"><i class="bi bi-calendar-check-fill me-2"></i>Réservations</h5>
+                    <p class="card-text">Gérez les réservations ici.</p>
+                    <a href="{{ path('app_calendar') }}" class="btn btn-warning">Gérer les réservations</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 border-primary shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-primary"><i class="bi bi-briefcase-fill me-2"></i>Prestations</h5>
+                    <p class="card-text">Gérez vos prestations ici.</p>
+                    <a href="{{ path('app_service_index') }}" class="btn btn-primary">Gérer les prestations</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 border-success shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-success"><i class="bi bi-tags-fill me-2"></i>Catégories</h5>
+                    <p class="card-text">Gérez vos catégories ici.</p>
+                    <a href="{{ path('app_category_index') }}" class="btn btn-success">Gérer les catégories</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 border-danger shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-danger"><i class="bi bi-people-fill me-2"></i>Clients</h5>
+                    <p class="card-text">Gérez les clients ici.</p>
+                    <a href="{{ path('app_client_index') }}" class="btn btn-danger">Gérer les clients</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4 justify-content-center">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow border-info">
+                <div class="d-flex justify-content-between border-info align-items-center mb-3 card-header bg-light">
+                    <h5 class="card-title  text-info mb-0">Statistiques rapides</h5>
+                    <a href="{{ path('app_statistics_index') }}" class="btn btn-info">Voir les statistiques</a>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Total des rendez-vous aujourd'hui : <strong>{{ countByDay }}</strong> ({{ totalByDay }} €)</p>
+                    <p class="card-text">Total des rendez-vous cette semaine : <strong>{{ countByWeek }}</strong> ({{ totalByWeek }} €)</p>
+                    <p class="card-text">Total des rendez-vous ce mois-ci : <strong>{{ countByMonth }}</strong> ({{ totalByMonth }} €)</p>
+                    <p class="card-text">Total des rendez-vous cette année : <strong>{{ countByYear }}</strong> ({{ totalByYear }} €)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

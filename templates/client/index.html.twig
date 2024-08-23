@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des clients{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Liste des clients</h1>
+
+    <form method="GET" class="mb-3">
+        <input type="text" name="search" placeholder="Rechercher par nom ou prénom" value="{{ app.request.get('search') }}">
+        <button type="submit" class="btn btn-primary">Rechercher</button>
+    </form>
+
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ path('app_client_new') }}" class="btn btn-sm btn-outline-secondary">
+             <i class="fas fa-plus"></i> Ajouter un client
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th><a href="{{ path('app_client_index', {'sort': 'firstName'}) }}">Prénom</a></th>
+                    <th><a href="{{ path('app_client_index', {'sort': 'name'}) }}">Nom</a></th>
+                    <th>Email</th>
+                    <th>N°</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for client in clients %}
+                <tr>
+                    <td>{{ client.firstName }}</td>
+                    <td>{{ client.name }}</td>
+                    <td>{{ client.email }}</td>
+                    <td>{{ client.phoneNumber }}</td>
+                    <td>
+                        <a href="{{ path('app_client_show', {'id': client.id}) }}" class="btn btn-sm btn-info">Fiche</a>
+                        <a href="{{ path('app_client_appointment', {'id': client.id}) }}" class="btn btn-sm btn-secondary">Rdv</a>
+                        <a href="{{ path('app_client_edit', {'id': client.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">Aucun client trouvé</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
