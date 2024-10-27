@@ -18,6 +18,9 @@ class CategoryType extends AbstractType
             ->add('picture', null, [
                 'label' => 'Image'
             ])
+            ->add('description', null, [
+                'label' => 'Description'
+            ])
         ;
     }
 

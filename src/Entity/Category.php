@@ -5,7 +5,9 @@ namespace App\Entity;
 use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
@@ -16,6 +18,7 @@ class Category
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('categories')]
     private ?string $name = null;
 
     #[ORM\OneToMany(targetEntity: Service::class, mappedBy: 'category', orphanRemoval: true)]
@@ -23,6 +26,9 @@ class Category
 
     #[ORM\Column(length: 255)]
     private ?string $picture = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $Description = null;
 
     public function __construct()
     {
@@ -84,6 +90,18 @@ class Category
     public function setPicture(string $picture): static
     {
         $this->picture = $picture;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->Description;
+    }
+
+    public function setDescription(string $Description): static
+    {
+        $this->Description = $Description;
 
         return $this;
     }

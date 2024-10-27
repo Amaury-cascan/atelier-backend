@@ -30,6 +30,29 @@ class ServiceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Récupérer le fichier image
+            $imageFile = $form->get('image')->getData();
+
+            if ($imageFile) {
+                // Créer un nom unique pour l'image
+                $fileName = uniqid() . '.' . $imageFile->guessExtension();
+
+                // Déplacer le fichier vers le répertoire de destination
+                try {
+                    $imageFile->move(
+                        $this->getParameter('images_service_directory'), // Chemin de destination
+                        $fileName
+                    );
+                } catch (FileException $e) {
+                    // Gérer l'exception si quelque chose ne va pas lors de l'upload
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image : ' . $e->getMessage());
+                }
+
+                // Enregistrer le nom de l'image dans l'entité
+                $service->setPicture($fileName);
+            }
+
+            // Enregistrer le service dans la base de données
             $entityManager->persist($service);
             $entityManager->flush();
 
@@ -57,6 +80,28 @@ class ServiceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Récupérer le fichier image
+            $imageFile = $form->get('image')->getData();
+
+            if ($imageFile) {
+                // Créer un nom unique pour l'image
+                $fileName = uniqid() . '.' . $imageFile->guessExtension();
+
+                // Déplacer le fichier vers le répertoire de destination
+                try {
+                    $imageFile->move(
+                        $this->getParameter('images_service_directory'), // Chemin de destination
+                        $fileName
+                    );
+                    // Enregistrer le nom de l'image dans l'entité
+                    $service->setPicture($fileName);
+                } catch (FileException $e) {
+                    // Gérer l'exception si quelque chose ne va pas lors de l'upload
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image : ' . $e->getMessage());
+                }
+            }
+
+            // Enregistrer les modifications dans la base de données
             $entityManager->flush();
 
             return $this->redirectToRoute('app_service_index', [], Response::HTTP_SEE_OTHER);
