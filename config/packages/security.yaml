@@ -42,14 +42,11 @@ security:
 
     # Règles de contrôle d'accès
     access_control:
+
         # Permet l'accès à la route de connexion du backend sans authentification
         - { path: ^/login, roles: [] }  # URL de connexion pour le backend
-
-        # Permet l'accès à l'API de connexion sans authentification
-        - { path: ^/api/login, roles: [] }  # URL de connexion pour le frontend API
-
         # Les routes sous /administration nécessitent le rôle ROLE_ADMIN
-        - { path: ^/administration, roles: [] }  # Protège toutes les routes sous /administration
+        - { path: ^/administration, roles: [ROLE_ADMIN] }  # Protège toutes les routes sous /administration
 
 when@test:
     security:
