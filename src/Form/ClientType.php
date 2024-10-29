@@ -20,7 +20,8 @@ class ClientType extends AbstractType
                 'label' => 'Prénom'
             ])
             ->add('email', null, [
-                'label' => 'Email'
+                'label' => 'Email',
+                'empty_data' => '1234',
             ])
             ->add('phoneNumber', null, [
                 'label' => 'Numéro de téléphone'

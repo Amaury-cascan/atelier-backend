@@ -1,14 +1,16 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    # Configuration de hachage des mots de passe
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+
+    # Configuration du fournisseur d'utilisateurs
     providers:
-        # used to reload user from session & other features (e.g. switch_user)
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
+
+    # Configurations des pare-feux
     firewalls:
         login:
             pattern: ^/api/login
@@ -17,56 +19,37 @@ security:
                 check_path: /api/login_check
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
-            custom_authenticator: App\Security\LoginFormAuthenticator
-            logout:
-                path: app_logout
-
-                # where to redirect after logout
-                # target: app_any_route
-
-            remember_me:
-                secret: '%kernel.secret%'
-                lifetime: 604800
-                path: /
-                # by default, the feature is enabled by checking a checkbox in the
-                # login form, uncomment the following line to always enable it.
-                #always_remember_me: true
-
 
         api:
-            pattern:   ^/api
+            pattern: ^/api
             stateless: true
-            jwt: ~
+            jwt: ~  # Authentification JWT
+
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
+            security: false  # Désactiver la sécurité pour les outils de développement
+
         main:
-            entry_point: App\Security\LoginFormAuthenticator
             lazy: true
             provider: app_user_provider
-            custom_authenticator: App\Security\LoginFormAuthenticator
             form_login:
                 login_path: app_login
                 check_path: app_login
-                enable_csrf: true
+                enable_csrf: true  # Activer la protection CSRF pour le formulaire de connexion
             logout:
                 path: app_logout
-                target: /back/login
-                # where to redirect after logout
-                # target: app_any_route
+                target: /login  # Rediriger après la déconnexion
 
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
-
-    # Easy way to control access for large sections of your site
-    # Note: Only the *first* access control that matches will be used
+    # Règles de contrôle d'accès
     access_control:
-        - { path: ^/back/login, roles:  }
-        - { path: ^/back, roles: ROLE_ADMIN }
+        # Permet l'accès à la route de connexion du backend sans authentification
+        - { path: ^/login, roles: [] }  # URL de connexion pour le backend
 
+        # Permet l'accès à l'API de connexion sans authentification
+        - { path: ^/api/login, roles: [] }  # URL de connexion pour le frontend API
+
+        # Les routes sous /administration nécessitent le rôle ROLE_ADMIN
+        - { path: ^/administration, roles: [] }  # Protège toutes les routes sous /administration
 
 when@test:
     security:

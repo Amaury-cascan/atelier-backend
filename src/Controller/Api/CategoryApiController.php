@@ -25,6 +25,7 @@ class CategoryApiController extends AbstractController
                 'services' => $category->getServices(),
                 'name' => $category->getName(),
                 'picture' => $category->getPicture(),
+                'description' => $category->getDescription(),
             ];
         }
 
@@ -41,6 +42,7 @@ class CategoryApiController extends AbstractController
             'services' => $category->getServices(),
             'name' => $category->getName(),
             'picture' => $category->getPicture(),
+            'description' => $category->getDescription(),
         ];
 
         // Retourner les données en JSON
