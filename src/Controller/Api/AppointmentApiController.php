@@ -36,7 +36,7 @@ class AppointmentApiController extends AbstractController
             'appointments' => $appointmentsArray,
         ]);
     }
-    #[Route('/create', name: 'app_appointment_create', methods: ['POST'])]
+    #[Route('/create', name: 'app_appointment_api_create', methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
