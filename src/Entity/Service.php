@@ -16,31 +16,39 @@ class Service
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['serviceLinked'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['serviceLinked'])]
     private ?string $name = null;
 
     #[ORM\Column]
+    #[Groups(['serviceLinked'])]
     private ?int $price = null;
 
     #[ORM\ManyToOne(inversedBy: 'services')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['serviceLinked'])]
     private ?Category $category = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['serviceLinked'])]
     private ?string $picture = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['serviceLinked'])]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Groups(['serviceLinked'])]
     private ?int $duration = null;
 
     #[ORM\OneToMany(targetEntity: Appointment::class, mappedBy: 'service')]
     private Collection $appointments;
 
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'service')]
+    #[Groups(['serviceLinked'])]
     private Collection $reviews;
 
     public function __construct()

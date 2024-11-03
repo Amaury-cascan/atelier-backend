@@ -6,12 +6,14 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\InheritanceType("SINGLE_TABLE")]
 #[ORM\DiscriminatorColumn(name: "discr", type: "string")]
 #[ORM\DiscriminatorMap(["user" => User::class, "client" => Client::class])]
+#[Groups(['user'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
 
@@ -20,6 +22,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\SequenceGenerator(sequenceName: "user_id_seq", allocationSize: 1, initialValue: 1)]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['client'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]

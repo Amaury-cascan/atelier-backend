@@ -12,9 +12,11 @@ class Appointment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['appointmentLinked'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['appointmentLinked'])]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\ManyToOne(inversedBy: 'appointments')]
@@ -26,6 +28,7 @@ class Appointment
     private ?Client $client = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['appointmentLinked'])]
     private ?\DateTimeInterface $endDate = null;
 
     public function getId(): ?int

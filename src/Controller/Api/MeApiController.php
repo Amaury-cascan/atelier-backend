@@ -27,6 +27,8 @@ class MeApiController extends AbstractController
         $user = $this->getUser();
 
         // On renvoie directement l'objet utilisateur
-        return $this->json($user, Response::HTTP_OK);
+        return $this->json($user, Response::HTTP_OK, [], [
+            "groups" => ["user", "serviceLinked"],
+        ]);
     }
 }

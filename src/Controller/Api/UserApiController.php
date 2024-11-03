@@ -55,5 +55,6 @@ class UserApiController extends AbstractController
         $entityManager->flush();
 
         return $this->json($client, Response::HTTP_CREATED);
+
     }
 }
