@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\Client;
+use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,6 +16,13 @@ use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 class UserApiController extends AbstractController
 {
+    private EmailService $emailService;
+
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
+
     #[Route('/api/signup', name: 'app_api_client_add', methods: ['POST'])]
     public function add(
         Request $request,
@@ -26,15 +34,11 @@ class UserApiController extends AbstractController
         $jsonContent = $request->getContent();
 
         try {
-            // Désérialiser le JSON dans l'entité Client
             $client = $serializer->deserialize($jsonContent, Client::class, 'json');
         } catch (NotEncodableValueException $exception) {
-            return $this->json([
-                "error" => ["message" => $exception->getMessage()]
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->json([ "error" => ["message" => $exception->getMessage()] ], Response::HTTP_BAD_REQUEST);
         }
 
-        // Validation des données de l'entité Client
         $errors = $validator->validate($client);
         if (count($errors) > 0) {
             $dataErrors = [];
@@ -44,17 +48,24 @@ class UserApiController extends AbstractController
             return $this->json(["error" => ["message" => $dataErrors]], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        // Hachage du mot de passe
         if ($client->getPassword()) {
             $hashedPassword = $passwordHasher->hashPassword($client, $client->getPassword());
             $client->setPassword($hashedPassword);
         }
 
-        // Enregistrer le client en base de données
         $entityManager->persist($client);
         $entityManager->flush();
 
-        return $this->json($client, Response::HTTP_CREATED);
+        try {
+            // Utilisation du nouveau service EmailService
+            $this->emailService->sendWelcomeEmail("amaury.cascan@hotmail.fr", $client->getFirstName());
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne pas empêcher la création du compte
+            //$this->logger->error('Error sending welcome email: ' . $e->getMessage());
+            // Optionnel : informer l'utilisateur que l'email n'a pas pu être envoyé
+             return $this->json([ 'message' => 'Account created successfully, but welcome email could not be sent.' ], Response::HTTP_CREATED);
+        }
 
+        return $this->json($client, Response::HTTP_CREATED);
     }
 }

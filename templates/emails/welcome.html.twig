@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenue sur notre site</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #4a4a4a;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Bienvenue {{ username }} !</h1>
+
+    <p>Cher(e) {{ username }},</p>
+
+    <p>Nous sommes ravis de vous accueillir sur notre site. Votre inscription a été effectuée avec succès !</p>
+
+    <p>Voici quelques informations qui pourraient vous être utiles :</p>
+    <ul>
+        <li>Explorez notre catalogue de produits</li>
+        <li>Complétez votre profil pour une expérience personnalisée</li>
+        <li>N'hésitez pas à nous contacter si vous avez des questions</li>
+    </ul>
+
+    <p>Nous espérons que vous apprécierez votre expérience sur notre plateforme.</p>
+
+    <p>Cordialement,<br>L'équipe de notre site</p>
+
+    <div class="footer">
+        <p>Cet email a été envoyé à {{ email }}. Si vous n'êtes pas à l'origine de cette inscription, veuillez nous contacter.</p>
+    </div>
+</div>
+</body>
+</html>
