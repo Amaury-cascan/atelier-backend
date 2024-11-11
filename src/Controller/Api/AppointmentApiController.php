@@ -27,6 +27,8 @@ class AppointmentApiController extends AbstractController
             return [
                 'date' => $appointment->getDate()->format('Y-m-d H:i:s'),  // Date et heure de début
                 'endDate' => $appointment->getEndDate()->format('Y-m-d H:i:s'),  // Date et heure de fin
+                'service' => $appointment->getService()->getName(),
+                'user' => $appointment->getClient()->getId(),
             ];
         }, $appointments);
 
