@@ -42,7 +42,7 @@ class EmailService
             throw new \Exception('Error sending welcome email: ' . $e->getMessage());
         }
     }
-    public function senInfoWelcome(string $name, string $firstname, string $email): void
+    public function sendInfoWelcome(string $name, string $firstname, string $email): void
     {
         $email = (new TemplatedEmail())
             ->from(new Address($this->fromEmail, $this->fromName))
@@ -55,6 +55,48 @@ class EmailService
                 . "- **Email** : " . $email . "\n\n"
             );
 
+
+        try {
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            throw new \Exception('Error sending email: ' . $e->getMessage());
+        }
+    }
+
+    public function sendRdvToClient(string $date, string $firstname, string $name, string $to, string $service): void
+    {
+        $email = (new TemplatedEmail())
+            ->from(new Address($this->fromEmail, $this->fromName))
+            ->to($to)
+            ->subject("Confirmation de votre rendez-vous")
+            ->text("Bonjour " . $firstname . " " . $name .",\n\n"
+                . "Nous vous confirmons la prise en compte de votre rendez-vous.\n\n"
+                . "Détails du rendez-vous :\n"
+                . "- Service : " . $service . "\n"
+                . "- Date et heure : " . $date . "\n\n"
+                . "Si vous souhaitez modifier ce rendez-vous, merci de contacter Marie au 06 06 06 06 06.\n\n"
+                . "À très bientôt à l'Atelier de Marie !\n\n"
+                . "https://atelier-de-marie.com\n\n"
+            );
+
+        try {
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            throw new \Exception('Error sending email: ' . $e->getMessage());
+        }
+    }
+
+    public function sendRdvToMarie(string $date, string $firstname,string $name, string $service): void
+    {
+        $email = (new TemplatedEmail())
+            ->from(new Address($this->fromEmail, $this->fromName))
+            ->to("latelierdemarie41@outlook.com", "marie.pacreau14@outlook.fr")
+            ->subject("Nouveau rendez-vous")
+            ->text("Nouveau RDV de " . $firstname . " " . $name ."\n\n"
+                . "Détails du rendez-vous :\n"
+                . "- Service : " . $service . "\n"
+                . "- Date et heure : " . $date . "\n\n"
+            );
 
         try {
             $this->mailer->send($email);

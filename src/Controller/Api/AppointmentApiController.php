@@ -5,10 +5,12 @@ namespace App\Controller\Api;
 use App\Entity\Appointment;
 use App\Entity\Service;
 use App\Entity\User;
+use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
 use DateInterval;
@@ -39,7 +41,7 @@ class AppointmentApiController extends AbstractController
         ]);
     }
     #[Route('/create', name: 'app_appointment_api_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    public function create(Request $request, EntityManagerInterface $entityManager, EmailService $emailService): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         // Validation des données
@@ -68,6 +70,16 @@ class AppointmentApiController extends AbstractController
         $entityManager->persist($appointment);
         $entityManager->flush();
 
+        try {
+            // Utilisation du nouveau service EmailService
+            $emailService->sendRdvToClient($appointment->getDate()->format('d-m-Y \à H:i'), $user->getFirstName(), $user->getName(), $user->getEmail(), $service->getName());
+            $emailService->sendRdvToMarie($appointment->getDate()->format('d-m-Y \à H:i'), $user->getFirstName(), $user->getName(), $service->getName());
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne pas empêcher la création du compte
+            //$this->logger->error('Error sending welcome email: ' . $e->getMessage());
+            // Optionnel : informer l'utilisateur que l'email n'a pas pu être envoyé
+            new JsonResponse([ 'message' => 'Account created successfully, but welcome email could not be sent.' ], Response::HTTP_CREATED);
+        }
         return new JsonResponse([
             'success' => true,
             'id' => $appointment->getId(),

@@ -22,5 +22,6 @@ services:
             - '../src/Kernel.php'
     App\Service\EmailService:
         arguments:
+            $mailer: '@mailer.mailer'
             $fromEmail: '%env(MAILER_FROM_EMAIL)%'
             $fromName: '%env(MAILER_FROM_NAME)%'

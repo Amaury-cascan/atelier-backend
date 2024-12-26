@@ -59,7 +59,7 @@ class UserApiController extends AbstractController
         try {
             // Utilisation du nouveau service EmailService
             $this->emailService->sendWelcomeEmail($client->getEmail(), $client->getFirstName());
-            $this->emailService->senInfoWelcome($client->getName(), $client->getFirstName(), $client->getEmail());
+            $this->emailService->sendInfoWelcome($client->getName(), $client->getFirstName(), $client->getEmail());
         } catch (\Exception $e) {
             // Log l'erreur mais ne pas empêcher la création du compte
             //$this->logger->error('Error sending welcome email: ' . $e->getMessage());
