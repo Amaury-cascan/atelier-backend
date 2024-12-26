@@ -67,12 +67,13 @@ final class ClientInformationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_client_information_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_client_show', ['id' => $clientInformation->getClient()->getId()]);
         }
 
         return $this->render('client_information/edit.html.twig', [
             'client_information' => $clientInformation,
             'form' => $form,
+            'client' => $clientInformation->getClient(),
         ]);
     }
 
