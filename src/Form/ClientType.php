@@ -26,6 +26,15 @@ class ClientType extends AbstractType
             ->add('phoneNumber', null, [
                 'label' => 'Numéro de téléphone'
             ])
+            ->add('Connu', null, [
+                'label' => 'Comment m\'avez vous connue ?'
+            ])
+            ->add('etat', null, [
+                'label' => 'Etat des ongles'
+            ])
+            ->add('note', null, [
+                'label' => 'notes'
+            ])
         ;
     }
 
