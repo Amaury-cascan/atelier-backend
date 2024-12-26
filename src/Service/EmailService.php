@@ -74,7 +74,7 @@ class EmailService
                 . "Détails du rendez-vous :\n"
                 . "- Service : " . $service . "\n"
                 . "- Date et heure : " . $date . "\n\n"
-                . "Si vous souhaitez modifier ce rendez-vous, merci de contacter Marie au 06 06 06 06 06.\n\n"
+                . "Si vous souhaitez modifier ce rendez-vous, merci de contacter Marie au 06.60.53.50.44.\n\n"
                 . "À très bientôt à l'Atelier de Marie !\n\n"
                 . "https://atelier-de-marie.com\n\n"
             );
