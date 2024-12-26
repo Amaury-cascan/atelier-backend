@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
@@ -20,10 +21,26 @@ class Client extends User
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'client')]
     private Collection $reviews;
 
+    /**
+     * @var Collection<int, ClientInformation>
+     */
+    #[ORM\OneToMany(targetEntity: ClientInformation::class, mappedBy: 'client')]
+    private Collection $client;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $Connu = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $etat = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $note = null;
+
     public function __construct()
     {
         $this->appointments = new ArrayCollection();
         $this->reviews = new ArrayCollection();
+        $this->client = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -99,6 +116,72 @@ class Client extends User
                 $review->setClient(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClientInformation>
+     */
+    public function getClient(): Collection
+    {
+        return $this->client;
+    }
+
+    public function addClient(ClientInformation $client): static
+    {
+        if (!$this->client->contains($client)) {
+            $this->client->add($client);
+            $client->setClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClient(ClientInformation $client): static
+    {
+        if ($this->client->removeElement($client)) {
+            // set the owning side to null (unless already changed)
+            if ($client->getClient() === $this) {
+                $client->setClient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getConnu(): ?string
+    {
+        return $this->Connu;
+    }
+
+    public function setConnu(?string $Connu): static
+    {
+        $this->Connu = $Connu;
+
+        return $this;
+    }
+
+    public function getEtat(): ?string
+    {
+        return $this->etat;
+    }
+
+    public function setEtat(?string $etat): static
+    {
+        $this->etat = $etat;
+
+        return $this;
+    }
+
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    public function setNote(?string $note): static
+    {
+        $this->note = $note;
 
         return $this;
     }

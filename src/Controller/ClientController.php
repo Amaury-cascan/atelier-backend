@@ -3,8 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Client;
+use App\Entity\ClientInformation;
 use App\Entity\Appointment;
 use App\Form\ClientType;
+use App\Form\ClientInformationType;
+use App\Repository\ClientInformationRepository;
 use App\Repository\ClientRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,7 +27,6 @@ class ClientController extends AbstractController
 
         $clients = $clientRepository->findAll();
 
-        // Filtrage
         if ($search) {
             $clients = array_filter($clients, function($client) use ($search) {
                 return stripos($client->getFirstName(), $search) !== false || stripos($client->getName(), $search) !== false;
@@ -63,13 +65,39 @@ class ClientController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_client_show', methods: ['GET'])]
-    public function show(Client $client): Response
+    #[Route('/{id}', name: 'app_client_show', methods: ['GET', 'POST'])]
+    public function show(Client $client, ClientInformationRepository $clientInformationRepository, Request $request, EntityManagerInterface $entityManager): Response
     {
+        // Récupérer toutes les informations du client
+        $clientInformation = $clientInformationRepository->findBy(['client' => $client]);
+
+        // Créer une nouvelle instance de ClientInformation
+        $newClientInformation = new ClientInformation();
+        $form = $this->createForm(ClientInformationType::class, $newClientInformation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Associez l'information au client
+            $newClientInformation->setClient($client);
+
+            $entityManager->persist($newClientInformation);
+            $entityManager->flush();
+
+            // Optionnel : Message de confirmation
+            $this->addFlash('success', 'Les informations du client ont été ajoutées avec succès.');
+
+            // Rediriger vers la même page pour voir les changements
+            return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
+        }
+
+        // Renvoyer la vue avec le client, ses informations et le formulaire
         return $this->render('client/show.html.twig', [
             'client' => $client,
+            'clientInformation' => $clientInformation,
+            'form' => $form->createView(), // Ajoutez le formulaire à la vue
         ]);
     }
+
     #[Route('/{id}/rendez-vous', name: 'app_client_appointment', methods: ['GET'])]
     public function appointment(Client $client, EntityManagerInterface $entityManager): Response
     {

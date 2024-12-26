@@ -1,38 +1,97 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détails de {{client.firstName}} {{client.name}}{% endblock %}
+{% block title %}Détails de {{ client.firstName }} {{ client.name }}{% endblock %}
 
 {% block body %}
-    <h1>Détails de {{client.firstName}} {{client.name}}</h1>
-    
+    <h1>Détails de {{ client.firstName }} {{ client.name }}</h1>
+    <div class="d-flex gap-2 mb-2 justify-content-end">
+        <a href="{{ path('app_client_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        <a href="{{ path('app_client_edit', {'id': client.id}) }}" class="btn btn-primary">Modifier</a>
+        {{ include('client/_delete_form.html.twig') }}
+    </div>
     <div class="card mb-4">
         <div class="card-body">
-            <table class="table table table-striped">
+            <table class="table table-striped">
                 <tbody>
-                    <tr>
-                        <th>Prénom</th>
-                        <td>{{ client.firstName }}</td>
-                    </tr>
-                    <tr>
-                        <th>Nom</th>
-                        <td>{{ client.name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Email</th>
-                        <td>{{ client.email }}</td>
-                    </tr>
-                    <tr>
-                        <th>Numéro</th>
-                        <td>{{ client.phoneNumber }}</td>
-                    </tr>
+                <tr>
+                    <th>Prénom</th>
+                    <td>{{ client.firstName }}</td>
+                </tr>
+                <tr>
+                    <th>Nom</th>
+                    <td>{{ client.name }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ client.email }}</td>
+                </tr>
+                <tr>
+                    <th>Numéro</th>
+                    <td>{{ client.phoneNumber }}</td>
+                </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div class="d-flex gap-2">
-        <a href="{{ path('app_client_index') }}" class="btn btn-secondary">Retour à la liste</a>
-        <a href="{{ path('app_client_edit', {'id': client.id}) }}" class="btn btn-primary">Modifier</a>
-        {{ include('client/_delete_form.html.twig') }}
+    <h3>Historique client</h3>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Technique</th>
+            <th>Forme</th>
+            <th>Produits</th>
+            <th>Prix</th>
+            <th>Note</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for info in clientInformation %}
+            <tr>
+                <td>{{ info.date ? info.date|date('d/m/y') : ' ' }}</td>
+                <td>{{ info.technique }}</td>
+                <td>{{ info.forme }}</td>
+                <td>{{ info.produit }}</td>
+                <td>{{ info.prix }}€</td>
+                <td>{{ info.note }}</td>
+                <td class="d-flex gap-1">
+                    <a href="{{ path('app_client_information_edit', {'id': info.id}) }}" class="btn btn-primary">Modifier</a>
+                    <form action="{{ path('app_client_information_delete', {'id': info.id}) }}" method="post" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ info.id) }}">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette information ?');">X</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">Aucune information disponible pour ce client.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <button id="toggleForm" class="btn btn-info">Ajouter une nouvelle information</button>
+
+    <div id="newInformationForm" style="display: none;">
+        {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button class="btn btn-success">Ajouter</button>
+        {{ form_end(form) }}
     </div>
+
+    <script>
+        document.getElementById('toggleForm').addEventListener('click', function () {
+            var formDiv = document.getElementById('newInformationForm');
+            if (formDiv.style.display === 'none') {
+                formDiv.style.display = 'block';
+                this.textContent = 'Cacher le formulaire'; // Change le texte du bouton
+            } else {
+                formDiv.style.display = 'none';
+                this.textContent = 'Ajouter une nouvelle information'; // Change le texte du bouton
+            }
+        });
+    </script>
 {% endblock %}

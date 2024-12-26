@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ClientInformation{% endblock %}
+
+{% block body %}
+    <h1>ClientInformation</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ client_information.id }}</td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <td>{{ client_information.date ? client_information.date|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Technique</th>
+                <td>{{ client_information.technique }}</td>
+            </tr>
+            <tr>
+                <th>Forme</th>
+                <td>{{ client_information.forme }}</td>
+            </tr>
+            <tr>
+                <th>Produit</th>
+                <td>{{ client_information.produit }}</td>
+            </tr>
+            <tr>
+                <th>Prix</th>
+                <td>{{ client_information.prix }}</td>
+            </tr>
+            <tr>
+                <th>Note</th>
+                <td>{{ client_information.note }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_client_information_index') }}">back to list</a>
+
+    <a href="{{ path('app_client_information_edit', {'id': client_information.id}) }}">edit</a>
+
+    {{ include('client_information/_delete_form.html.twig') }}
+{% endblock %}
