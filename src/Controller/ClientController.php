@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Client;
+use App\Entity\Picture;
 use App\Entity\ClientInformation;
 use App\Entity\Appointment;
 use App\Form\ClientType;
@@ -11,6 +12,7 @@ use App\Repository\ClientInformationRepository;
 use App\Repository\ClientRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -77,6 +79,30 @@ class ClientController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            $imageFiles = $form->get('images')->getData();
+
+            if ($imageFiles) {
+                foreach ($imageFiles as $imageFile) {
+                    $fileName = uniqid() . '.' . $imageFile->guessExtension();
+
+                    try {
+                        $imageFile->move(
+                            $this->getParameter('images_client_directory'),
+                            $fileName
+                        );
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image : ' . $e->getMessage());
+                        continue; // Ignore l'image en erreur et passe à la suivante
+                    }
+
+                    $picture = new Picture();
+                    $picture->setName($fileName);
+                    $picture->setClientInformation($newClientInformation);
+
+                    $entityManager->persist($picture);
+                }
+            }
             // Associez l'information au client
             $newClientInformation->setClient($client);
 

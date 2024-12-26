@@ -7,6 +7,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType; // Importer DateType
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 
 class ClientInformationType extends AbstractType
 {
@@ -21,6 +22,12 @@ class ClientInformationType extends AbstractType
             ->add('produit')
             ->add('prix')
             ->add('note')
+            ->add('images', FileType::class, [
+                'label' => 'Images',
+                'mapped' => false, // Ce champ n’est pas directement lié à l’entité ClientInformation
+                'required' => false,
+                'multiple' => true, // Permet l’upload multiple
+            ]);
 
         ;
     }

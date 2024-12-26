@@ -57,6 +57,7 @@
             <th>Produits</th>
             <th>Prix</th>
             <th>Note</th>
+            <th>Photos</th>
             <th>Actions</th>
         </tr>
         </thead>
@@ -72,6 +73,21 @@
                     <span class="note-preview" data-full-note="{{ info.note }}">
                         {{ info.note|split(' ')|slice(0, 3)|join(' ') }}...
                     </span>
+                </td>
+                <td>
+                    <button
+                            class="btn btn-secondary open-carousel"
+                            data-id="{{ info.id }}"
+                            data-firstName="{{ client.firstName }}"
+                            data-name="{{ client.name }}"
+                            data-images="{{ info.pictures|map(p => p.name)|join(',') }}"
+                            data-technique="{{ info.technique }}"
+                            data-forme="{{ info.forme }}"
+                            data-produit="{{ info.produit }}"
+                            data-date="{{ info.date ? info.date|date('d/m/y') : '' }}"
+                    >
+                        Voir
+                    </button>
                 </td>
                 <td class="d-flex gap-1">
                     <a href="{{ path('app_client_information_edit', {'id': info.id}) }}" class="btn btn-primary">Modifier</a>
@@ -113,6 +129,39 @@
         </div>
     </div>
 
+    <div class="modal fade carou-modal" id="carouselModal" tabindex="-1" aria-labelledby="carouselModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 600px;"> <!-- Taille de la modale ajustée -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="carouselModalLabel">Détails</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Détails dynamiques -->
+                    <div id="carouselDetails" class="mb-3">
+                        <!-- Les informations seront insérées ici -->
+                    </div>
+
+                    <!-- Carrousel -->
+                    <div id="carouselImages" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner" id="carouselContent">
+                            <!-- Les images dynamiques seront insérées ici -->
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Précédent</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Suivant</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         document.getElementById('toggleForm').addEventListener('click', function () {
             var formDiv = document.getElementById('newInformationForm');
@@ -134,5 +183,60 @@
                 noteModal.show(); // Afficher la modale
             });
         });
+
+        document.querySelectorAll('.open-carousel').forEach(function(button) {
+            button.addEventListener('click', function() {
+                // Récupérer les informations dynamiques
+                const images = this.getAttribute('data-images').split(',');
+                const technique = this.getAttribute('data-technique');
+                const forme = this.getAttribute('data-forme');
+                const produit = this.getAttribute('data-produit');
+                const date = this.getAttribute('data-date');
+                const firstName = this.getAttribute('data-firstName');
+                const name = this.getAttribute('data-name')
+
+                // Mettre à jour les informations de la modale
+                const modalTitle = document.getElementById('carouselModalLabel');
+                modalTitle.textContent = `Séance du ${date} - ${firstName} ${name}`;
+
+                const modalDetails = document.getElementById('carouselDetails');
+                modalDetails.innerHTML = `
+            <p><strong>Technique :</strong> ${technique}</p>
+            <p><strong>Forme :</strong> ${forme}</p>
+            <p><strong>Produit :</strong> ${produit}</p>
+        `;
+
+                // Mettre à jour les images du carrousel
+                const carouselContent = document.getElementById('carouselContent');
+                carouselContent.innerHTML = ''; // Effacer les images précédentes
+
+                images.forEach((image, index) => {
+                    const activeClass = index === 0 ? 'active' : '';
+                    const carouselItem = `
+                <div class="carousel-item ${activeClass}">
+                    <img src="/images/client/${image}" class="d-block w-100" alt="Image ${index + 1}">
+                </div>
+            `;
+                    carouselContent.innerHTML += carouselItem;
+                });
+
+                // Afficher la modale
+                const carouselModal = new bootstrap.Modal(document.getElementById('carouselModal'));
+                carouselModal.show();
+            });
+        });
+
     </script>
+    <style>
+        .carousel-item img {
+            max-width: 100%;  /* Limite la largeur à celle de la modale */
+            max-height: 400px; /* Définit une hauteur maximale pour éviter que les images soient trop grandes */
+            object-fit: contain; /* Garde les proportions des images */
+            margin: auto; /* Centre les images */
+        }
+        .carou-modal {
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+    </style>
 {% endblock %}

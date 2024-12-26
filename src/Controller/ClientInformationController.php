@@ -80,12 +80,32 @@ final class ClientInformationController extends AbstractController
     #[Route('/{id}', name: 'app_client_information_delete', methods: ['POST'])]
     public function delete(Request $request, ClientInformation $clientInformation, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$clientInformation->getId(), $request->getPayload()->getString('_token'))) {
+        // Vérifiez le token CSRF pour la sécurité
+        if ($this->isCsrfTokenValid('delete'.$clientInformation->getId(), $request->request->get('_token'))) {
+            // Récupérez les images associées
+            $pictures = $clientInformation->getPictures(); // Méthode de relation OneToMany dans votre entité ClientInformation
+
+            // Supprimez chaque image
+            foreach ($pictures as $picture) {
+                // Supprimez le fichier physique si nécessaire
+                $imagePath = $this->getParameter('images_client_directory').'/'.$picture->getName();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath); // Supprime le fichier physique
+                }
+
+                $entityManager->remove($picture); // Supprime l'entité Picture
+            }
+
+            // Supprimez l'entité ClientInformation
             $client = $clientInformation->getClient();
             $entityManager->remove($clientInformation);
             $entityManager->flush();
+
+            // Redirigez après la suppression
+            return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
+        // Redirection en cas de token invalide
+        return $this->redirectToRoute('app_client_index');
     }
 }
