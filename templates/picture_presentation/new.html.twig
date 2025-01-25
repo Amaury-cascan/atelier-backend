@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle image{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Créer une nouvelle image</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            {{ include('picture_presentation/_form.html.twig') }}
+        </div>
+    </div>
+
+    <a href="{{ path('app_picture_presentation_index') }}" class="btn btn-secondary">Retour à la liste</a>
+{% endblock %}

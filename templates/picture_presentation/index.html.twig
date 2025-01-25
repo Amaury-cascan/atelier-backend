@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des images{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Liste des images</h1>
+
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ path('app_picture_presentation_new') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-plus"></i> Ajouter une image
+        </a>
+    </div>
+
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Image</th>
+                    <th>actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for picture_presentation in picture_presentations %}
+                <tr>
+                    <td>{{ picture_presentation.description }}</td>
+                    <td>{{ picture_presentation.picture }}</td>
+                    <td>
+                        <a href="{{ path('app_picture_presentation_show', {'id': picture_presentation.id}) }}" class="btn btn-sm btn-info">voir</a>
+                        <a href="{{ path('app_picture_presentation_edit', {'id': picture_presentation.id}) }}" class="btn btn-sm btn-primary">modifier</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">Aucune image trouvée</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
