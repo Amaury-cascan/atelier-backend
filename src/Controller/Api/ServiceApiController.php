@@ -36,6 +36,7 @@ class ServiceApiController extends AbstractController
                 'picture' => $service->getPicture(),
                 'description' => $service->getDescription(),
                 'duration' => $service->getDuration(),
+                'active' => $service->isActive(),
 
             ];
         }
