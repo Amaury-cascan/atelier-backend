@@ -77,6 +77,26 @@ class CategoryController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('image')->getData();
+
+            if ($imageFile) {
+                // Créer un nom unique pour l'image
+                $fileName = uniqid() . '.' . $imageFile->guessExtension();
+
+                // Déplacer le fichier vers le répertoire de destination
+                try {
+                    $imageFile->move(
+                        $this->getParameter('images_service_directory'), // Chemin de destination
+                        $fileName
+                    );
+                    // Enregistrer le nom de l'image dans l'entité
+                    $category->setPicture($fileName);
+                } catch (FileException $e) {
+                    // Gérer l'exception si quelque chose ne va pas lors de l'upload
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image : ' . $e->getMessage());
+                }
+            }
+            $entityManager->persist($category);
             $entityManager->flush();
 
             return $this->redirectToRoute('app_category_index', [], Response::HTTP_SEE_OTHER);

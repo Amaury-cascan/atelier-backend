@@ -51,6 +51,9 @@ class Service
     #[Groups(['serviceLinked'])]
     private Collection $reviews;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $active = null;
+
     public function __construct()
     {
         $this->appointments = new ArrayCollection();
@@ -190,6 +193,18 @@ class Service
                 $review->setService(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isActive(): ?bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(?bool $active): static
+    {
+        $this->active = $active;
 
         return $this;
     }

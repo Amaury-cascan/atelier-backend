@@ -117,7 +117,8 @@ class ServiceController extends AbstractController
     public function delete(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$service->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($service);
+            $service->setActive(false);
+            $entityManager->persist($service);
             $entityManager->flush();
         }
 

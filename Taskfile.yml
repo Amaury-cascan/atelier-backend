@@ -51,10 +51,10 @@ tasks:
 
     build: # Build the project.
         cmds:
-            - task docker:build
+            - task: docker:build
            
     run: # Run the project.
         cmds:
-            - task docker:up
+            - task: docker:up
             - task: symfony:serve
             

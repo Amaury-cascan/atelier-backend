@@ -23,16 +23,18 @@
             </thead>
             <tbody>
             {% for service in services %}
-                <tr>
-                    <td>{{ service.name }}</td>
-                    <td>{{ service.price }} €</td>
-                    <td>{{ service.duration }} min</td>
-                    <td>
-                        <a href="{{ path('app_service_show', {'id': service.id}) }}" class="btn btn-sm btn-info">Voir</a>
-                        <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
-                    </td>
-                </tr>
-            {% else %}
+                {% if service.active is null or service.active == true %}
+                    <tr>
+                        <td>{{ service.name }}</td>
+                        <td>{{ service.price }} €</td>
+                        <td>{{ service.duration }} min</td>
+                        <td>
+                            <a href="{{ path('app_service_show', {'id': service.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                            <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
+                        </td>
+                    </tr>
+                {% endif %}
+            {% else%}
                 <tr>
                     <td colspan="7" class="text-center">Aucune prestation trouvé</td>
                 </tr>
