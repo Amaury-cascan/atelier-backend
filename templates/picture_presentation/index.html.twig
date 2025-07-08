@@ -1,42 +1,599 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des images{% endblock %}
+{% block title %}Gestion de la Galerie{% endblock %}
+
+{% block stylesheets %}
+<style>
+.gallery-container {
+    padding: 2rem 0;
+}
+
+.page-header {
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.1), rgba(197, 101, 63, 0.05));
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+}
+
+.page-title {
+    color: var(--taupe);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-subtitle {
+    color: var(--taupe-dark);
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    box-shadow: 0 4px 15px rgba(162, 78, 50, 0.08);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.15);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.total { background: linear-gradient(135deg, var(--taupe), var(--taupe-dark)); }
+.stat-icon.with-desc { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.stat-icon.without-desc { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--taupe);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--taupe-dark);
+    font-weight: 500;
+}
+
+.images-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.image-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    box-shadow: 0 4px 15px rgba(162, 78, 50, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.image-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.15);
+}
+
+.image-container {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.image-card:hover .image-preview {
+    transform: scale(1.05);
+}
+
+.placeholder-image {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.1), rgba(197, 101, 63, 0.05));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--taupe);
+}
+
+.placeholder-image i {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.image-card:hover .image-overlay {
+    opacity: 1;
+}
+
+.overlay-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.overlay-btn.view {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+
+.overlay-btn.edit {
+    background: rgba(162, 78, 50, 0.9);
+    color: white;
+}
+
+.image-content {
+    padding: 1.25rem;
+}
+
+.image-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.image-id {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.image-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.image-status.with-file {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.05));
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.image-status.no-file {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.image-description {
+    color: var(--taupe-dark);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    min-height: 40px;
+}
+
+.image-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--taupe-dark);
+    font-size: 0.8rem;
+}
+
+.image-filename {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.image-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+}
+
+.action-btn.view {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.action-btn.edit {
+    background: rgba(162, 78, 50, 0.1);
+    color: var(--taupe);
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+}
+
+.search-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    box-shadow: 0 4px 15px rgba(162, 78, 50, 0.08);
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.search-title {
+    color: var(--taupe);
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-container {
+    position: relative;
+    min-width: 300px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 2px solid rgba(162, 78, 50, 0.15);
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--taupe);
+    box-shadow: 0 0 0 3px rgba(162, 78, 50, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--taupe);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--taupe-dark);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.add-btn {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.3);
+    color: white;
+}
+
+.results-counter {
+    color: var(--taupe-dark);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .images-cards-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-container {
+        min-width: auto;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
 
 {% block body %}
-    <h1 class="mb-4">Liste des images</h1>
-
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ path('app_picture_presentation_new') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-plus"></i> Ajouter une image
-        </a>
+<div class="gallery-container" data-animate="true">
+    <!-- En-tête -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-images"></i>
+                    Galerie d'Images
+                </h1>
+                <p class="page-subtitle">Gérez les images de présentation de vos services</p>
+            </div>
+            <a href="{{ path('app_picture_presentation_new') }}" class="add-btn">
+                <i class="fas fa-plus-circle"></i>
+                Nouvelle Image
+            </a>
+        </div>
     </div>
 
+    <!-- Statistiques -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-icon total">
+                <i class="fas fa-images"></i>
+            </div>
+            <div class="stat-number" data-target="{{ picture_presentations|length }}">0</div>
+            <div class="stat-label">Images total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon with-desc">
+                <i class="fas fa-align-left"></i>
+            </div>
+            <div class="stat-number" data-target="{% set withDescCount = 0 %}{% for picture in picture_presentations %}{% if picture.description is defined and picture.description %}{% set withDescCount = withDescCount + 1 %}{% endif %}{% endfor %}{{ withDescCount }}">0</div>
+            <div class="stat-label">Avec description</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon without-desc">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-number" data-target="{{ picture_presentations|length - withDescCount }}">0</div>
+            <div class="stat-label">Sans description</div>
+        </div>
+    </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th>Image</th>
-                    <th>actions</th>
-                </tr>
-            </thead>
-            <tbody>
+    <!-- Recherche -->
+    <div class="search-header">
+        <h4 class="search-title">
+            <i class="fas fa-th-large"></i>
+            Galerie d'Images
+        </h4>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Rechercher une image..." id="searchImages">
+        </div>
+    </div>
+
+    <!-- Galerie des images -->
+    {% if picture_presentations is not empty %}
+        <div class="images-cards-container">
             {% for picture_presentation in picture_presentations %}
-                <tr>
-                    <td>{{ picture_presentation.description }}</td>
-                    <td>{{ picture_presentation.picture }}</td>
-                    <td>
-                        <a href="{{ path('app_picture_presentation_show', {'id': picture_presentation.id}) }}" class="btn btn-sm btn-info">voir</a>
-                        <a href="{{ path('app_picture_presentation_edit', {'id': picture_presentation.id}) }}" class="btn btn-sm btn-primary">modifier</a>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="7" class="text-center">Aucune image trouvée</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                <div class="image-card" data-description="{{ picture_presentation.description|default('')|lower }}">
+                    <div class="image-container">
+                        {% if picture_presentation.picture %}
+                            <img src="{{ asset('images/service/' ~ picture_presentation.picture) }}" 
+                                 class="image-preview" 
+                                 alt="{{ picture_presentation.description ?: 'Image de présentation' }}">
+                        {% else %}
+                            <div class="placeholder-image">
+                                <i class="fas fa-image"></i>
+                                <div>Aucune image</div>
+                            </div>
+                        {% endif %}
+                        <div class="image-overlay">
+                            <a href="{{ path('app_picture_presentation_show', {'id': picture_presentation.id}) }}" 
+                               class="overlay-btn view">
+                                <i class="fas fa-eye"></i>
+                                Voir
+                            </a>
+                            <a href="{{ path('app_picture_presentation_edit', {'id': picture_presentation.id}) }}" 
+                               class="overlay-btn edit">
+                                <i class="fas fa-edit"></i>
+                                Modifier
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="image-content">
+                        <div class="image-header">
+                            <div class="image-id">#{{ picture_presentation.id }}</div>
+                            <div class="image-status {{ picture_presentation.picture ? 'with-file' : 'no-file' }}">
+                                {% if picture_presentation.picture %}
+                                    <i class="fas fa-check"></i> Fichier OK
+                                {% else %}
+                                    <i class="fas fa-times"></i> Pas de fichier
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="image-description">
+                            {% if picture_presentation.description %}
+                                {{ picture_presentation.description|slice(0, 120) }}{% if picture_presentation.description|length > 120 %}...{% endif %}
+                            {% else %}
+                                <em>Aucune description disponible</em>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="image-meta">
+                            {% if picture_presentation.picture %}
+                                <div class="image-filename">
+                                    <i class="fas fa-file-image"></i>
+                                    {{ picture_presentation.picture }}
+                                </div>
+                            {% else %}
+                                <div class="image-filename">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Aucun fichier
+                                </div>
+                            {% endif %}
+                            
+                            <div class="image-actions">
+                                <a href="{{ path('app_picture_presentation_show', {'id': picture_presentation.id}) }}" 
+                                   class="action-btn view">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ path('app_picture_presentation_edit', {'id': picture_presentation.id}) }}" 
+                                   class="action-btn edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="results-counter">
+            <span id="imageCount">{{ picture_presentations|length }}</span> image(s) affichée(s)
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-images"></i>
+            <h3>Aucune image trouvée</h3>
+            <p>Ajoutez votre première image pour commencer votre galerie</p>
+            <a href="{{ path('app_picture_presentation_new') }}" class="add-btn">
+                <i class="fas fa-plus-circle"></i>
+                Ajouter une Image
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des compteurs
+    document.querySelectorAll('.stat-number').forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        if (!isNaN(target)) {
+            let current = 0;
+            const increment = target / 20;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current);
+            }, 50);
+        }
+    });
+
+    // Recherche en temps réel
+    const searchInput = document.getElementById('searchImages');
+    const imageCards = document.querySelectorAll('.image-card');
+    const imageCounter = document.getElementById('imageCount');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let visibleCount = 0;
+            
+            imageCards.forEach(card => {
+                const description = card.getAttribute('data-description');
+                if (description.includes(searchTerm)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            if (imageCounter) {
+                imageCounter.textContent = visibleCount;
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

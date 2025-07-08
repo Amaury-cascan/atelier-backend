@@ -119,5 +119,52 @@ class AppointmentApiController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/duration', name: 'app_appointment_update_duration', methods: ['PATCH'])]
+    public function updateDuration(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        // Validation
+        if (!isset($data['duration']) || !is_numeric($data['duration']) || $data['duration'] < 5) {
+            return new JsonResponse(['success' => false, 'message' => 'Durée invalide'], 400);
+        }
+
+        $appointment = $entityManager->getRepository(Appointment::class)->find($id);
+        if (!$appointment) {
+            return new JsonResponse(['success' => false, 'message' => 'Rendez-vous introuvable'], 404);
+        }
+
+        // Calculer la nouvelle heure de fin
+        $newEndDate = clone $appointment->getDate();
+        $newEndDate->add(new DateInterval('PT' . intval($data['duration']) . 'M'));
+        
+        $appointment->setEndDate($newEndDate);
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'id' => $appointment->getId(),
+            'duration' => $data['duration'],
+            'endDate' => $appointment->getEndDate()->format('Y-m-d\TH:i:s')
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_appointment_delete', methods: ['DELETE'])]
+    public function deleteAppointment(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $appointment = $entityManager->getRepository(Appointment::class)->find($id);
+        if (!$appointment) {
+            return new JsonResponse(['success' => false, 'message' => 'Rendez-vous introuvable'], 404);
+        }
+
+        $entityManager->remove($appointment);
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Rendez-vous supprimé avec succès'
+        ]);
+    }
+
 
 }

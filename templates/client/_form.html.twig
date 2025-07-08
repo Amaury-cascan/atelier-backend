@@ -1,4 +1,193 @@
-{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
-    {{ form_widget(form) }}
-    <button class="btn btn-primary mt-3">{{ button_label|default('Enregistrer') }}</button>
+{{ form_start(form, {'attr': {'class': 'modern-form', 'novalidate': 'novalidate'}}) }}
+
+<style>
+.modern-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.modern-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.modern-form .form-control {
+    padding: 1rem;
+    border: 2px solid rgba(139, 115, 85, 0.15);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.modern-form .form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 
+        0 0 0 3px rgba(139, 115, 85, 0.1),
+        0 4px 15px rgba(139, 115, 85, 0.15);
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+}
+
+.modern-form .form-control::placeholder {
+    color: var(--text-light);
+}
+
+.modern-form label {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modern-form label::before {
+    content: attr(data-icon);
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    color: var(--primary-color);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 115, 85, 0.3);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.form-errors {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #dc2626;
+}
+
+.form-errors ul {
+    margin: 0;
+    padding-left: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .modern-form {
+        gap: 1rem;
+    }
+    
+    .modern-form .form-control {
+        padding: 0.875rem;
+    }
+    
+    .submit-btn {
+        padding: 0.875rem 1.5rem;
+    }
+}
+</style>
+
+<div class="modern-form">
+    {% if form.vars.errors|length > 0 %}
+        <div class="form-errors">
+            <strong>Erreurs de validation :</strong>
+            <ul>
+                {% for error in form.vars.errors %}
+                    <li>{{ error.message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="form-row">
+        <div class="form-group">
+            {{ form_label(form.firstName, 'Prénom', {'attr': {'data-icon': '\f007'}}) }}
+            {{ form_widget(form.firstName, {'attr': {'placeholder': 'Ex: Marie'}}) }}
+            {{ form_errors(form.firstName) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.name, 'Nom', {'attr': {'data-icon': '\f2c0'}}) }}
+            {{ form_widget(form.name, {'attr': {'placeholder': 'Ex: Dupont'}}) }}
+            {{ form_errors(form.name) }}
+        </div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.email, 'Adresse email', {'attr': {'data-icon': '\f0e0'}}) }}
+        {{ form_widget(form.email, {'attr': {'placeholder': 'Ex: marie.dupont@email.com'}}) }}
+        {{ form_errors(form.email) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.phoneNumber, 'Numéro de téléphone', {'attr': {'data-icon': '\f095'}}) }}
+        {{ form_widget(form.phoneNumber, {'attr': {'placeholder': 'Ex: 06 12 34 56 78'}}) }}
+        {{ form_errors(form.phoneNumber) }}
+    </div>
+
+    {% if form.birthDate is defined %}
+    <div class="form-group">
+        {{ form_label(form.birthDate, 'Date de naissance', {'attr': {'data-icon': '\f1fd'}}) }}
+        {{ form_widget(form.birthDate, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.birthDate) }}
+    </div>
+    {% endif %}
+
+    {% if form.address is defined %}
+    <div class="form-group">
+        {{ form_label(form.address, 'Adresse', {'attr': {'data-icon': '\f3c5'}}) }}
+        {{ form_widget(form.address, {'attr': {'placeholder': 'Ex: 123 Rue de la Paix, 75001 Paris', 'rows': '3'}}) }}
+        {{ form_errors(form.address) }}
+    </div>
+    {% endif %}
+
+    {% if form.notes is defined %}
+    <div class="form-group">
+        {{ form_label(form.notes, 'Notes', {'attr': {'data-icon': '\f249'}}) }}
+        {{ form_widget(form.notes, {'attr': {'placeholder': 'Notes personnelles sur le client...', 'rows': '4'}}) }}
+        {{ form_errors(form.notes) }}
+    </div>
+    {% endif %}
+
+    <button type="submit" class="submit-btn">
+        <i class="fas fa-save"></i>
+        {{ button_label|default('Enregistrer') }}
+    </button>
+</div>
+
 {{ form_end(form) }}

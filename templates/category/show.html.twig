@@ -1,35 +1,199 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détails de la catégorie{% endblock %}
+{% block title %}{{ category.name }} - Détails{% endblock %}
+
 {% block body %}
-    <h1 class="mb-4">Détails de la catégorie</h1>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <table class="table table-striped">
-                <tbody>
-                    <tr>
-                        <th>Nom</th>
-                        <td>{{ category.name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Image</th>
-                        <td>
-                            {% if category.picture %}
-                                <img src="{{ asset('uploads/category/' ~ category.picture) }}" alt="{{ category.name }}" class="img-thumbnail" style="max-width: 200px;">
-                            {% else %}
-                                <span class="text-muted">Aucune image</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-4 mb-2"><i class="fas fa-tag me-3"></i>{{ category.name }}</h1>
+            <p class="text-muted lead">Détails de la catégorie</p>
         </div>
-    </div>        
-
-    <div class="d-flex gap-2">
-        <a href="{{ path('app_category_index') }}" class="btn btn-secondary">Retour à la liste</a>
-        <a href="{{ path('app_category_edit', {'id': category.id}) }}" class="btn btn-primary">Modifier</a>
-        {{ include('category/_delete_form.html.twig') }}
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_category_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+            </a>
+            <a href="{{ path('app_category_edit', {'id': category.id}) }}" class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i>Modifier
+            </a>
+        </div>
     </div>
+
+    <div class="row g-4">
+        <!-- Informations principales -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations de la catégorie</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-tag text-primary"></i>
+                                    <span>Nom de la catégorie</span>
+                                </div>
+                                <div class="detail-value">{{ category.name }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-hashtag text-primary"></i>
+                                    <span>ID</span>
+                                </div>
+                                <div class="detail-value">#{{ category.id }}</div>
+                            </div>
+                        </div>
+                        {% if category.description is defined and category.description %}
+                        <div class="col-12">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-align-left text-primary"></i>
+                                    <span>Description</span>
+                                </div>
+                                <div class="detail-value">{{ category.description }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if category.services is defined and category.services|length > 0 %}
+                        <div class="col-12">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-briefcase text-primary"></i>
+                                    <span>Services associés ({{ category.services|length }})</span>
+                                </div>
+                                <div class="services-list mt-2">
+                                    {% for service in category.services %}
+                                        <span class="badge bg-secondary me-2 mb-1">
+                                            <i class="fas fa-briefcase me-1"></i>{{ service.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image de la catégorie -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-image me-2"></i>Image de la catégorie</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if category.picture %}
+                        <div class="category-image-container">
+                            <img src="{{ asset('uploads/category/' ~ category.picture) }}" 
+                                 alt="{{ category.name }}" 
+                                 class="category-image">
+                            <div class="image-info">
+                                <small class="text-muted">
+                                    <i class="fas fa-file-image me-1"></i>{{ category.picture }}
+                                </small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="no-image-placeholder">
+                            <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Aucune image</p>
+                            <small class="text-muted">Vous pouvez ajouter une image en modifiant la catégorie</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ path('app_category_edit', {'id': category.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Modifier la catégorie
+                    </a>
+                    {{ include('category/_delete_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.detail-item {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border-left: 4px solid var(--taupe);
+    transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(162, 78, 50, 0.1);
+}
+
+.detail-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--taupe);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #333;
+    font-size: 1rem;
+}
+
+.services-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.category-image-container {
+    position: relative;
+}
+
+.category-image {
+    width: 100%;
+    max-width: 300px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.category-image:hover {
+    transform: scale(1.02);
+}
+
+.image-info {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(162, 78, 50, 0.05);
+    border-radius: 8px;
+}
+
+.no-image-placeholder {
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--beige), var(--beige-light));
+    border-radius: 12px;
+    color: var(--taupe);
+}
+</style>
 {% endblock %}

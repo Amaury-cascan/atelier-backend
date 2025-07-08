@@ -1,4 +1,181 @@
-{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
-    {{ form_widget(form) }}
-<button class="btn btn-primary mt-3">{{ button_label|default('Enregistrer') }}</button>
+{{ form_start(form, {'attr': {'class': 'modern-form', 'novalidate': 'novalidate'}}) }}
+
+<style>
+.modern-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.modern-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.modern-form .form-control {
+    padding: 1rem;
+    border: 2px solid rgba(162, 78, 50, 0.15);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.modern-form .form-control:focus {
+    outline: none;
+    border-color: var(--taupe);
+    box-shadow: 
+        0 0 0 3px rgba(162, 78, 50, 0.1),
+        0 4px 15px rgba(162, 78, 50, 0.15);
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+}
+
+.modern-form .form-control::placeholder {
+    color: var(--taupe-dark);
+}
+
+.modern-form label {
+    font-weight: 600;
+    color: var(--taupe);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modern-form label::before {
+    content: attr(data-icon);
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    color: var(--taupe);
+}
+
+.modern-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.modern-form input[type="file"] {
+    padding: 0.75rem;
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.05), rgba(197, 101, 63, 0.02));
+    border: 2px dashed rgba(162, 78, 50, 0.3);
+}
+
+.modern-form input[type="file"]:hover {
+    border-color: var(--taupe);
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.08), rgba(197, 101, 63, 0.04));
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.3);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.form-errors {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #dc2626;
+}
+
+.form-errors ul {
+    margin: 0;
+    padding-left: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modern-form {
+        gap: 1rem;
+    }
+    
+    .modern-form .form-control {
+        padding: 0.875rem;
+    }
+    
+    .submit-btn {
+        padding: 0.875rem 1.5rem;
+    }
+}
+</style>
+
+<div class="modern-form">
+    {% if form.vars.errors|length > 0 %}
+        <div class="form-errors">
+            <strong>Erreurs de validation :</strong>
+            <ul>
+                {% for error in form.vars.errors %}
+                    <li>{{ error.message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if form.name is defined %}
+    <div class="form-group">
+        {{ form_label(form.name, 'Nom de l\'image', {'attr': {'data-icon': '\f02b'}}) }}
+        {{ form_widget(form.name, {'attr': {'placeholder': 'Ex: Réalisation du jour...', 'class': 'form-control'}}) }}
+        {{ form_errors(form.name) }}
+    </div>
+    {% endif %}
+
+    {% if form.description is defined %}
+    <div class="form-group">
+        {{ form_label(form.description, 'Description', {'attr': {'data-icon': '\f036'}}) }}
+        {{ form_widget(form.description, {'attr': {'placeholder': 'Décrivez cette réalisation...', 'rows': '4', 'class': 'form-control'}}) }}
+        {{ form_errors(form.description) }}
+    </div>
+    {% endif %}
+
+    {% if form.pictureName is defined %}
+    <div class="form-group">
+        {{ form_label(form.pictureName, 'Image', {'attr': {'data-icon': '\f03e'}}) }}
+        {{ form_widget(form.pictureName, {'attr': {'accept': 'image/*', 'class': 'form-control'}}) }}
+        {{ form_errors(form.pictureName) }}
+        <small class="form-text text-muted">Formats acceptés: JPG, PNG, GIF (max 5MB)</small>
+    </div>
+    {% endif %}
+
+    {% if form.category is defined %}
+    <div class="form-group">
+        {{ form_label(form.category, 'Catégorie', {'attr': {'data-icon': '\f02c'}}) }}
+        {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.category) }}
+    </div>
+    {% endif %}
+
+    <button type="submit" class="submit-btn">
+        <i class="fas fa-images"></i>
+        {{ button_label|default('Enregistrer') }}
+    </button>
+</div>
+
 {{ form_end(form) }}

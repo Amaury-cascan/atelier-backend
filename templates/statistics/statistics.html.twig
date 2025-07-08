@@ -1,245 +1,1364 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Statistiques{% endblock %}
+{% block title %}Statistiques - L'Atelier de Marie{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* Statistiques page moderne */
+.stats-container {
+    padding: 0;
+}
+
+.stats-header {
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.1), rgba(197, 101, 63, 0.05));
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--taupe), var(--taupe-light), var(--taupe));
+    border-radius: 24px 24px 0 0;
+}
+
+.stats-title-section {
+    width: 100%;
+}
+
+.stats-title {
+    color: var(--taupe);
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.stats-subtitle {
+    color: var(--taupe-dark);
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: 400;
+}
+
+
+
+/* Filtres de période */
+.period-filters {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.08);
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.period-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.period-btn {
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--taupe-dark);
+    border: 2px solid rgba(162, 78, 50, 0.2);
+    padding: 12px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.period-btn:hover,
+.period-btn.active {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    border-color: var(--taupe);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(162, 78, 50, 0.3);
+}
+
+.period-badge {
+    background: linear-gradient(135deg, var(--beige-dark), var(--beige));
+    color: var(--taupe-dark);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(162, 78, 50, 0.2);
+}
+
+/* KPIs Cards */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.08);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(162, 78, 50, 0.15);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--taupe);
+    border-radius: 20px 20px 0 0;
+}
+
+.kpi-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    position: relative;
+}
+
+.kpi-icon.revenue { 
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark)); 
+}
+
+.kpi-icon.appointments { 
+    background: linear-gradient(135deg, var(--taupe-light), var(--taupe)); 
+}
+
+.kpi-icon.average { 
+    background: linear-gradient(135deg, var(--accent-warm), var(--taupe-light)); 
+}
+
+.kpi-icon.trend { 
+    background: linear-gradient(135deg, var(--accent-cool), var(--taupe)); 
+}
+
+.kpi-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--taupe);
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.kpi-label {
+    color: var(--taupe-dark);
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-description {
+    color: var(--taupe-dark);
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+/* Charts and Data Section */
+.charts-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--taupe), var(--taupe-light));
+    border-radius: 20px 20px 0 0;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.chart-title {
+    color: var(--taupe);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.date-filter {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.date-input {
+    padding: 8px 12px;
+    border: 2px solid rgba(162, 78, 50, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--taupe-dark);
+    font-weight: 500;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: var(--taupe);
+    box-shadow: 0 0 0 2px rgba(162, 78, 50, 0.1);
+}
+
+.filter-btn {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(162, 78, 50, 0.3);
+}
+
+.chart-container {
+    height: 400px;
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.chart-period-info {
+    text-align: center;
+    color: var(--taupe-dark);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+/* Data Table */
+.data-table {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+}
+
+.data-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.data-table thead th {
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.1), rgba(197, 101, 63, 0.05));
+    color: var(--taupe);
+    font-weight: 700;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.9rem;
+    border: none;
+}
+
+.data-table tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(162, 78, 50, 0.1);
+    color: #333;
+    font-weight: 500;
+}
+
+.data-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.03), rgba(197, 101, 63, 0.01));
+}
+
+.service-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.service-name {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--taupe-dark);
+}
+
+.count-badge {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.revenue-amount {
+    font-weight: 700;
+    color: var(--taupe);
+    font-size: 1rem;
+}
+
+.progress-container {
+    width: 100%;
+    height: 24px;
+    background: rgba(162, 78, 50, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: width 1s ease-in-out;
+}
+
+.total-row {
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.1), rgba(197, 101, 63, 0.05)) !important;
+    font-weight: 700;
+}
+
+.total-row td {
+    border-bottom: none !important;
+    color: var(--taupe) !important;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--taupe-dark);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+}
+
+.empty-state h5 {
+    color: var(--taupe);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-header {
+        padding: 2rem 1.5rem;
+    }
+    
+    .stats-title {
+        font-size: 2rem;
+    }
+    
+    .period-filters {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .period-buttons {
+        justify-content: center;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .chart-card {
+        padding: 1.5rem;
+    }
+    
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .date-filter {
+        width: 100%;
+        justify-content: stretch;
+    }
+    
+    .date-input {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpi-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .kpi-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .kpi-number {
+        font-size: 2rem;
+    }
+    
+    .period-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Animations */
+.kpi-card {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.kpi-card:nth-child(1) { animation-delay: 0.1s; }
+.kpi-card:nth-child(2) { animation-delay: 0.2s; }
+.kpi-card:nth-child(3) { animation-delay: 0.3s; }
+.kpi-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chart-card {
+    animation: slideInLeft 0.8s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+</style>
+{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">Statistiques des Rendez-vous</h1>
-
-        <div class="btn-group mb-3" role="group" aria-label="Navigation">
-            <a href="{{ path('app_statistics_index', { 'period': 'daily' }) }}" class="btn btn-primary">Par Jour</a>
-            <a href="{{ path('app_statistics_index', { 'period': 'weekly' }) }}" class="btn btn-primary">Par Semaine</a>
-            <a href="{{ path('app_statistics_index', { 'period': 'monthly' }) }}" class="btn btn-primary">Par Mois</a>
-            <a href="{{ path('app_statistics_index', { 'period': 'yearly' }) }}" class="btn btn-primary">Par Année</a>
+<div class="stats-container">
+    <!-- Header Section -->
+    <div class="stats-header">
+        <div class="stats-title-section">
+            <h1 class="stats-title">
+                <i class="fas fa-chart-line"></i>
+                Tableau de Bord Analytique
+            </h1>
+            <p class="stats-subtitle">Analysez vos performances et suivez votre croissance</p>
         </div>
+    </div>
 
-        {% if period == 'daily' %}
-            <div class="card mb-4 shadow">
-                <div class="card-header">
-                    <h2>Statistiques Par Jour</h2>
-                </div>
-                <div class="card-body">
-                    <form method="get" action="{{ path('app_statistics_index') }}">
-                        <div class="input-group mb-3">
-                            <input type="date" name="date" class="form-control" value="{{ date|date('Y-m-d') }}" required>
-                            <input type="hidden" name="period" value="daily">
-                            <button class="btn btn-outline-secondary" type="submit">Afficher</button>
-                        </div>
-                    </form>
+    <!-- Period Filters -->
+    <div class="period-filters">
+        <div class="period-buttons">
+            <a href="{{ path('app_statistics_index', { 'period': 'daily', 'date': date is defined ? date|date('Y-m-d') : 'now'|date('Y-m-d') }) }}" 
+               class="period-btn {% if period == 'daily' %}active{% endif %}">
+                <i class="fas fa-calendar-day"></i>
+                Jour
+            </a>
+            <a href="{{ path('app_statistics_index', { 'period': 'weekly', 'week': week is defined ? week : 'now'|date('Y-\\WW') }) }}" 
+               class="period-btn {% if period == 'weekly' %}active{% endif %}">
+                <i class="fas fa-calendar-week"></i>
+                Semaine
+            </a>
+            <a href="{{ path('app_statistics_index', { 'period': 'monthly', 'month': month is defined ? month : 'now'|date('Y-m') }) }}" 
+               class="period-btn {% if period == 'monthly' %}active{% endif %}">
+                <i class="fas fa-calendar-alt"></i>
+                Mois
+            </a>
+            <a href="{{ path('app_statistics_index', { 'period': 'yearly', 'year': year is defined ? year : 'now'|date('Y') }) }}" 
+               class="period-btn {% if period == 'yearly' %}active{% endif %}">
+                <i class="fas fa-calendar"></i>
+                Année
+            </a>
+        </div>
+        <div class="period-badge">
+            <i class="fas fa-clock"></i>
+            Période: 
+            {% if period == 'daily' %}Quotidienne
+            {% elseif period == 'weekly' %}Hebdomadaire
+            {% elseif period == 'monthly' %}Mensuelle
+            {% else %}Annuelle
+            {% endif %}
+        </div>
+    </div>
 
-                    <h3>Statistiques pour le {{ date|date('d/m/Y') }}</h3>
-                    {% if hasDailyStats %}
-                        <table class="table table-striped table-hover">
-                            <thead class="table-primary">
-                            <tr>
-                                <th>Service</th>
-                                <th>Nombre</th>
-                                <th>Chiffre d'Affaires</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% set totalCount = 0 %}
-                            {% set totalAmount = 0 %}
-                            {% for service, stats in dailyStats[date] %}
-                                {% if stats.total > 0 %}
-                                    <tr>
-                                        <td>{{ service }}</td>
-                                        <td>{{ stats.count }}</td>
-                                        <td>{{ stats.total }} €</td>
-                                    </tr>
-                                    {% set totalCount = totalCount + stats.count %}
-                                    {% set totalAmount = totalAmount + stats.total %}
-                                {% endif %}
-                            {% endfor %}
-                            {% if totalCount > 0 %}
-                                <tr class="table-success">
-                                    <td><strong>Total</strong></td>
-                                    <td><strong>{{ totalCount }}</strong></td>
-                                    <td><strong>{{ totalAmount }} €</strong></td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="3" class="text-center">Aucune prestation disponible avec un prix supérieur à 0.</td>
-                                </tr>
-                            {% endif %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <p>Aucun rendez-vous disponible pour cette date.</p>
+    <!-- Vue quotidienne -->
+    {% if period == 'daily' %}
+        {% if hasDailyStats %}
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                {% set totalCount = 0 %}
+                {% set totalAmount = 0 %}
+                {% for service, stats in dailyStats[date] %}
+                    {% if stats.total > 0 %}
+                        {% set totalCount = totalCount + stats.count %}
+                        {% set totalAmount = totalAmount + stats.total %}
                     {% endif %}
+                {% endfor %}
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon revenue">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalAmount }}</div>
+                    <div class="kpi-label">Chiffre d'affaires</div>
+                    <div class="kpi-description">Total du {{ date|date('d/m/Y') }}</div>
                 </div>
-            </div>
-
-        {% elseif period == 'weekly' %}
-            <div class="card mb-4 shadow">
-                <div class="card-header">
-                    <h2>Statistiques Par Semaine</h2>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon appointments">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount }}</div>
+                    <div class="kpi-label">Rendez-vous</div>
+                    <div class="kpi-description">Total des prestations</div>
                 </div>
-                <div class="card-body">
-                    <form method="get" action="{{ path('app_statistics_index') }}">
-                        <div class="input-group mb-3">
-                            <input type="week" name="week" class="form-control" value="{{ week }}" required>
-                            <input type="hidden" name="period" value="weekly">
-                            <button class="btn btn-outline-secondary" type="submit">Afficher</button>
-                        </div>
-                    </form>
-
-                    <h3>Statistiques pour la semaine {{ week }}</h3>
-                    {% if hasWeeklyStats %}
-                        <table class="table table-striped table-hover">
-                            <thead class="table-primary">
-                            <tr>
-                                <th>Service</th>
-                                <th>Nombre</th>
-                                <th>Chiffre d'Affaires</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% set totalCount = 0 %}
-                            {% set totalAmount = 0 %}
-                            {% for service, stats in weeklyStats[week] %}
-                                {% if stats.total > 0 %}
-                                    <tr>
-                                        <td>{{ service }}</td>
-                                        <td>{{ stats.count }}</td>
-                                        <td>{{ stats.total }} €</td>
-                                    </tr>
-                                    {% set totalCount = totalCount + stats.count %}
-                                    {% set totalAmount = totalAmount + stats.total %}
-                                {% endif %}
-                            {% endfor %}
-                            {% if totalCount > 0 %}
-                                <tr class="table-success">
-                                    <td><strong>Total</strong></td>
-                                    <td><strong>{{ totalCount }}</strong></td>
-                                    <td><strong>{{ totalAmount }} €</strong></td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="3" class="text-center">Aucune prestation disponible avec un prix supérieur à 0.</td>
-                                </tr>
-                            {% endif %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <p>Aucun rendez-vous disponible pour cette semaine.</p>
-                    {% endif %}
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon average">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="kpi-number">{{ (totalAmount / totalCount)|number_format(0, '.', '') }}</div>
+                    <div class="kpi-label">Panier moyen</div>
+                    <div class="kpi-description">Par rendez-vous</div>
                 </div>
-            </div>
-
-        {% elseif period == 'monthly' %}
-            <div class="card mb-4 shadow">
-                <div class="card-header">
-                    <h2>Statistiques Par Mois</h2>
-                </div>
-                <div class="card-body">
-                    <form method="get" action="{{ path('app_statistics_index') }}">
-                        <div class="input-group mb-3">
-                            <input type="month" name="month" class="form-control" value="{{ month }}" required>
-                            <input type="hidden" name="period" value="monthly">
-                            <button class="btn btn-outline-secondary" type="submit">Afficher</button>
-                        </div>
-                    </form>
-
-                    <h3>Statistiques pour le mois {{ month }}</h3>
-                    {% if hasMonthlyStats %}
-                        <table class="table table-striped table-hover">
-                            <thead class="table-primary">
-                            <tr>
-                                <th>Service</th>
-                                <th>Nombre</th>
-                                <th>Chiffre d'Affaires</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% set totalCount = 0 %}
-                            {% set totalAmount = 0 %}
-                            {% for service, stats in monthlyStats[month] %}
-                                {% if stats.total > 0 %}
-                                    <tr>
-                                        <td>{{ service }}</td>
-                                        <td>{{ stats.count }}</td>
-                                        <td>{{ stats.total }} €</td>
-                                    </tr>
-                                    {% set totalCount = totalCount + stats.count %}
-                                    {% set totalAmount = totalAmount + stats.total %}
-                                {% endif %}
-                            {% endfor %}
-                            {% if totalCount > 0 %}
-                                <tr class="table-success">
-                                    <td><strong>Total</strong></td>
-                                    <td><strong>{{ totalCount }}</strong></td>
-                                    <td><strong>{{ totalAmount }} €</strong></td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="3" class="text-center">Aucune prestation disponible avec un prix supérieur à 0.</td>
-                                </tr>
-                            {% endif %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <p>Aucun rendez-vous disponible pour ce mois.</p>
-                    {% endif %}
-                </div>
-            </div>
-
-        {% elseif period == 'yearly' %}
-            <div class="card mb-4 shadow">
-                <div class="card-header">
-                    <h2>Statistiques Par Année</h2>
-                </div>
-                <div class="card-body">
-                    <form method="get" action="{{ path('app_statistics_index') }}">
-                        <div class="input-group mb-3">
-                            <input type="year" name="year" class="form-control" value="{{ year }}" required>
-                            <input type="hidden" name="period" value="yearly">
-                            <button class="btn btn-outline-secondary" type="submit">Afficher</button>
-                        </div>
-                    </form>
-
-                    <h3>Statistiques pour l'année {{ year }}</h3>
-                    {% if hasYearlyStats %}
-                        <table class="table table-striped table-hover">
-                            <thead class="table-primary">
-                            <tr>
-                                <th>Service</th>
-                                <th>Nombre</th>
-                                <th>Chiffre d'Affaires</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% set totalCount = 0 %}
-                            {% set totalAmount = 0 %}
-                            {% for service, stats in yearlyStats[year] %}
-                                {% if stats.total > 0 %}
-                                    <tr>
-                                        <td>{{ service }}</td>
-                                        <td>{{ stats.count }}</td>
-                                        <td>{{ stats.total }} €</td>
-                                    </tr>
-                                    {% set totalCount = totalCount + stats.count %}
-                                    {% set totalAmount = totalAmount + stats.total %}
-                                {% endif %}
-                            {% endfor %}
-                            {% if totalCount > 0 %}
-                                <tr class="table-success">
-                                    <td><strong>Total</strong></td>
-                                    <td><strong>{{ totalCount }}</strong></td>
-                                    <td><strong>{{ totalAmount }} €</strong></td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="3" class="text-center">Aucune prestation disponible avec un prix supérieur à 0.</td>
-                                </tr>
-                            {% endif %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <p>Aucun rendez-vous disponible pour cette année.</p>
-                    {% endif %}
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon trend">
+                        <i class="fas fa-trending-up"></i>
+                    </div>
+                    <div class="kpi-number">{{ ((dailyStats[date]|length * 100) / 5)|round }}%</div>
+                    <div class="kpi-label">Taux d'occupation</div>
+                    <div class="kpi-description">Services utilisés</div>
                 </div>
             </div>
         {% endif %}
-    </div>
+
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4 class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Répartition des Services
+                    </h4>
+                    <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
+                        <input type="date" name="date" class="date-input" value="{{ date|date('Y-m-d') }}" required>
+                        <input type="hidden" name="period" value="daily">
+                        <button class="filter-btn" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="chart-period-info">Analyse du {{ date|date('d/m/Y') }}</div>
+                
+                {% if hasDailyStats %}
+                    <div class="chart-container">
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h5>Aucun rendez-vous</h5>
+                        <p>Sélectionnez une autre date pour voir les statistiques</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if hasDailyStats %}
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4 class="chart-title">
+                        <i class="fas fa-list"></i>
+                        Détail des Services
+                    </h4>
+                </div>
+                
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-concierge-bell me-1"></i>Service</th>
+                                <th><i class="fas fa-hashtag me-1"></i>Nombre</th>
+                                <th><i class="fas fa-euro-sign me-1"></i>CA</th>
+                                <th><i class="fas fa-percent me-1"></i>Part</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set totalCount = 0 %}
+                            {% set totalAmount = 0 %}
+                            {% set serviceColors = ['#a24e32', '#c5653f', '#d4864a', '#8b5a3c', '#7d3a26', '#f0d5b8'] %}
+                            {% for service, stats in dailyStats[date] %}
+                                {% if stats.total > 0 %}
+                                    {% set totalCount = totalCount + stats.count %}
+                                    {% set totalAmount = totalAmount + stats.total %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% for service, stats in dailyStats[date] %}
+                                {% if stats.total > 0 %}
+                                    <tr>
+                                        <td>
+                                            <div class="service-name">
+                                                <div class="service-indicator" style="background: {{ serviceColors[loop.index0 % 6] }}"></div>
+                                                {{ service }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="count-badge">{{ stats.count }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="revenue-amount">{{ stats.total }}€</span>
+                                        </td>
+                                        <td>
+                                            {% set percentage = (stats.total / totalAmount * 100)|round(1) %}
+                                            <div class="progress-container">
+                                                <div class="progress-bar" style="width: {{ percentage }}%; background: {{ serviceColors[loop.index0 % 6] }}">
+                                                    {{ percentage }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        {% if totalCount > 0 %}
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td><strong>Total</strong></td>
+                                    <td><span class="count-badge">{{ totalCount }}</span></td>
+                                    <td><span class="revenue-amount">{{ totalAmount }}€</span></td>
+                                    <td><strong>100%</strong></td>
+                                </tr>
+                            </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    <!-- Vue hebdomadaire -->
+    {% elseif period == 'weekly' %}
+        {% if hasWeeklyStats %}
+            <!-- KPIs Hebdomadaires -->
+            <div class="kpi-grid">
+                {% set totalCount = 0 %}
+                {% set totalAmount = 0 %}
+                {% for service, stats in weeklyStats[week] %}
+                    {% if stats.total > 0 %}
+                        {% set totalCount = totalCount + stats.count %}
+                        {% set totalAmount = totalAmount + stats.total %}
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon revenue">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalAmount }}</div>
+                    <div class="kpi-label">Chiffre d'affaires</div>
+                    <div class="kpi-description">Total semaine {{ week }}</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon appointments">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount }}</div>
+                    <div class="kpi-label">Rendez-vous</div>
+                    <div class="kpi-description">Total des prestations</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon average">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount > 0 ? (totalAmount / totalCount)|number_format(0, '.', '') : 0 }}</div>
+                    <div class="kpi-label">Panier moyen</div>
+                    <div class="kpi-description">Par rendez-vous</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon trend">
+                        <i class="fas fa-trending-up"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount }}</div>
+                    <div class="kpi-label">Services actifs</div>
+                    <div class="kpi-description">Nombre de services utilisés</div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h4 class="chart-title">
+                    <i class="fas fa-calendar-week"></i>
+                    Statistiques Hebdomadaires
+                </h4>
+                <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
+                    <input type="week" name="week" class="date-input" value="{{ week }}" required>
+                    <input type="hidden" name="period" value="weekly">
+                    <button class="filter-btn" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <div class="chart-period-info">Analyse de la semaine {{ week }}</div>
+            
+            {% if hasWeeklyStats %}
+                <div class="chart-container">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+                {% include 'statistics/_stats_table.html.twig' with {'stats': weeklyStats[week], 'period': 'weekly'} %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h5>Aucun rendez-vous cette semaine</h5>
+                    <p>Sélectionnez une autre semaine pour voir les statistiques</p>
+                </div>
+            {% endif %}
+        </div>
+
+    <!-- Vue mensuelle -->
+    {% elseif period == 'monthly' %}
+        {% if hasMonthlyStats %}
+            <!-- KPIs Mensuels -->
+            <div class="kpi-grid">
+                {% set totalCount = 0 %}
+                {% set totalAmount = 0 %}
+                {% for service, stats in monthlyStats[month] %}
+                    {% if stats.total > 0 %}
+                        {% set totalCount = totalCount + stats.count %}
+                        {% set totalAmount = totalAmount + stats.total %}
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon revenue">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalAmount }}</div>
+                    <div class="kpi-label">Chiffre d'affaires</div>
+                    <div class="kpi-description">Total mois {{ month }}</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon appointments">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount }}</div>
+                    <div class="kpi-label">Rendez-vous</div>
+                    <div class="kpi-description">Total des prestations</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon average">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount > 0 ? (totalAmount / totalCount)|number_format(0, '.', '') : 0 }}</div>
+                    <div class="kpi-label">Panier moyen</div>
+                    <div class="kpi-description">Par rendez-vous</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon trend">
+                        <i class="fas fa-trending-up"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount }}</div>
+                    <div class="kpi-label">Services actifs</div>
+                    <div class="kpi-description">Nombre de services utilisés</div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h4 class="chart-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Statistiques Mensuelles
+                </h4>
+                <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
+                    <input type="month" name="month" class="date-input" value="{{ month }}" required>
+                    <input type="hidden" name="period" value="monthly">
+                    <button class="filter-btn" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <div class="chart-period-info">Analyse du mois {{ month }}</div>
+            
+            {% if hasMonthlyStats %}
+                <div class="chart-container">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+                {% include 'statistics/_stats_table.html.twig' with {'stats': monthlyStats[month], 'period': 'monthly'} %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h5>Aucun rendez-vous ce mois</h5>
+                    <p>Sélectionnez un autre mois pour voir les statistiques</p>
+                </div>
+            {% endif %}
+        </div>
+
+    <!-- Vue annuelle -->
+    {% elseif period == 'yearly' %}
+        {% if hasYearlyStats %}
+            <!-- KPIs Annuels -->
+            <div class="kpi-grid">
+                {% set totalCount = 0 %}
+                {% set totalAmount = 0 %}
+                {% for service, stats in yearlyStats[year] %}
+                    {% if stats.total > 0 %}
+                        {% set totalCount = totalCount + stats.count %}
+                        {% set totalAmount = totalAmount + stats.total %}
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon revenue">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalAmount }}</div>
+                    <div class="kpi-label">Chiffre d'affaires</div>
+                    <div class="kpi-description">Total année {{ year }}</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon appointments">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount }}</div>
+                    <div class="kpi-label">Rendez-vous</div>
+                    <div class="kpi-description">Total des prestations</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon average">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount > 0 ? (totalAmount / totalCount)|number_format(0, '.', '') : 0 }}</div>
+                    <div class="kpi-label">Panier moyen</div>
+                    <div class="kpi-description">Par rendez-vous</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon trend">
+                        <i class="fas fa-trending-up"></i>
+                    </div>
+                    <div class="kpi-number">{{ totalCount }}</div>
+                    <div class="kpi-label">Services actifs</div>
+                    <div class="kpi-description">Nombre de services utilisés</div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h4 class="chart-title">
+                    <i class="fas fa-calendar"></i>
+                    Statistiques Annuelles
+                </h4>
+                <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
+                    <input type="number" name="year" class="date-input" value="{{ year }}" min="2020" max="2030" required>
+                    <input type="hidden" name="period" value="yearly">
+                    <button class="filter-btn" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <div class="chart-period-info">Analyse de l'année {{ year }}</div>
+            
+            {% if hasYearlyStats %}
+                <div class="chart-container">
+                    <canvas id="yearlyChart"></canvas>
+                </div>
+                {% include 'statistics/_stats_table.html.twig' with {'stats': yearlyStats[year], 'period': 'yearly'} %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h5>Aucun rendez-vous cette année</h5>
+                    <p>Sélectionnez une autre année pour voir les statistiques</p>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Couleurs du thème taupe/beige
+    const colors = ['#a24e32', '#c5653f', '#d4864a', '#8b5a3c', '#7d3a26', '#f0d5b8'];
+    
+    {% if period == 'daily' and hasDailyStats %}
+        // Graphique quotidien modernisé
+        const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+        const dailyData = {
+            labels: [
+                {% for service, stats in dailyStats[date] %}
+                    {% if stats.total > 0 %}'{{ service|e('js') }}',{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for service, stats in dailyStats[date] %}
+                        {% if stats.total > 0 %}{{ stats.total }},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: colors,
+                borderWidth: 0,
+                borderRadius: 8,
+                hoverOffset: 15
+            }]
+        };
+        
+        new Chart(dailyCtx, {
+            type: 'doughnut',
+            data: dailyData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            color: '#a24e32',
+                            font: {
+                                family: 'Inter',
+                                size: 13,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(162, 78, 50, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#a24e32',
+                        borderWidth: 2,
+                        cornerRadius: 12,
+                        titleFont: {
+                            family: 'Inter',
+                            size: 14,
+                            weight: '700'
+                        },
+                        bodyFont: {
+                            family: 'Inter',
+                            size: 13,
+                            weight: '500'
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed + '€ (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 1500,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    {% endif %}
+
+    {% if period == 'weekly' and hasWeeklyStats %}
+        // Graphique hebdomadaire
+        const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+        const weeklyData = {
+            labels: [
+                {% for service, stats in weeklyStats[week] %}
+                    {% if stats.total > 0 %}'{{ service|e('js') }}',{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for service, stats in weeklyStats[week] %}
+                        {% if stats.total > 0 %}{{ stats.total }},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: colors,
+                borderWidth: 0,
+                borderRadius: 8,
+                hoverOffset: 15
+            }]
+        };
+        
+        new Chart(weeklyCtx, {
+            type: 'doughnut',
+            data: weeklyData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            color: '#a24e32',
+                            font: {
+                                family: 'Inter',
+                                size: 13,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(162, 78, 50, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#a24e32',
+                        borderWidth: 2,
+                        cornerRadius: 12,
+                        titleFont: {
+                            family: 'Inter',
+                            size: 14,
+                            weight: '700'
+                        },
+                        bodyFont: {
+                            family: 'Inter',
+                            size: 13,
+                            weight: '500'
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed + '€ (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 1500,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    {% endif %}
+
+    {% if period == 'monthly' and hasMonthlyStats %}
+        // Graphique mensuel
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        const monthlyData = {
+            labels: [
+                {% for service, stats in monthlyStats[month] %}
+                    {% if stats.total > 0 %}'{{ service|e('js') }}',{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for service, stats in monthlyStats[month] %}
+                        {% if stats.total > 0 %}{{ stats.total }},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: colors,
+                borderWidth: 0,
+                borderRadius: 8,
+                hoverOffset: 15
+            }]
+        };
+        
+        new Chart(monthlyCtx, {
+            type: 'doughnut',
+            data: monthlyData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            color: '#a24e32',
+                            font: {
+                                family: 'Inter',
+                                size: 13,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(162, 78, 50, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#a24e32',
+                        borderWidth: 2,
+                        cornerRadius: 12,
+                        titleFont: {
+                            family: 'Inter',
+                            size: 14,
+                            weight: '700'
+                        },
+                        bodyFont: {
+                            family: 'Inter',
+                            size: 13,
+                            weight: '500'
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed + '€ (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 1500,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    {% endif %}
+
+    {% if period == 'yearly' and hasYearlyStats %}
+        // Graphique annuel
+        const yearlyCtx = document.getElementById('yearlyChart').getContext('2d');
+        const yearlyData = {
+            labels: [
+                {% for service, stats in yearlyStats[year] %}
+                    {% if stats.total > 0 %}'{{ service|e('js') }}',{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for service, stats in yearlyStats[year] %}
+                        {% if stats.total > 0 %}{{ stats.total }},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: colors,
+                borderWidth: 0,
+                borderRadius: 8,
+                hoverOffset: 15
+            }]
+        };
+        
+        new Chart(yearlyCtx, {
+            type: 'doughnut',
+            data: yearlyData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            color: '#a24e32',
+                            font: {
+                                family: 'Inter',
+                                size: 13,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(162, 78, 50, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#a24e32',
+                        borderWidth: 2,
+                        cornerRadius: 12,
+                        titleFont: {
+                            family: 'Inter',
+                            size: 14,
+                            weight: '700'
+                        },
+                        bodyFont: {
+                            family: 'Inter',
+                            size: 13,
+                            weight: '500'
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed + '€ (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 1500,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    {% endif %}
+    
+    // Animation des compteurs
+    function animateCounter(element, target) {
+        let current = 0;
+        const increment = target / 60;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, 25);
+    }
+
+    // Animation des barres de progression
+    function animateProgressBars() {
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach((bar, index) => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 300 + (index * 100));
+        });
+    }
+
+    // Animer les compteurs KPI
+    setTimeout(() => {
+        document.querySelectorAll('.kpi-number').forEach(counter => {
+            const text = counter.textContent;
+            const target = parseInt(text.replace(/[€\s]/g, ''));
+            if (!isNaN(target)) {
+                counter.textContent = '0';
+                animateCounter(counter, target);
+            }
+        });
+    }, 500);
+
+    // Animer les barres de progression
+    setTimeout(animateProgressBars, 800);
+
+    // Animation des icônes KPI (rotation au hover)
+    document.querySelectorAll('.kpi-icon').forEach(icon => {
+        icon.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+        
+        icon.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    });
+});
+</script>
 {% endblock %}

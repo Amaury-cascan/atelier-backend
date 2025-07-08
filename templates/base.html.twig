@@ -3,59 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}<L'atelier de Marie>{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-...your-integrity-hash..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <title>{% block title %}L'Atelier de Marie{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     {% block stylesheets %}{% endblock %}
+    
+    <style>
+        :root {
+            /* Nouvelles variables utilisant les couleurs taupe/beige */
+            --taupe: #a24e32;
+            --taupe-light: #c5653f;
+            --taupe-dark: #7d3a26;
+            --beige: #f5dfc6;
+            --beige-light: #f9e8d1;
+            --beige-dark: #f0d5b8;
+            --accent-warm: #d4864a;
+            --accent-cool: #8b5a3c;
+            
+            /* Compatibilité avec les anciens noms (redirection vers taupe/beige) */
+            --primary-color: var(--taupe);
+            --primary-light: var(--taupe-light);
+            --primary-dark: var(--taupe-dark);
+            --accent-color: var(--beige);
+            --background: var(--beige-light);
+            --surface: rgba(255, 255, 255, 0.9);
+            --surface-dark: rgba(255, 255, 255, 0.7);
+            --text-primary: #333;
+            --text-secondary: var(--taupe-dark);
+            --text-light: var(--taupe);
+            --border: rgba(162, 78, 50, 0.2);
+            --shadow: rgba(162, 78, 50, 0.1);
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --error: #EF4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--beige) 0%, var(--taupe-light) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navbar moderne */
+        .modern-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--taupe);
+            font-weight: 700;
+            font-size: 1.25rem;
+            gap: 8px;
+        }
+
+        .navbar-brand i {
+            font-size: 1.5rem;
+        }
+
+        .navbar-menu {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .navbar-menu.show {
+            display: flex;
+        }
+
+        .navbar-links {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            gap: 12px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(162, 78, 50, 0.1);
+            color: var(--taupe);
+            transform: translateX(4px);
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(162, 78, 50, 0.3);
+            color: white;
+        }
+
+        .mobile-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-toggle:hover {
+            background: rgba(162, 78, 50, 0.1);
+        }
+
+        /* Main content */
+        .main-content {
+            margin-top: 80px;
+            padding: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Alerts modernes */
+        .modern-alert {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: slideInDown 0.4s ease;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #15803d;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #dc2626;
+        }
+
+        /* Animations */
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Desktop styles */
+        @media (min-width: 768px) {
+            .mobile-toggle {
+                display: none;
+            }
+
+            .navbar-menu {
+                display: flex;
+                position: static;
+                background: none;
+                backdrop-filter: none;
+                border: none;
+                padding: 0;
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .navbar-links {
+                flex-direction: row;
+                margin-bottom: 0;
+                gap: 4px;
+            }
+
+            .nav-link {
+                padding: 8px 12px;
+                border-radius: 8px;
+            }
+
+            .nav-link:hover, .nav-link.active {
+                transform: none;
+            }
+
+            .navbar-user {
+                padding-top: 0;
+                border-top: none;
+                margin-left: 20px;
+            }
+
+            .main-content {
+                padding: 40px 20px;
+            }
+        }
+
+        /* Responsive breakpoints */
+        @media (min-width: 1024px) {
+            .main-content {
+                padding: 40px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ path('app_dashboard_index') }}">L'Atelier de Marie</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a class="navbar-brand" href="{{ path('app_dashboard_index') }}">
+                <i class="fas fa-palette"></i>
+                L'Atelier de Marie
+            </a>
+            
             {% if is_granted('ROLE_ADMIN') %}
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_dashboard_index') }}">Tableau de bord</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_calendar') }}">Réservations</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_service_index') }}">Prestations</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_category_index') }}">Catégories</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_picture_presentation_index') }}">Images</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_client_index') }}">Clients</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_statistics_index') }}">Statistiques</a>
-                    </li>
-                </ul>
-                {% if app.user %}
-                <div class="ms-auto"> 
-                    <a class="btn btn-outline-light" href="{{ path('app_logout') }}">Déconnexion</a>
+                <div class="mobile-toggle" id="mobileToggle">
+                    <i class="fas fa-bars"></i>
                 </div>
-                {% endif %}
-            </div>
+
+                <div class="navbar-menu" id="navbarMenu">
+                    <div class="navbar-links">
+                        <a class="nav-link" href="{{ path('app_dashboard_index') }}">
+                            <i class="fas fa-home"></i>
+                            <span>Tableau de bord</span>
+                        </a>
+                        <a class="nav-link" href="{{ path('app_calendar') }}">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Calendrier</span>
+                        </a>
+                        <a class="nav-link" href="{{ path('app_service_index') }}">
+                            <i class="fas fa-cut"></i>
+                            <span>Prestations</span>
+                        </a>
+                        <a class="nav-link" href="{{ path('app_category_index') }}">
+                            <i class="fas fa-tags"></i>
+                            <span>Catégories</span>
+                        </a>
+                        <a class="nav-link" href="{{ path('app_picture_presentation_index') }}">
+                            <i class="fas fa-images"></i>
+                            <span>Images</span>
+                        </a>
+                        <a class="nav-link" href="{{ path('app_client_index') }}">
+                            <i class="fas fa-users"></i>
+                            <span>Clients</span>
+                        </a>
+                        <a class="nav-link" href="{{ path('app_statistics_index') }}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Statistiques</span>
+                        </a>
+                    </div>
+                    
+                    {% if app.user %}
+                        <div class="navbar-user">
+                            <a class="logout-btn" href="{{ path('app_logout') }}">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Déconnexion</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
             {% endif %}
         </div>
     </nav>
-    <main class="container mt-4">
+    
+    <main class="main-content">
+        {% for flash_error in app.flashes('verify_email_error') %}
+            <div class="modern-alert alert-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ flash_error }}
+            </div>
+        {% endfor %}
+        
+        {% for flash_success in app.flashes('success') %}
+            <div class="modern-alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                {{ flash_success }}
+            </div>
+        {% endfor %}
+        
+        {% for flash_error in app.flashes('error') %}
+            <div class="modern-alert alert-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ flash_error }}
+            </div>
+        {% endfor %}
+        
         {% block body %}{% endblock %}
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileToggle = document.getElementById('mobileToggle');
+            const navbarMenu = document.getElementById('navbarMenu');
+            
+            if (mobileToggle && navbarMenu) {
+                mobileToggle.addEventListener('click', function() {
+                    navbarMenu.classList.toggle('show');
+                    const icon = mobileToggle.querySelector('i');
+                    icon.classList.toggle('fa-bars');
+                    icon.classList.toggle('fa-times');
+                });
+            }
+
+            // Active link detection
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Animation d'entrée pour les éléments
+            const animatedElements = document.querySelectorAll('.card, .modern-alert, [data-animate="true"]');
+            animatedElements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.1}s`;
+                element.classList.add('fade-in-up');
+            });
+
+            // Close mobile menu on link click
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 768) {
+                        navbarMenu.classList.remove('show');
+                        const icon = mobileToggle.querySelector('i');
+                        icon.classList.add('fa-bars');
+                        icon.classList.remove('fa-times');
+                    }
+                });
+            });
+        });
+    </script>
+    
     {% block javascripts %}{% endblock %}
 </body>
 </html>

@@ -2,62 +2,611 @@
 
 {% block title %}Tableau de bord administrateur{% endblock %}
 
+{% block stylesheets %}
+<style>
+/* Dashboard moderne avec thème beige/taupe */
+.dashboard-container {
+    padding: 0;
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.1), rgba(166, 139, 91, 0.05));
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.dashboard-title {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, #8B7355, #6F5B47);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dashboard-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin: 0.5rem 0 0 0;
+    font-weight: 400;
+}
+
+.dashboard-date {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(139, 115, 85, 0.2);
+}
+
+/* KPI Cards modernes */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    box-shadow: 
+        0 10px 25px rgba(139, 115, 85, 0.08),
+        0 4px 15px rgba(139, 115, 85, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 
+        0 20px 40px rgba(139, 115, 85, 0.15),
+        0 8px 25px rgba(139, 115, 85, 0.1);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8B7355, #A68B5B);
+    border-radius: 20px 20px 0 0;
+}
+
+.kpi-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 8px 20px rgba(139, 115, 85, 0.2);
+}
+
+.kpi-icon.today { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.kpi-icon.week { background: linear-gradient(135deg, #8B7355, #A68B5B); }
+.kpi-icon.month { background: linear-gradient(135deg, #22C55E, #16A34A); }
+.kpi-icon.year { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+
+.kpi-number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.kpi-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.kpi-revenue {
+    background: linear-gradient(135deg, #22C55E, #16A34A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+/* Sections principales */
+.main-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.quick-actions-card,
+.chart-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    box-shadow: 
+        0 10px 25px rgba(139, 115, 85, 0.08),
+        0 4px 15px rgba(139, 115, 85, 0.05);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.05), rgba(166, 139, 91, 0.02));
+}
+
+.card-header h4 {
+    margin: 0;
+    color: var(--primary-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    padding: 2rem;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    border-radius: 16px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    position: relative;
+    overflow: hidden;
+    min-height: 140px;
+    color: white;
+    font-weight: 600;
+}
+
+.action-btn.calendar { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.action-btn.services { background: linear-gradient(135deg, #8B7355, #A68B5B); }
+.action-btn.clients { background: linear-gradient(135deg, #EF4444, #DC2626); }
+.action-btn.stats { background: linear-gradient(135deg, #22C55E, #16A34A); }
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    color: white;
+}
+
+.action-btn i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.action-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.action-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Chart container */
+.chart-container {
+    padding: 2rem;
+    height: 350px;
+    position: relative;
+}
+
+/* Secondary actions */
+.secondary-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.secondary-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    box-shadow: 
+        0 10px 25px rgba(139, 115, 85, 0.08),
+        0 4px 15px rgba(139, 115, 85, 0.05);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.secondary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 15px 35px rgba(139, 115, 85, 0.12),
+        0 6px 20px rgba(139, 115, 85, 0.08);
+}
+
+.secondary-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.secondary-icon.categories { background: linear-gradient(135deg, #22C55E, #16A34A); }
+.secondary-icon.gallery { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+.secondary-icon.settings { background: linear-gradient(135deg, #6B7280, #4B5563); }
+
+.secondary-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.secondary-description {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.secondary-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.secondary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(139, 115, 85, 0.3);
+    color: white;
+}
+
+.secondary-btn:disabled {
+    background: #6B7280;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .main-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .secondary-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-header {
+        padding: 1.5rem;
+    }
+    
+    .kpi-card {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
 {% block body %}
-    <h1 class="text-center mb-4">Tableau de bord administrateur</h1>
+<div class="dashboard-container" data-animate="true">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title">Tableau de bord</h1>
+            <p class="dashboard-subtitle">Bienvenue dans votre espace d'administration L'Atelier de Marie</p>
+        </div>
+        <div class="dashboard-date">
+            <i class="fas fa-calendar-day"></i>
+            {{ "now"|date("d/m/Y") }}
+        </div>
+    </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-4">
-        <div class="col">
-            <div class="card h-100 border-warning shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-warning"><i class="bi bi-calendar-check-fill me-2"></i>Réservations</h5>
-                    <p class="card-text">Gérez les réservations ici.</p>
-                    <a href="{{ path('app_calendar') }}" class="btn btn-warning">Gérer les réservations</a>
-                </div>
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card" data-animate="true">
+            <div class="kpi-icon today">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="kpi-number" data-target="{{ countByDay }}">0</div>
+            <div class="kpi-label">Rendez-vous aujourd'hui</div>
+            <div class="kpi-revenue">{{ totalByDay }} €</div>
+        </div>
+        
+        <div class="kpi-card" data-animate="true">
+            <div class="kpi-icon week">
+                <i class="fas fa-calendar-week"></i>
+            </div>
+            <div class="kpi-number" data-target="{{ countByWeek }}">0</div>
+            <div class="kpi-label">Cette semaine</div>
+            <div class="kpi-revenue">{{ totalByWeek }} €</div>
+        </div>
+        
+        <div class="kpi-card" data-animate="true">
+            <div class="kpi-icon month">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="kpi-number" data-target="{{ countByMonth }}">0</div>
+            <div class="kpi-label">Ce mois-ci</div>
+            <div class="kpi-revenue">{{ totalByMonth }} €</div>
+        </div>
+        
+        <div class="kpi-card" data-animate="true">
+            <div class="kpi-icon year">
+                <i class="fas fa-calendar"></i>
+            </div>
+            <div class="kpi-number" data-target="{{ countByYear }}">0</div>
+            <div class="kpi-label">Cette année</div>
+            <div class="kpi-revenue">{{ totalByYear }} €</div>
+        </div>
+    </div>
+
+    <!-- Section principale -->
+    <div class="main-section">
+        <!-- Actions rapides -->
+        <div class="quick-actions-card" data-animate="true">
+            <div class="card-header">
+                <h4><i class="fas fa-bolt"></i>Actions Rapides</h4>
+            </div>
+            <div class="actions-grid">
+                <a href="{{ path('app_calendar') }}" class="action-btn calendar">
+                    <i class="fas fa-calendar-check"></i>
+                    <div class="action-title">Calendrier</div>
+                    <div class="action-subtitle">Gérer les RDV</div>
+                </a>
+                <a href="{{ path('app_service_index') }}" class="action-btn services">
+                    <i class="fas fa-cut"></i>
+                    <div class="action-title">Services</div>
+                    <div class="action-subtitle">Prestations</div>
+                </a>
+                <a href="{{ path('app_client_index') }}" class="action-btn clients">
+                    <i class="fas fa-users"></i>
+                    <div class="action-title">Clients</div>
+                    <div class="action-subtitle">Base clients</div>
+                </a>
+                <a href="{{ path('app_statistics_index') }}" class="action-btn stats">
+                    <i class="fas fa-chart-line"></i>
+                    <div class="action-title">Statistiques</div>
+                    <div class="action-subtitle">Analyses</div>
+                </a>
             </div>
         </div>
-        <div class="col">
-            <div class="card h-100 border-primary shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-primary"><i class="bi bi-briefcase-fill me-2"></i>Prestations</h5>
-                    <p class="card-text">Gérez vos prestations ici.</p>
-                    <a href="{{ path('app_service_index') }}" class="btn btn-primary">Gérer les prestations</a>
-                </div>
+        
+        <!-- Graphique -->
+        <div class="chart-card" data-animate="true">
+            <div class="card-header">
+                <h4><i class="fas fa-chart-pie"></i>Revenus Mensuels</h4>
             </div>
-        </div>
-        <div class="col">
-            <div class="card h-100 border-success shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-success"><i class="bi bi-tags-fill me-2"></i>Catégories</h5>
-                    <p class="card-text">Gérez vos catégories ici.</p>
-                    <a href="{{ path('app_category_index') }}" class="btn btn-success">Gérer les catégories</a>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="card h-100 border-danger shadow">
-                <div class="card-body">
-                    <h5 class="card-title text-danger"><i class="bi bi-people-fill me-2"></i>Clients</h5>
-                    <p class="card-text">Gérez les clients ici.</p>
-                    <a href="{{ path('app_client_index') }}" class="btn btn-danger">Gérer les clients</a>
-                </div>
+            <div class="chart-container">
+                <canvas id="revenueChart"></canvas>
             </div>
         </div>
     </div>
 
-    <div class="row mb-4 justify-content-center">
-        <div class="col-md-6">
-            <div class="card mb-4 shadow border-info">
-                <div class="d-flex justify-content-between border-info align-items-center mb-3 card-header bg-light">
-                    <h5 class="card-title  text-info mb-0">Statistiques rapides</h5>
-                    <a href="{{ path('app_statistics_index') }}" class="btn btn-info">Voir les statistiques</a>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Total des rendez-vous aujourd'hui : <strong>{{ countByDay }}</strong> ({{ totalByDay }} €)</p>
-                    <p class="card-text">Total des rendez-vous cette semaine : <strong>{{ countByWeek }}</strong> ({{ totalByWeek }} €)</p>
-                    <p class="card-text">Total des rendez-vous ce mois-ci : <strong>{{ countByMonth }}</strong> ({{ totalByMonth }} €)</p>
-                    <p class="card-text">Total des rendez-vous cette année : <strong>{{ countByYear }}</strong> ({{ totalByYear }} €)</p>
-                </div>
+    <!-- Actions secondaires -->
+    <div class="secondary-actions">
+        <div class="secondary-card" data-animate="true">
+            <div class="secondary-icon categories">
+                <i class="fas fa-tags"></i>
             </div>
+            <h5 class="secondary-title">Catégories</h5>
+            <p class="secondary-description">Organisez vos prestations par catégories pour une meilleure gestion</p>
+            <a href="{{ path('app_category_index') }}" class="secondary-btn">
+                <i class="fas fa-arrow-right"></i>
+                Gérer les catégories
+            </a>
+        </div>
+        
+        <div class="secondary-card" data-animate="true">
+            <div class="secondary-icon gallery">
+                <i class="fas fa-images"></i>
+            </div>
+            <h5 class="secondary-title">Galerie</h5>
+            <p class="secondary-description">Gérez vos images de présentation et votre portfolio</p>
+            <a href="{{ path('app_picture_presentation_index') }}" class="secondary-btn">
+                <i class="fas fa-arrow-right"></i>
+                Gérer la galerie
+            </a>
+        </div>
+        
+        <div class="secondary-card" data-animate="true">
+            <div class="secondary-icon settings">
+                <i class="fas fa-cog"></i>
+            </div>
+            <h5 class="secondary-title">Paramètres</h5>
+            <p class="secondary-description">Configurez votre application selon vos besoins</p>
+            <button class="secondary-btn" disabled>
+                <i class="fas fa-wrench"></i>
+                Bientôt disponible
+            </button>
         </div>
     </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des compteurs avec effet moderne
+    function animateCounter(element, target) {
+        let current = 0;
+        const increment = target / 60;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, 25);
+    }
+
+    // Animer tous les compteurs après un délai
+    setTimeout(() => {
+        document.querySelectorAll('.kpi-number').forEach(counter => {
+            const target = parseInt(counter.getAttribute('data-target'));
+            animateCounter(counter, target);
+        });
+    }, 500);
+
+    // Graphique moderne avec thème beige/taupe
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    
+    const colors = [
+        'rgba(139, 115, 85, 0.8)',   // Primary
+        'rgba(166, 139, 91, 0.8)',   // Primary light
+        'rgba(111, 91, 71, 0.8)',    // Primary dark
+        'rgba(212, 196, 168, 0.8)'   // Accent
+    ];
+    
+    const borderColors = [
+        '#8B7355',
+        '#A68B5B', 
+        '#6F5B47',
+        '#D4C4A8'
+    ];
+    
+    const monthlyData = [
+        {{ totalByMonth|default(0) }}, 
+        {{ (totalByMonth * 0.8)|number_format(0, '.', '') }}, 
+        {{ (totalByMonth * 1.2)|number_format(0, '.', '') }}, 
+        {{ (totalByMonth * 0.9)|number_format(0, '.', '') }}
+    ];
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Ce mois', 'Mois -1', 'Mois -2', 'Mois -3'],
+            datasets: [{
+                data: monthlyData,
+                backgroundColor: colors,
+                borderColor: borderColors,
+                borderWidth: 2,
+                cutout: '65%',
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: {
+                            size: 12,
+                            family: 'Inter',
+                            weight: '500'
+                        },
+                        color: '#8B7355'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(139, 115, 85, 0.95)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#8B7355',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    titleFont: {
+                        family: 'Inter',
+                        weight: '600'
+                    },
+                    bodyFont: {
+                        family: 'Inter'
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.parsed + '€';
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

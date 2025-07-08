@@ -1,45 +1,1073 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des prestations{% endblock %}
+{% block title %}Gestion des Prestations{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* Services page moderne */
+.services-container {
+    padding: 0;
+}
+
+.services-header {
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.1), rgba(166, 139, 91, 0.05));
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.services-title {
+    color: var(--primary-color);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, #8B7355, #6F5B47);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.services-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0.5rem 0 0 3rem;
+    font-weight: 400;
+}
+
+.new-service-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(139, 115, 85, 0.2);
+}
+
+.new-service-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 115, 85, 0.3);
+    color: white;
+}
+
+/* Stats cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    box-shadow: 
+        0 8px 20px rgba(139, 115, 85, 0.08),
+        0 4px 12px rgba(139, 115, 85, 0.05);
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 15px 35px rgba(139, 115, 85, 0.12),
+        0 6px 20px rgba(139, 115, 85, 0.08);
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 16px 16px 0 0;
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stats-icon.services { background: linear-gradient(135deg, #8B7355, #A68B5B); }
+.stats-icon.value { background: linear-gradient(135deg, #22C55E, #16A34A); }
+.stats-icon.duration { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.stats-icon.average { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+
+.stats-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.stats-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Services table card */
+.services-table-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    box-shadow: 
+        0 10px 25px rgba(139, 115, 85, 0.08),
+        0 4px 15px rgba(139, 115, 85, 0.05);
+    overflow: hidden;
+}
+
+.table-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.05), rgba(166, 139, 91, 0.02));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.table-title {
+    margin: 0;
+    color: var(--primary-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(139, 115, 85, 0.2);
+    border-radius: 12px;
+    padding: 8px 16px;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.search-container:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-primary);
+    padding: 4px 0;
+    width: 200px;
+}
+
+.search-input::placeholder {
+    color: var(--text-light);
+}
+
+.search-btn {
+    color: var(--primary-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+}
+
+/* Table moderne */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modern-table thead {
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.05), rgba(166, 139, 91, 0.02));
+}
+
+.modern-table th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary-color);
+    border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+    white-space: nowrap;
+}
+
+.modern-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(139, 115, 85, 0.05);
+    vertical-align: middle;
+}
+
+.service-row {
+    transition: all 0.3s ease;
+}
+
+.service-row:hover {
+    background: rgba(139, 115, 85, 0.03);
+}
+
+.service-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.service-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    flex-shrink: 0;
+}
+
+.service-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.service-category {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.price-badge {
+    background: linear-gradient(135deg, #22C55E, #16A34A);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.duration-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+}
+
+.status-badge {
+    background: linear-gradient(135deg, #22C55E, #16A34A);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(139, 115, 85, 0.2);
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
+}
+
+.action-btn.view { border-color: rgba(59, 130, 246, 0.3); color: #3B82F6; }
+.action-btn.edit { border-color: rgba(139, 115, 85, 0.3); color: var(--primary-color); }
+
+.action-btn.view:hover { background: #3B82F6; }
+.action-btn.edit:hover { background: var(--primary-color); }
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+
+.empty-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-description {
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .modern-table {
+        font-size: 0.9rem;
+    }
+    
+    .modern-table th,
+    .modern-table td {
+        padding: 0.8rem 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .services-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .services-title {
+        font-size: 1.8rem;
+    }
+    
+    .services-subtitle {
+        margin-left: 0;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-container {
+        width: 100%;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Table responsive */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modern-table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .services-header {
+        padding: 1.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .action-btn {
+        width: 100%;
+    }
+}
+
+/* Mobile cards styles */
+.services-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.services-cards-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.25rem;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    box-shadow: 0 4px 15px rgba(139, 115, 85, 0.08);
+    margin-bottom: 0.5rem;
+}
+
+.cards-title {
+    margin: 0 0 1rem 0;
+    color: var(--primary-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+}
+
+.mobile-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.mobile-search-input {
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    border: 2px solid rgba(139, 115, 85, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.mobile-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+    background: rgba(255, 255, 255, 1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 16px;
+    color: var(--primary-color);
+    pointer-events: none;
+}
+
+.service-card-mobile {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 115, 85, 0.08);
+}
+
+.service-card-mobile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 115, 85, 0.15);
+}
+
+.service-card-header {
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.05), rgba(166, 139, 91, 0.02));
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+}
+
+.service-card-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #22C55E, #16A34A);
+    flex-shrink: 0;
+}
+
+.service-card-info {
+    flex: 1;
+    margin: 0 1rem;
+    min-width: 0;
+}
+
+.service-card-name {
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 1.1rem;
+    word-break: break-word;
+}
+
+.service-card-category {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.service-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.mobile-service-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(139, 115, 85, 0.2);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--primary-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.mobile-service-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
+}
+
+.mobile-service-btn.view-btn {
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3B82F6;
+}
+
+.mobile-service-btn.edit-btn {
+    border-color: rgba(139, 115, 85, 0.3);
+    color: var(--primary-color);
+}
+
+.mobile-service-btn.view-btn:hover {
+    background: #3B82F6;
+    color: white;
+}
+
+.mobile-service-btn.edit-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.service-card-body {
+    padding: 1.25rem;
+}
+
+.service-details-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.service-detail-item {
+    text-align: center;
+}
+
+.service-detail-label {
+    display: block;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.service-price-mobile {
+    background: linear-gradient(135deg, #22C55E, #16A34A);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.service-duration-mobile {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F59E0B;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.status-badge-mobile {
+    background: linear-gradient(135deg, #22C55E, #16A34A);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.service-description-mobile {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(139, 115, 85, 0.1);
+    text-align: left;
+}
+
+.description-text-mobile {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Responsive mobile services */
+@media (max-width: 768px) {
+    .service-card-header {
+        padding: 0.875rem;
+    }
+    
+    .service-card-name {
+        font-size: 1rem;
+    }
+    
+    .mobile-service-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    
+    .service-card-body {
+        padding: 1rem;
+    }
+    
+    .service-details-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    .service-detail-item:nth-child(3) {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .service-card-header {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .service-card-info {
+        margin: 0;
+        flex: 1 1 100%;
+        order: 2;
+    }
+    
+    .service-card-indicator {
+        order: 1;
+    }
+    
+    .service-card-actions {
+        order: 3;
+        justify-content: flex-end;
+    }
+    
+    .service-details-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .service-detail-item:nth-child(3) {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 320px) {
+    .services-cards-header {
+        padding: 1rem;
+    }
+    
+    .service-card-body {
+        padding: 0.875rem;
+    }
+}
+</style>
+{% endblock %}
 
 {% block body %}
-    <h1 class="mb-4">Liste des prestations</h1>
-        
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ path('app_service_new') }}" class="btn btn-sm btn-outline-secondary">
-             <i class="fas fa-plus"></i> Ajouter une prestation
+<div class="services-container" data-animate="true">
+    <!-- Header -->
+    <div class="services-header">
+        <div>
+            <h1 class="services-title">
+                <i class="fas fa-cut"></i>
+                Prestations
+            </h1>
+            <p class="services-subtitle">Gérez vos services et tarifs</p>
+        </div>
+        <a href="{{ path('app_service_new') }}" class="new-service-btn">
+            <i class="fas fa-plus"></i>
+            Nouvelle Prestation
         </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Prix</th>
-                    <th>Durée</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
+    <!-- Stats rapides -->
+    <div class="stats-grid">
+        <div class="stats-card" data-animate="true">
+            <div class="stats-icon services">
+                <i class="fas fa-cut"></i>
+            </div>
+            <div class="stats-number" data-target="{{ services|length }}">0</div>
+            <div class="stats-label">Services actifs</div>
+        </div>
+        
+        <div class="stats-card" data-animate="true">
+            <div class="stats-icon value">
+                <i class="fas fa-euro-sign"></i>
+            </div>
+            <div class="stats-number" data-target="{% set totalPrice = 0 %}{% for service in services %}{% if service.active is null or service.active == true %}{% set totalPrice = totalPrice + service.price %}{% endif %}{% endfor %}{{ totalPrice }}">0</div>
+            <div class="stats-label">Valeur totale (€)</div>
+        </div>
+        
+        <div class="stats-card" data-animate="true">
+            <div class="stats-icon duration">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stats-number" data-target="{% set totalDuration = 0 %}{% for service in services %}{% if service.active is null or service.active == true %}{% set totalDuration = totalDuration + service.duration %}{% endif %}{% endfor %}{{ (totalDuration / services|length)|round }}">0</div>
+            <div class="stats-label">Durée moy. (min)</div>
+        </div>
+        
+        <div class="stats-card" data-animate="true">
+            <div class="stats-icon average">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <div class="stats-number" data-target="{{ ((totalPrice / services|length)|round) }}">0</div>
+            <div class="stats-label">Prix moyen (€)</div>
+        </div>
+    </div>
+
+    <!-- Liste des services -->
+    {% if services is not empty %}
+        <!-- Affichage mobile/tablet (cartes) -->
+        <div class="d-lg-none services-cards-container">
+            <div class="services-cards-header">
+                <h4 class="cards-title">
+                    <i class="fas fa-list"></i>
+                    Liste des Services ({% set activeServices = 0 %}{% for service in services %}{% if service.active is null or service.active == true %}{% set activeServices = activeServices + 1 %}{% endif %}{% endfor %}{{ activeServices }})
+                </h4>
+                <div class="mobile-search-container">
+                    <input type="text" class="mobile-search-input" placeholder="Rechercher..." id="searchServicesMobile">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+            </div>
+            
             {% for service in services %}
                 {% if service.active is null or service.active == true %}
-                    <tr>
-                        <td>{{ service.name }}</td>
-                        <td>{{ service.price }} €</td>
-                        <td>{{ service.duration }} min</td>
-                        <td>
-                            <a href="{{ path('app_service_show', {'id': service.id}) }}" class="btn btn-sm btn-info">Voir</a>
-                            <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
-                        </td>
-                    </tr>
+                    <div class="service-card-mobile" data-service-name="{{ service.name|lower }}" data-category="{{ service.category ? service.category.name|lower : '' }}">
+                        <div class="service-card-header">
+                            <div class="service-card-indicator"></div>
+                            <div class="service-card-info">
+                                <h5 class="service-card-name">{{ service.name }}</h5>
+                                {% if service.category %}
+                                    <span class="service-card-category">{{ service.category.name }}</span>
+                                {% else %}
+                                    <span class="service-card-category text-muted">Sans catégorie</span>
+                                {% endif %}
+                            </div>
+                            <div class="service-card-actions">
+                                <a href="{{ path('app_service_show', {'id': service.id}) }}" 
+                                   class="mobile-service-btn view-btn"
+                                   title="Voir les détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ path('app_service_edit', {'id': service.id}) }}" 
+                                   class="mobile-service-btn edit-btn"
+                                   title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="service-card-body">
+                            <div class="service-details-row">
+                                <div class="service-detail-item">
+                                    <label class="service-detail-label">
+                                        <i class="fas fa-euro-sign me-2"></i>Prix
+                                    </label>
+                                    <div class="service-price-mobile">{{ service.price }} €</div>
+                                </div>
+                                
+                                <div class="service-detail-item">
+                                    <label class="service-detail-label">
+                                        <i class="fas fa-clock me-2"></i>Durée
+                                    </label>
+                                    <div class="service-duration-mobile">{{ service.duration }} min</div>
+                                </div>
+                                
+                                <div class="service-detail-item">
+                                    <label class="service-detail-label">
+                                        <i class="fas fa-check-circle me-2"></i>Statut
+                                    </label>
+                                    <div class="service-status-mobile">
+                                        <span class="status-badge-mobile active">
+                                            <i class="fas fa-check-circle me-1"></i>Actif
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if service.description %}
+                                <div class="service-description-mobile">
+                                    <label class="service-detail-label">
+                                        <i class="fas fa-info-circle me-2"></i>Description
+                                    </label>
+                                    <p class="description-text-mobile">{{ service.description }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 {% endif %}
-            {% else%}
-                <tr>
-                    <td colspan="7" class="text-center">Aucune prestation trouvé</td>
-                </tr>
             {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        </div>
+    {% else %}
+        <div class="services-table-card" data-animate="true">
+            <div class="table-responsive">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-cut"></i>
+                    </div>
+                    <h5 class="empty-title">Aucune prestation disponible</h5>
+                    <p class="empty-description">Créez votre première prestation pour commencer à proposer vos services</p>
+                    <a href="{{ path('app_service_new') }}" class="new-service-btn">
+                        <i class="fas fa-plus"></i>
+                        Nouvelle Prestation
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des compteurs avec délai
+    function animateCounter(element, target) {
+        let current = 0;
+        const increment = target / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, 25);
+    }
+
+    // Animer les compteurs après un délai
+    setTimeout(() => {
+        document.querySelectorAll('.stats-number').forEach(counter => {
+            const target = parseInt(counter.getAttribute('data-target'));
+            if (!isNaN(target)) {
+                animateCounter(counter, target);
+            }
+        });
+    }, 500);
+
+    // Fonction de filtrage des services
+    function filterServices(searchTerm) {
+        // Filtrer les lignes du tableau desktop
+        const tableRows = document.querySelectorAll('.service-row');
+        let visibleCount = 0;
+        
+        tableRows.forEach(row => {
+            const serviceName = row.querySelector('.service-name')?.textContent.toLowerCase() || '';
+            const categoryElement = row.querySelector('.service-category');
+            const categoryText = categoryElement ? categoryElement.textContent.toLowerCase() : '';
+            
+            if (serviceName.includes(searchTerm) || categoryText.includes(searchTerm)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Filtrer les cartes mobiles
+        const mobileCards = document.querySelectorAll('.service-card-mobile');
+        let visibleMobileCount = 0;
+        
+        mobileCards.forEach(card => {
+            const serviceName = card.getAttribute('data-service-name') || '';
+            const categoryName = card.getAttribute('data-category') || '';
+            
+            if (serviceName.includes(searchTerm) || categoryName.includes(searchTerm)) {
+                card.style.display = '';
+                visibleMobileCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Mettre à jour le compteur des cartes mobiles
+        updateMobileCounter(visibleMobileCount);
+        
+        // Afficher un message si aucun résultat desktop
+        let noResultsMsg = document.getElementById('no-results-message');
+        if (visibleCount === 0 && searchTerm !== '') {
+            if (!noResultsMsg) {
+                const tbody = document.querySelector('.modern-table tbody');
+                if (tbody) {
+                    noResultsMsg = document.createElement('tr');
+                    noResultsMsg.id = 'no-results-message';
+                    noResultsMsg.innerHTML = `
+                        <td colspan="5" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="fas fa-search mb-2" style="font-size: 2rem;"></i>
+                                <div>Aucun service trouvé pour "${searchTerm}"</div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(noResultsMsg);
+                }
+            } else {
+                noResultsMsg.querySelector('div:last-child').textContent = `Aucun service trouvé pour "${searchTerm}"`;
+            }
+            if (noResultsMsg) noResultsMsg.style.display = '';
+        } else if (noResultsMsg) {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+
+    // Mettre à jour le compteur dans le header des cartes mobiles
+    function updateMobileCounter(count) {
+        const cardsTitle = document.querySelector('.cards-title');
+        if (cardsTitle) {
+            const titleText = cardsTitle.innerHTML.replace(/\(\d+\)/, `(${count})`);
+            cardsTitle.innerHTML = titleText;
+        }
+    }
+
+    // Recherche en temps réel desktop
+    const searchInput = document.getElementById('searchServices');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            // Débounce pour éviter trop de traitements
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterServices(searchTerm);
+            }, 300);
+        });
+
+        // Animation du search container
+        searchInput.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        searchInput.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    }
+
+    // Recherche en temps réel mobile
+    const mobileSearchInput = document.getElementById('searchServicesMobile');
+    if (mobileSearchInput) {
+        let mobileSearchTimeout;
+        mobileSearchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            // Débounce pour éviter trop de traitements
+            clearTimeout(mobileSearchTimeout);
+            mobileSearchTimeout = setTimeout(() => {
+                filterServices(searchTerm);
+            }, 300);
+        });
+
+        // Synchroniser avec la recherche desktop
+        mobileSearchInput.addEventListener('input', function() {
+            if (searchInput) {
+                searchInput.value = this.value;
+            }
+        });
+    }
+
+    // Synchroniser les champs de recherche
+    if (searchInput && mobileSearchInput) {
+        searchInput.addEventListener('input', function() {
+            mobileSearchInput.value = this.value;
+        });
+    }
+
+    // Animation d'entrée pour les cartes mobiles
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observer les cartes mobiles pour l'animation d'entrée
+    document.querySelectorAll('.service-card-mobile').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+        observer.observe(card);
+    });
+
+    // Gestion améliorée des boutons d'action mobile
+    document.querySelectorAll('.mobile-service-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            // Animation de feedback tactile
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+
+    // Animation des hover sur les cartes
+    document.querySelectorAll('.service-card-mobile').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-4px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+    });
+});
+</script>
 {% endblock %}

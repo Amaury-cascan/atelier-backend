@@ -1,30 +1,220 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détails de l'utilisateur{% endblock %}
+{% block title %}Détails de {{ user.email }}{% endblock %}
 
 {% block body %}
-    <h1 class="mb-4">Détails de l'utilisateur</h1>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <table class="table table-striped">
-                <tbody>
-                    <tr>
-                        <th>Email</th>
-                        <td>{{ user.email }}</td>
-                    </tr>
-                    <tr>
-                        <th>Rôles</th>
-                        <td>{{ user.roles ? user.roles|json_encode : '' }}</td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-4 mb-2"><i class="fas fa-user-circle me-3"></i>Profil Utilisateur</h1>
+            <p class="text-muted lead">Informations détaillées de l'utilisateur</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_user_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+            </a>
+            <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i>Modifier
+            </a>
         </div>
     </div>
 
-    <div class="d-flex gap-2">
-        <a href="{{ path('app_user_index') }}" class="btn btn-secondary">Retour à la liste</a>
-        <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-primary">Modifier</a>
-        {{ include('user/_delete_form.html.twig') }}
+    <!-- Profil utilisateur -->
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations personnelles</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                    <span>Email</span>
+                                </div>
+                                <div class="detail-value">{{ user.email }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-hashtag text-primary"></i>
+                                    <span>ID</span>
+                                </div>
+                                <div class="detail-value">#{{ user.id }}</div>
+                            </div>
+                        </div>
+                        {% if user.createdAt is defined %}
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-calendar-plus text-primary"></i>
+                                    <span>Créé le</span>
+                                </div>
+                                <div class="detail-value">{{ user.createdAt|date('d/m/Y à H:i') }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.updatedAt is defined %}
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-calendar-check text-primary"></i>
+                                    <span>Modifié le</span>
+                                </div>
+                                <div class="detail-value">{{ user.updatedAt|date('d/m/Y à H:i') }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Carte des rôles -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user-tag me-2"></i>Rôles et permissions</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.roles is defined and user.roles|length > 0 %}
+                        <div class="d-flex flex-column gap-2">
+                            {% for role in user.roles %}
+                                {% if role == 'ROLE_ADMIN' %}
+                                    <div class="role-badge admin">
+                                        <i class="fas fa-crown me-2"></i>
+                                        <span>Administrateur</span>
+                                        <small class="role-desc">Accès complet au système</small>
+                                    </div>
+                                {% elseif role == 'ROLE_USER' %}
+                                    <div class="role-badge user">
+                                        <i class="fas fa-user me-2"></i>
+                                        <span>Utilisateur</span>
+                                        <small class="role-desc">Accès standard</small>
+                                    </div>
+                                {% else %}
+                                    <div class="role-badge other">
+                                        <i class="fas fa-tag me-2"></i>
+                                        <span>{{ role }}</span>
+                                        <small class="role-desc">Rôle personnalisé</small>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                            <p>Aucun rôle assigné</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Actions -->
+    <div class="mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Modifier l'utilisateur
+                    </a>
+                    {{ include('user/_delete_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.detail-item {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border-left: 4px solid var(--taupe);
+    transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(162, 78, 50, 0.1);
+}
+
+.detail-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--taupe);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #333;
+    font-size: 1rem;
+}
+
+.role-badge {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 1rem;
+    border-left: 4px solid;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.3s ease;
+}
+
+.role-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.role-badge.admin {
+    border-left-color: #dc2626;
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(239, 68, 68, 0.02));
+}
+
+.role-badge.admin i {
+    color: #dc2626;
+}
+
+.role-badge.user {
+    border-left-color: var(--taupe);
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.05), rgba(197, 101, 63, 0.02));
+}
+
+.role-badge.user i {
+    color: var(--taupe);
+}
+
+.role-badge.other {
+    border-left-color: #6b7280;
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.05), rgba(156, 163, 175, 0.02));
+}
+
+.role-badge.other i {
+    color: #6b7280;
+}
+
+.role-badge span {
+    font-weight: 600;
+    color: #333;
+}
+
+.role-desc {
+    color: #6b7280;
+    font-size: 0.8rem;
+}
+</style>
 {% endblock %}

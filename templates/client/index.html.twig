@@ -1,50 +1,1081 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des clients{% endblock %}
+{% block title %}Gestion des Clients{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* Clients page moderne */
+.clients-container {
+    padding: 0;
+}
+
+.clients-header {
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.1), rgba(197, 101, 63, 0.05));
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.clients-title {
+    color: var(--taupe);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.clients-subtitle {
+    color: var(--taupe-dark);
+    font-size: 1rem;
+    margin: 0.5rem 0 0 3rem;
+    font-weight: 400;
+}
+
+.new-client-btn {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(162, 78, 50, 0.2);
+}
+
+.new-client-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.3);
+    color: white;
+}
+
+/* Stats cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    box-shadow: 
+        0 8px 20px rgba(139, 115, 85, 0.08),
+        0 4px 12px rgba(139, 115, 85, 0.05);
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 15px 35px rgba(162, 78, 50, 0.12),
+        0 6px 20px rgba(162, 78, 50, 0.08);
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--taupe);
+    border-radius: 16px 16px 0 0;
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stats-icon.total { background: linear-gradient(135deg, var(--taupe), var(--taupe-light)); }
+.stats-icon.email { background: linear-gradient(135deg, #22C55E, #16A34A); }
+.stats-icon.phone { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+
+.stats-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.stats-label {
+    color: var(--taupe-dark);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Search and filters */
+.search-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    box-shadow: 
+        0 8px 20px rgba(162, 78, 50, 0.08),
+        0 4px 12px rgba(162, 78, 50, 0.05);
+    margin-bottom: 2rem;
+}
+
+.search-form {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1.5rem;
+    align-items: end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--taupe);
+    font-size: 0.9rem;
+}
+
+.search-input {
+    padding: 12px 16px;
+    border: 2px solid rgba(162, 78, 50, 0.15);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--taupe);
+    box-shadow: 0 0 0 3px rgba(162, 78, 50, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.search-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.search-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
+}
+
+.reset-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-secondary);
+    border: 1px solid rgba(139, 115, 85, 0.2);
+    padding: 12px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.reset-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Clients table */
+.clients-table-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    box-shadow: 
+        0 10px 25px rgba(139, 115, 85, 0.08),
+        0 4px 15px rgba(139, 115, 85, 0.05);
+    overflow: hidden;
+}
+
+.table-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.05), rgba(166, 139, 91, 0.02));
+}
+
+.table-title {
+    margin: 0;
+    color: var(--primary-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modern-table thead {
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.05), rgba(166, 139, 91, 0.02));
+}
+
+.modern-table th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary-color);
+    border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+    white-space: nowrap;
+}
+
+.modern-table th a {
+    color: var(--primary-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modern-table th a:hover {
+    color: var(--primary-dark);
+}
+
+.modern-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(139, 115, 85, 0.05);
+    vertical-align: middle;
+}
+
+.client-row {
+    transition: all 0.3s ease;
+}
+
+.client-row:hover {
+    background: rgba(139, 115, 85, 0.03);
+    transform: translateX(2px);
+}
+
+.client-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.client-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.contact-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contact-info a {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.contact-info a:hover {
+    color: var(--primary-color);
+}
+
+.contact-missing {
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.action-btn {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(139, 115, 85, 0.2);
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
+}
+
+.action-btn.profile { border-color: rgba(59, 130, 246, 0.3); color: #3B82F6; }
+.action-btn.appointment { border-color: rgba(245, 158, 11, 0.3); color: #F59E0B; }
+.action-btn.edit { border-color: rgba(139, 115, 85, 0.3); color: var(--primary-color); }
+
+.action-btn.profile:hover { background: #3B82F6; color: white; }
+.action-btn.appointment:hover { background: #F59E0B; color: white; }
+.action-btn.edit:hover { background: var(--primary-color); color: white; }
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+
+.empty-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-description {
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.empty-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .search-form {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .search-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    .clients-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .clients-title {
+        font-size: 1.8rem;
+    }
+    
+    .clients-subtitle {
+        margin-left: 0;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .action-btn {
+        width: 100%;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modern-table {
+        min-width: 700px;
+    }
+}
+
+@media (max-width: 480px) {
+    .clients-header {
+        padding: 1.5rem;
+    }
+    
+    .search-card {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+}
+
+/* Mobile cards styles */
+.clients-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.clients-cards-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.25rem;
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    box-shadow: 0 4px 15px rgba(162, 78, 50, 0.08);
+    margin-bottom: 0.5rem;
+}
+
+.cards-title {
+    margin: 0;
+    color: var(--taupe);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+}
+
+.client-card-mobile {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(162, 78, 50, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(162, 78, 50, 0.08);
+}
+
+.client-card-mobile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.15);
+}
+
+.client-card-header {
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.05), rgba(197, 101, 63, 0.02));
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(162, 78, 50, 0.1);
+}
+
+.client-avatar-mobile {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    letter-spacing: 1px;
+}
+
+.client-card-info {
+    flex: 1;
+    margin: 0 1rem;
+    min-width: 0;
+}
+
+.client-full-name {
+    font-weight: 700;
+    color: var(--taupe);
+    margin: 0;
+    font-size: 1.1rem;
+    word-break: break-word;
+}
+
+.client-id {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.client-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.mobile-action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(162, 78, 50, 0.2);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--taupe);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.mobile-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(162, 78, 50, 0.2);
+}
+
+.profile-btn {
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3B82F6;
+}
+
+.edit-btn {
+    border-color: rgba(162, 78, 50, 0.3);
+    color: var(--taupe);
+}
+
+.profile-btn:hover {
+    background: #3B82F6;
+    color: white;
+}
+
+.edit-btn:hover {
+    background: var(--taupe);
+    color: white;
+}
+
+.client-card-body {
+    padding: 1.25rem;
+}
+
+.contact-section {
+    margin-bottom: 1.25rem;
+}
+
+.contact-item {
+    margin-bottom: 1rem;
+}
+
+.contact-item:last-child {
+    margin-bottom: 0;
+}
+
+.contact-label {
+    display: block;
+    font-weight: 600;
+    color: var(--taupe);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.contact-value {
+    padding-left: 0.5rem;
+}
+
+.contact-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.email-link:hover {
+    color: #22C55E;
+}
+
+.phone-link:hover {
+    color: #3B82F6;
+}
+
+.contact-value.missing {
+    color: var(--text-muted);
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    padding-left: 0.5rem;
+}
+
+.mobile-action-footer {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(162, 78, 50, 0.1);
+}
+
+.appointment-btn-mobile {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    font-size: 0.95rem;
+}
+
+.appointment-btn-mobile:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    color: white;
+}
+
+/* Responsive mobile cards */
+@media (max-width: 768px) {
+    .client-card-header {
+        padding: 0.875rem;
+    }
+    
+    .client-avatar-mobile {
+        width: 45px;
+        height: 45px;
+        font-size: 1rem;
+    }
+    
+    .client-full-name {
+        font-size: 1rem;
+    }
+    
+    .mobile-action-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    
+    .client-card-body {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .client-card-header {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .client-card-info {
+        margin: 0;
+        flex: 1 1 100%;
+        order: 2;
+    }
+    
+    .client-avatar-mobile {
+        order: 1;
+    }
+    
+    .client-card-actions {
+        order: 3;
+        justify-content: flex-end;
+    }
+    
+    .contact-label {
+        font-size: 0.85rem;
+    }
+    
+    .contact-link,
+    .contact-value.missing {
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}
 
 {% block body %}
-    <h1 class="mb-4">Liste des clients</h1>
-
-    <form method="GET" class="mb-3">
-        <input type="text" name="search" placeholder="Rechercher par nom ou prénom" value="{{ app.request.get('search') }}">
-        <button type="submit" class="btn btn-primary">Rechercher</button>
-    </form>
-
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ path('app_client_new') }}" class="btn btn-sm btn-outline-secondary">
-             <i class="fas fa-plus"></i> Ajouter un client
+<div class="clients-container" data-animate="true">
+    <!-- Header -->
+    <div class="clients-header">
+        <div>
+            <h1 class="clients-title">
+                <i class="fas fa-users"></i>
+                Clients
+            </h1>
+            <p class="clients-subtitle">Gérez votre base de données clients</p>
+        </div>
+        <a href="{{ path('app_client_new') }}" class="new-client-btn">
+            <i class="fas fa-user-plus"></i>
+            Nouveau Client
         </a>
     </div>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th><a href="{{ path('app_client_index', {'sort': 'firstName'}) }}">Prénom</a></th>
-                    <th><a href="{{ path('app_client_index', {'sort': 'name'}) }}">Nom</a></th>
-                    <th>Email</th>
-                    <th>N°</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for client in clients %}
-                <tr>
-                    <td>{{ client.firstName }}</td>
-                    <td>{{ client.name }}</td>
-                    <td>{{ client.email }}</td>
-                    <td>{{ client.phoneNumber }}</td>
-                    <td>
-                        <a href="{{ path('app_client_show', {'id': client.id}) }}" class="btn btn-sm btn-info">Fiche</a>
-                        <a href="{{ path('app_client_appointment', {'id': client.id}) }}" class="btn btn-sm btn-secondary">Rdv</a>
-                        <a href="{{ path('app_client_edit', {'id': client.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="5" class="text-center">Aucun client trouvé</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+
+    <!-- Stats rapides -->
+    <div class="stats-grid">
+        <div class="stats-card" data-animate="true">
+            <div class="stats-icon total">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stats-number" data-target="{{ clients|length }}">0</div>
+            <div class="stats-label">Clients total</div>
+        </div>
+        
+        <div class="stats-card" data-animate="true">
+            <div class="stats-icon email">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="stats-number" data-target="{% set activeClients = 0 %}{% for client in clients %}{% if client.email is not empty %}{% set activeClients = activeClients + 1 %}{% endif %}{% endfor %}{{ activeClients }}">0</div>
+            <div class="stats-label">Avec email</div>
+        </div>
+        
+        <div class="stats-card" data-animate="true">
+            <div class="stats-icon phone">
+                <i class="fas fa-phone"></i>
+            </div>
+            <div class="stats-number" data-target="{% set phoneClients = 0 %}{% for client in clients %}{% if client.phoneNumber is not empty %}{% set phoneClients = phoneClients + 1 %}{% endif %}{% endfor %}{{ phoneClients }}">0</div>
+            <div class="stats-label">Avec téléphone</div>
+        </div>
     </div>
+
+    <!-- Recherche et filtres -->
+    <div class="search-card" data-animate="true">
+        <form method="GET" class="search-form">
+            <div class="form-group">
+                <label for="search" class="form-label">Rechercher un client</label>
+                <input type="text" 
+                       name="search" 
+                       id="search"
+                       class="search-input" 
+                       placeholder="Nom, prénom ou email..." 
+                       value="{{ app.request.get('search') }}">
+            </div>
+            <div class="form-group">
+                <label for="sort" class="form-label">Trier par</label>
+                <select name="sort" id="sort" class="search-input">
+                    <option value="name" {% if app.request.get('sort') == 'name' %}selected{% endif %}>Nom</option>
+                    <option value="firstName" {% if app.request.get('sort') == 'firstName' %}selected{% endif %}>Prénom</option>
+                    <option value="email" {% if app.request.get('sort') == 'email' %}selected{% endif %}>Email</option>
+                </select>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                    Filtrer
+                </button>
+                <a href="{{ path('app_client_index') }}" class="reset-btn">
+                    <i class="fas fa-redo"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des clients -->
+    {% if clients is not empty %}
+
+        <!-- Affichage mobile/tablet (cartes) -->
+        <div class="d-lg-none clients-cards-container">
+            <div class="clients-cards-header">
+                <h4 class="cards-title">
+                    <i class="fas fa-list"></i>
+                    Base Clients ({{ clients|length }})
+                </h4>
+            </div>
+            
+            {% for client in clients %}
+                <div class="client-card-mobile" data-client-name="{{ (client.firstName ~ ' ' ~ client.name)|lower }}">
+                    <div class="client-card-header">
+                        <div class="client-avatar-mobile">
+                            {{ client.firstName|first|upper }}{{ client.name|first|upper }}
+                        </div>
+                        <div class="client-card-info">
+                            <h5 class="client-full-name">{{ client.firstName }} {{ client.name }}</h5>
+                            <span class="client-id">Client #{{ client.id }}</span>
+                        </div>
+                        <div class="client-card-actions">
+                            <a href="{{ path('app_client_show', {'id': client.id}) }}" 
+                               class="mobile-action-btn profile-btn"
+                               title="Fiche client">
+                                <i class="fas fa-user-circle"></i>
+                            </a>
+                            <a href="{{ path('app_client_edit', {'id': client.id}) }}" 
+                               class="mobile-action-btn edit-btn"
+                               title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="client-card-body">
+                        <div class="contact-section">
+                            <div class="contact-item">
+                                <label class="contact-label">
+                                    <i class="fas fa-envelope me-2"></i>Email
+                                </label>
+                                {% if client.email %}
+                                    <div class="contact-value">
+                                        <a href="mailto:{{ client.email }}" class="contact-link email-link">
+                                            <i class="fas fa-envelope-circle-check me-1"></i>
+                                            {{ client.email }}
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="contact-value missing">
+                                        <i class="fas fa-envelope-open me-1"></i>
+                                        Non renseigné
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="contact-item">
+                                <label class="contact-label">
+                                    <i class="fas fa-phone me-2"></i>Téléphone
+                                </label>
+                                {% if client.phoneNumber %}
+                                    <div class="contact-value">
+                                        <a href="tel:{{ client.phoneNumber }}" class="contact-link phone-link">
+                                            <i class="fas fa-phone-volume me-1"></i>
+                                            {{ client.phoneNumber }}
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="contact-value missing">
+                                        <i class="fas fa-phone-slash me-1"></i>
+                                        Non renseigné
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mobile-action-footer">
+                            <a href="{{ path('app_client_appointment', {'id': client.id}) }}" 
+                               class="appointment-btn-mobile">
+                                <i class="fas fa-calendar-plus me-2"></i>
+                                Liste des RDV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="clients-table-card" data-animate="true">
+            <div class="table-responsive">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h5 class="empty-title">Aucun client trouvé</h5>
+                    {% if app.request.get('search') %}
+                        <p class="empty-description">Essayez une autre recherche ou créez un nouveau client</p>
+                        <div class="empty-actions">
+                            <a href="{{ path('app_client_index') }}" class="reset-btn">
+                                <i class="fas fa-redo"></i>
+                                Réinitialiser
+                            </a>
+                            <a href="{{ path('app_client_new') }}" class="new-client-btn">
+                                <i class="fas fa-user-plus"></i>
+                                Nouveau Client
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="empty-description">Commencez par ajouter votre premier client</p>
+                        <a href="{{ path('app_client_new') }}" class="new-client-btn">
+                            <i class="fas fa-user-plus"></i>
+                            Ajouter un Client
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des compteurs avec délai
+    function animateCounter(element, target) {
+        let current = 0;
+        const increment = target / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, 25);
+    }
+
+    // Animer les compteurs après un délai
+    setTimeout(() => {
+        document.querySelectorAll('.stats-number').forEach(counter => {
+            const target = parseInt(counter.getAttribute('data-target'));
+            if (!isNaN(target)) {
+                animateCounter(counter, target);
+            }
+        });
+    }, 500);
+
+    // Animation des lignes au survol (desktop)
+    document.querySelectorAll('.client-row').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(4px)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+
+    // Recherche en temps réel sur les formulaires de recherche
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+        // Focus sur le champ de recherche si vide
+        if (!searchInput.value) {
+            searchInput.focus();
+        }
+        
+        // Recherche temps réel
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            // Débounce pour éviter trop de traitements
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterClients(searchTerm);
+            }, 300);
+        });
+    }
+
+    // Fonction de filtrage des clients
+    function filterClients(searchTerm) {
+        // Filtrer les lignes du tableau desktop
+        const tableRows = document.querySelectorAll('.clients-table-card .client-row');
+        tableRows.forEach(row => {
+            const firstName = row.querySelector('.client-info .client-name')?.textContent.toLowerCase() || '';
+            const lastName = row.querySelectorAll('.client-name')[1]?.textContent.toLowerCase() || '';
+            const email = row.querySelector('.contact-info a[href^="mailto:"]')?.textContent.toLowerCase() || '';
+            const fullName = firstName + ' ' + lastName;
+            
+            if (fullName.includes(searchTerm) || email.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Filtrer les cartes mobiles
+        const mobileCards = document.querySelectorAll('.client-card-mobile');
+        mobileCards.forEach(card => {
+            const clientName = card.getAttribute('data-client-name') || '';
+            const email = card.querySelector('.email-link')?.textContent.toLowerCase() || '';
+            
+            if (clientName.includes(searchTerm) || email.includes(searchTerm)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Mettre à jour le compteur des cartes mobiles
+        updateMobileCounter();
+    }
+
+    // Mettre à jour le compteur dans le header des cartes mobiles
+    function updateMobileCounter() {
+        const visibleCards = document.querySelectorAll('.client-card-mobile:not([style*="display: none"])').length;
+        const cardsTitle = document.querySelector('.cards-title');
+        if (cardsTitle) {
+            const titleText = cardsTitle.innerHTML.replace(/\(\d+\)/, `(${visibleCards})`);
+            cardsTitle.innerHTML = titleText;
+        }
+    }
+
+    // Animation d'entrée pour les cartes mobiles
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observer les cartes mobiles pour l'animation d'entrée
+    document.querySelectorAll('.client-card-mobile').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+        observer.observe(card);
+    });
+
+    // Gestion des liens de contact améliorée
+    document.querySelectorAll('.contact-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Animation de feedback
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+
+    // Gestion améliorée des boutons d'action mobile
+    document.querySelectorAll('.mobile-action-btn, .appointment-btn-mobile').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            // Animation de feedback tactile
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+});
+</script>
 {% endblock %}

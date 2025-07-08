@@ -1,20 +1,103 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello AppointmentApiController!{% endblock %}
+{% block title %}API Rendez-vous{% endblock %}
 
 {% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-4 mb-2"><i class="fas fa-calendar-check me-3"></i>API Rendez-vous</h1>
+            <p class="text-muted lead">Interface de développement pour la gestion des rendez-vous</p>
+        </div>
+    </div>
+
+    <!-- Cards d'information -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <div class="card-icon icon-primary mx-auto mb-3">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h5 class="card-title">Contrôleur API</h5>
+                    <p class="card-text text-muted">{{ controller_name }} est actif et fonctionnel</p>
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle me-1"></i>Opérationnel
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <div class="card-icon icon-info mx-auto mb-3">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h5 class="card-title">Template</h5>
+                    <p class="card-text text-muted">Template mis à jour avec le thème moderne</p>
+                    <span class="badge bg-info">
+                        <i class="fas fa-paint-brush me-1"></i>Stylisé
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations techniques -->
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations techniques</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="tech-info">
+                        <h6 class="text-primary mb-2">
+                            <i class="fas fa-file-code me-2"></i>Contrôleur
+                        </h6>
+                        <p class="text-muted small mb-0">
+                            <code>src/Controller/Api/AppointmentApiController.php</code>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="tech-info">
+                        <h6 class="text-primary mb-2">
+                            <i class="fas fa-file-alt me-2"></i>Template
+                        </h6>
+                        <p class="text-muted small mb-0">
+                            <code>templates/appointment_api/index.html.twig</code>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-3 bg-light rounded">
+                <h6 class="text-success mb-2">
+                    <i class="fas fa-check-circle me-2"></i>Configuration réussie
+                </h6>
+                <p class="text-muted small mb-0">
+                    Le contrôleur API est correctement configuré et prêt à recevoir des requêtes pour la gestion des rendez-vous.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
 <style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+.tech-info {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    border-left: 3px solid var(--taupe);
+}
+
+.tech-info code {
+    background: rgba(162, 78, 50, 0.1);
+    color: var(--taupe-dark);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
 </style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/acascan/Desktop/Programme/perso/BackEnd/src/Controller/AppointmentApiController.php</code></li>
-        <li>Your template at <code>C:/Users/acascan/Desktop/Programme/perso/BackEnd/templates/appointment_api/index.html.twig</code></li>
-    </ul>
-</div>
 {% endblock %}

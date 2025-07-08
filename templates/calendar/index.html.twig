@@ -1,521 +1,3631 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Calendrier des Rendez-vous{% endblock %}
+{% block title %}Calendrier{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css">
-    <style>
-        #calendar {
-            max-height: 75vh; /* Ajuste la hauteur maximale du calendrier pour le rendre plus lisible */
-        }
+{{ parent() }}
+<style>
+/* Variables couleurs beige/taupe */
+:root {
+    --beige: #f5dfc6;
+    --beige-light: #f8e6d3;
+    --beige-dark: #f0d7bb;
+    --taupe: #a24e32;
+    --taupe-light: #b85c40;
+    --taupe-dark: #8a402a;
+    --white: #ffffff;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-600: #6c757d;
+    --gray-800: #343a40;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --shadow-sm: 0 2px 4px rgba(162, 78, 50, 0.1);
+    --shadow-md: 0 4px 12px rgba(162, 78, 50, 0.15);
+    --shadow-lg: 0 8px 24px rgba(162, 78, 50, 0.2);
+}
 
-        /* styles.css */
+/* Reset et base mobile-first */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-/* styles.css */
-.bg-default {
-    background-color: #e0e0e0; /* Couleur par défaut */
+body {
+    background: linear-gradient(135deg, var(--beige-light) 0%, var(--beige) 100%);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: var(--gray-800);
+    overflow-x: hidden;
 }
-.bg-service-1 {
-    background-color: #d32f2f; /* Rouge vif */
+
+/* Container mobile-optimized */
+.mobile-calendar {
+    max-width: 100%;
+    min-height: 100vh;
+    padding: 0;
 }
-.bg-service-2 {
-    background-color: #f57c00; /* Orange vif */
+
+/* Header mobile sticky */
+.mobile-header {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    color: white;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-md);
 }
-.bg-service-3 {
-    background-color: #fbc02d; /* Jaune vif */
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 }
-.bg-service-4 {
-    background-color: #388e3c; /* Vert vif */
+
+.header-title {
+    font-size: 1.4rem;
+    font-weight: 700;
 }
-.bg-service-5 {
-    background-color: #1976d2; /* Bleu vif */
+
+.header-date {
+    font-size: 0.9rem;
+    opacity: 0.9;
 }
-.bg-service-6 {
-    background-color: #7b1fa2; /* Violet vif */
+
+/* Navigation mobile */
+.mobile-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 }
-.bg-service-7 {
-    background-color: #c2185b; /* Rose vif */
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.bg-service-8 {
-    background-color: #8e24aa; /* Lavande vif */
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
 }
-.bg-service-9 {
-    background-color: #616161; /* Gris foncé */
+
+.nav-current-date {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    flex-grow: 1;
+    margin: 0 1rem;
 }
-.bg-service-10 {
-    background-color: #d32f2f; /* Rouge foncé */
+
+/* Vue selector mobile */
+.view-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 0.25rem;
+    gap: 0.25rem;
 }
-.bg-service-11 {
-    background-color: #f57c00; /* Orange foncé */
+
+.view-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.75rem 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.7;
 }
-.bg-service-12 {
-    background-color: #fbc02d; /* Jaune foncé */
+
+.view-tab.active {
+    background: rgba(255, 255, 255, 0.25);
+    opacity: 1;
+    backdrop-filter: blur(10px);
 }
-.bg-service-13 {
-    background-color: #388e3c; /* Vert foncé */
+
+/* Vue Jour Mobile */
+.day-view {
+    padding: 1rem;
+    background: white;
+    min-height: calc(100vh - 200px);
 }
-.bg-service-14 {
-    background-color: #1976d2; /* Bleu foncé */
+
+.day-header {
+    background: linear-gradient(135deg, var(--beige), var(--beige-light));
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    border: 2px solid var(--taupe-light);
 }
-.bg-service-15 {
-    background-color: #7b1fa2; /* Violet foncé */
+
+.day-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--taupe-dark);
+    margin-bottom: 0.5rem;
 }
-.bg-service-16 {
-    background-color: #c2185b; /* Rose foncé */
+
+.day-subtitle {
+    color: var(--gray-600);
+    font-size: 0.9rem;
 }
-.bg-service-17 {
-    background-color: #8e24aa; /* Lavande foncé */
+
+/* Timeline mobile */
+.timeline {
+    position: relative;
 }
-.bg-service-18 {
-    background-color: #424242; /* Gris très foncé */
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--beige-dark);
 }
-.bg-service-19 {
-    background-color: #b71c1c; /* Rouge très foncé */
+
+.time-slot {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    position: relative;
 }
-.bg-service-20 {
-    background-color: #ff6f00; /* Orange très foncé */
+
+.time-label {
+    width: 60px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--taupe);
+    text-align: center;
+    background: white;
+    border-radius: 8px;
+    padding: 0.25rem;
+    border: 1px solid var(--beige-dark);
+    position: relative;
+    z-index: 1;
 }
-    </style>
+
+.time-content {
+    flex: 1;
+    margin-left: 1rem;
+}
+
+/* Carte RDV mobile */
+.appointment-card {
+    background: linear-gradient(135deg, var(--white), var(--beige-light));
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-left: 4px solid var(--taupe);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.appointment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.appointment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.appointment-service {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--taupe-dark);
+}
+
+.appointment-time {
+    font-size: 0.85rem;
+    color: var(--taupe);
+    font-weight: 600;
+    background: var(--beige);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+}
+
+.appointment-client {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.client-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.client-info {
+    flex: 1;
+}
+
+.client-name {
+    font-weight: 600;
+    color: var(--gray-800);
+    font-size: 0.95rem;
+}
+
+.appointment-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--gray-600);
+}
+
+.appointment-duration {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.appointment-price {
+    font-weight: 700;
+    color: var(--taupe);
+}
+
+/* Vue Liste Mobile */
+.list-view {
+    padding: 1rem;
+    background: white;
+    min-height: calc(100vh - 200px);
+}
+
+.list-filters {
+    background: var(--gray-100);
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.filter-row:last-child {
+    margin-bottom: 0;
+}
+
+.filter-input {
+    flex: 1;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.filter-input:focus {
+    border-color: var(--taupe-light);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(162, 78, 50, 0.25);
+}
+
+/* Bouton Nouveau RDV flottant */
+.fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 32px rgba(162, 78, 50, 0.4);
+}
+
+/* States vides */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--gray-600);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: var(--beige-dark);
+    margin-bottom: 1rem;
+}
+
+.empty-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--gray-800);
+}
+
+.empty-subtitle {
+    font-size: 0.9rem;
+}
+
+/* Modal mobile-optimized */
+.mobile-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.mobile-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content-mobile {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-height: 90vh;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+}
+
+.mobile-modal.show .modal-content-mobile {
+    transform: translateY(0);
+}
+
+.modal-header-mobile {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    color: white;
+    padding: 1.5rem;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title-mobile {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: rgba(255,255,255,0.2);
+    transform: rotate(90deg);
+}
+
+.modal-body-mobile {
+    padding: 1.5rem;
+}
+
+.modal-footer-mobile {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 1rem;
+}
+
+/* Boutons mobile */
+.btn-mobile {
+    border: none;
+    border-radius: 12px;
+    padding: 0.875rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary-mobile {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    color: white;
+}
+
+.btn-primary-mobile:hover {
+    background: linear-gradient(135deg, var(--taupe-dark), var(--taupe));
+    transform: translateY(-1px);
+}
+
+.btn-secondary-mobile {
+    background: var(--gray-200);
+    color: var(--gray-800);
+}
+
+.btn-secondary-mobile:hover {
+    background: var(--gray-300);
+}
+
+.btn-danger-mobile {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    color: white;
+}
+
+/* Formulaires mobile */
+.form-group-mobile {
+    margin-bottom: 1.5rem;
+}
+
+.form-label-mobile {
+    display: block;
+    font-weight: 600;
+    color: var(--taupe-dark);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-input-mobile {
+    width: 100%;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 0.875rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    min-height: 48px;
+}
+
+.form-input-mobile:focus {
+    border-color: var(--taupe-light);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(162, 78, 50, 0.25);
+}
+
+/* Loading states */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--beige);
+    border-top: 3px solid var(--taupe);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Swipe indicators */
+.swipe-indicator {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--taupe);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.swipe-indicator.left {
+    left: 10px;
+}
+
+.swipe-indicator.right {
+    right: 10px;
+}
+
+/* Responsive pour tablettes */
+@media (min-width: 768px) {
+    .mobile-calendar {
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: var(--shadow-lg);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .day-view, .list-view {
+        padding: 1.5rem;
+    }
+    
+    .fab {
+        bottom: 30px;
+        right: 30px;
+    }
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.3s ease;
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+/* Couleurs de services harmonieuses */
+.service-color-1 { border-left-color: var(--taupe) !important; }
+.service-color-2 { border-left-color: #C8956D !important; }
+.service-color-3 { border-left-color: #B8956D !important; }
+.service-color-4 { border-left-color: #A67C52 !important; }
+.service-color-5 { border-left-color: #8B7355 !important; }
+.service-color-6 { border-left-color: #9B8B72 !important; }
+.service-color-7 { border-left-color: #AD9B82 !important; }
+.service-color-8 { border-left-color: #8A7B6B !important; }
+.service-color-9 { border-left-color: #7A6F5D !important; }
+.service-color-10 { border-left-color: #9A8F7D !important; }
+
+/* Vue semaine mobile */
+.week-view {
+    padding: 1rem;
+    background: white;
+    min-height: calc(100vh - 200px);
+}
+
+.week-header {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+}
+
+.week-day {
+    background: var(--gray-100);
+    border-radius: 12px;
+    padding: 0.75rem 0;
+    min-height: 120px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.week-day:hover {
+    background: var(--beige-light);
+    transform: translateY(-2px);
+}
+
+.week-day.today {
+    background: linear-gradient(135deg, var(--beige), var(--beige-light));
+    border: 2px solid var(--taupe-light);
+}
+
+.week-day-header {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.week-day-name {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.week-day-number {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--taupe-dark);
+    margin-top: 0.25rem;
+}
+
+.week-day.today .week-day-number {
+    color: var(--taupe);
+}
+
+.week-day-appointments {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.week-appointment {
+    background: var(--white);
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    border-left: 3px solid var(--taupe);
+    box-shadow: var(--shadow-sm);
+}
+
+.week-apt-time {
+    font-weight: 600;
+    color: var(--taupe);
+    line-height: 1.2;
+}
+
+.week-apt-client {
+    color: var(--gray-700);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.week-more {
+    background: var(--taupe);
+    color: white;
+    text-align: center;
+    padding: 0.25rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* Headers de date pour la liste */
+.list-date-header {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    color: white;
+    padding: 0.75rem 1rem;
+    margin: 1rem -1rem 1rem -1rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.list-date-header:first-child {
+    margin-top: 0;
+}
+
+/* États vides avec plus de style */
+.time-empty {
+    color: #999;
+    font-style: italic;
+    padding: 10px 0;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.time-ongoing {
+    color: #8B7355;
+    font-style: italic;
+    padding: 8px 12px;
+    text-align: center;
+    background: rgba(139, 115, 85, 0.1);
+    border-left: 3px solid #8B7355;
+    border-radius: 4px;
+    margin: 4px 0;
+    font-size: 0.9em;
+}
+
+/* Navigation rapide */
+.quick-nav {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.quick-nav-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    justify-content: center;
+}
+
+.quick-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Navigation semaine */
+.week-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--beige-light);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.week-nav-btn {
+    background: var(--taupe);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.week-nav-btn:hover {
+    background: var(--taupe-dark);
+    transform: translateY(-1px);
+}
+
+.week-range {
+    font-weight: 700;
+    color: var(--taupe-dark);
+    text-align: center;
+    flex: 1;
+    margin: 0 1rem;
+}
+
+/* Vue Mois */
+.month-view {
+    padding: 1rem;
+    background: white;
+    min-height: calc(100vh - 200px);
+}
+
+.month-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--beige), var(--beige-light));
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.month-nav-btn {
+    background: var(--taupe);
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.month-nav-btn:hover {
+    background: var(--taupe-dark);
+    transform: scale(1.1);
+}
+
+.month-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--taupe-dark);
+    text-align: center;
+    flex: 1;
+}
+
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--gray-200);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.month-day-header {
+    background: var(--taupe);
+    color: white;
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.month-day {
+    background: white;
+    min-height: 80px;
+    padding: 0.5rem;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.month-day:hover {
+    background: var(--beige-light);
+}
+
+.month-day.other-month {
+    background: var(--gray-100);
+    color: var(--gray-400);
+}
+
+.month-day.today {
+    background: var(--beige);
+    border: 2px solid var(--taupe);
+}
+
+.month-day-number {
+    font-weight: 700;
+    color: var(--taupe-dark);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.month-day.today .month-day-number {
+    color: var(--taupe);
+}
+
+.month-appointments {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.month-appointment {
+    background: var(--taupe);
+    color: white;
+    padding: 0.15rem 0.3rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.month-more {
+    color: var(--gray-600);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 0.25rem;
+}
+
+/* Vue Statistiques - Mobile first */
+.stats-view {
+    padding: 0.75rem;
+    background: white;
+    min-height: calc(100vh - 200px);
+}
+
+.stats-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--beige), var(--beige-light));
+    border-radius: 12px;
+}
+
+.stats-header h2 {
+    color: var(--taupe-dark);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+}
+
+.stats-period {
+    display: flex;
+    justify-content: center;
+}
+
+.stats-period select {
+    min-width: 140px;
+    padding: 0.5rem;
+    border: 2px solid var(--taupe-light);
+    border-radius: 8px;
+    background: white;
+    color: var(--taupe-dark);
+    font-weight: 600;
+}
+
+/* KPIs Grid - Mobile first */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: linear-gradient(135deg, var(--white), var(--beige-light));
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--taupe);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.kpi-content {
+    flex: 1;
+}
+
+.kpi-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--taupe-dark);
+    margin-bottom: 0.25rem;
+}
+
+.kpi-label {
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Charts Container - Mobile first */
+.charts-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+}
+
+.chart-card h3 {
+    color: var(--taupe-dark);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    text-align: center;
+}
+
+.chart-card canvas {
+    max-height: 180px;
+    max-width: 100%;
+}
+
+/* Top List */
+.top-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.top-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--gray-100);
+    border-radius: 8px;
+    border-left: 3px solid var(--taupe);
+}
+
+.top-item-info {
+    flex: 1;
+}
+
+.top-item-name {
+    font-weight: 600;
+    color: var(--gray-800);
+    font-size: 0.9rem;
+}
+
+.top-item-details {
+    color: var(--gray-600);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.top-item-value {
+    font-weight: 700;
+    color: var(--taupe);
+    font-size: 0.9rem;
+}
+
+/* Sélecteur d'année */
+.year-selector {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.year-grid {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 300px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.year-item {
+    background: var(--gray-100);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    font-weight: 700;
+    color: var(--taupe-dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.year-item:hover {
+    background: var(--beige-light);
+    border-color: var(--taupe-light);
+}
+
+.year-item.current {
+    background: var(--taupe);
+    color: white;
+}
+
+/* Responsive pour tablettes/desktop */
+@media (min-width: 480px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .kpi-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1.5rem;
+    }
+    
+    .kpi-number {
+        font-size: 1.8rem;
+    }
+    
+    .kpi-label {
+        font-size: 0.9rem;
+    }
+    
+    .charts-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .chart-card {
+        padding: 1.5rem;
+    }
+    
+    .chart-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .chart-card canvas {
+        max-height: 200px;
+    }
+    
+    .stats-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .stats-header h2 {
+        font-size: 1.3rem;
+        text-align: left;
+    }
+    
+    .stats-period {
+        justify-content: flex-end;
+    }
+    
+    .stats-view {
+        padding: 1rem;
+    }
+    
+    .month-day {
+        min-height: 100px;
+    }
+    
+    .quick-nav {
+        max-width: 300px;
+        margin: 1rem auto 0;
+    }
+}
+
+@media (min-width: 1200px) {
+    .kpi-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .charts-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .chart-card canvas {
+        max-height: 250px;
+    }
+}
+
+/* Corrections responsive pour vue semaine et mois */
+@media (max-width: 767px) {
+    /* Corrections vue semaine */
+    .week-view {
+        padding: 0.5rem 0.25rem;
+        overflow-x: hidden;
+    }
+    
+    .week-header {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1px;
+        margin-bottom: 1rem;
+        width: 100%;
+        overflow: hidden;
+    }
+    
+    .week-day {
+        min-height: 90px;
+        max-width: 100%;
+        overflow: hidden;
+        border-radius: 6px;
+    }
+    
+    .week-day-header {
+        padding: 0.3rem 0.1rem;
+    }
+    
+    .week-day-name {
+        font-size: 0.6rem;
+        line-height: 1;
+    }
+    
+    .week-day-number {
+        font-size: 0.8rem;
+        margin-top: 0.1rem;
+        line-height: 1;
+    }
+    
+    .week-day-appointments {
+        padding: 0.25rem 0.15rem;
+        gap: 0.1rem;
+    }
+    
+    .week-appointment {
+        padding: 0.2rem 0.3rem;
+        font-size: 0.6rem;
+        font-weight: 700;
+        border-radius: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.2);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .week-appointment:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        border-color: rgba(255,255,255,0.4);
+    }
+    
+    .week-appointment:active {
+        transform: translateY(-1px);
+        transition: all 0.1s;
+    }
+    
+    .week-apt-time {
+        font-size: 0.55rem;
+        line-height: 1;
+        font-weight: 800;
+        opacity: 1;
+    }
+    
+    .week-apt-client {
+        font-size: 0.6rem;
+        line-height: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+    
+    .week-more {
+        font-size: 0.5rem;
+        margin-top: 0.1rem;
+    }
+    
+    /* Corrections vue mois */
+    .month-view {
+        padding: 0.5rem 0.25rem;
+        overflow-x: hidden;
+    }
+    
+    .month-grid {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        gap: 1px;
+        margin: 0;
+    }
+    
+    .month-day {
+        min-height: 70px;
+        padding: 0.25rem;
+        overflow: hidden;
+    }
+    
+    .month-day-header {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.7rem;
+    }
+    
+    .month-day-number {
+        font-size: 0.8rem;
+        margin-bottom: 0.15rem;
+    }
+    
+    .month-appointments {
+        gap: 0.1rem;
+    }
+    
+    .month-appointment {
+        padding: 0.15rem 0.25rem;
+        font-size: 0.6rem;
+        font-weight: 700;
+        border-radius: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.2);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: 0.05rem 0;
+    }
+    
+    .month-appointment:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        z-index: 10;
+        position: relative;
+        border-color: rgba(255,255,255,0.4);
+    }
+    
+    .month-appointment:active {
+        transform: translateY(-1px);
+        transition: all 0.1s;
+    }
+    
+    .month-more {
+        font-size: 0.55rem;
+        margin-top: 0.1rem;
+    }
+    
+    /* Navigation adaptée */
+    .month-nav, .week-nav {
+        padding: 0.75rem 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .month-nav-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0.5rem;
+    }
+    
+    .month-title {
+        font-size: 1.1rem;
+    }
+    
+    .week-range {
+        font-size: 0.9rem;
+        margin: 0 0.5rem;
+    }
+    
+    .week-nav-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* Corrections pour très petits écrans */
+@media (max-width: 360px) {
+    .week-day {
+        min-height: 75px;
+    }
+    
+    .week-day-name {
+        font-size: 0.55rem;
+    }
+    
+    .week-day-number {
+        font-size: 0.75rem;
+    }
+    
+    .week-appointment {
+        font-size: 0.5rem;
+        padding: 0.1rem 0.2rem;
+    }
+    
+    .month-day {
+        min-height: 60px;
+        padding: 0.2rem;
+    }
+    
+    .month-day-header {
+        padding: 0.4rem 0.15rem;
+        font-size: 0.65rem;
+    }
+    
+    .month-appointment {
+        font-size: 0.5rem;
+        padding: 0.08rem 0.15rem;
+    }
+    
+    .month-title {
+        font-size: 1rem;
+    }
+    
+    .week-range {
+        font-size: 0.8rem;
+    }
+}
+
+/* Modal de gestion des RDV */
+.appointment-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    backdrop-filter: blur(5px);
+}
+
+.appointment-modal-content {
+    background: white;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.appointment-modal-header {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    color: white;
+    padding: 1.5rem;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.appointment-modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    background: rgba(255,255,255,0.2);
+    transform: rotate(90deg);
+}
+
+.appointment-modal-body {
+    padding: 1.5rem;
+}
+
+.appointment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.appointment-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--gray-100);
+    border-radius: 12px;
+    border-left: 4px solid var(--taupe);
+}
+
+.appointment-detail i {
+    color: var(--taupe);
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.appointment-detail span {
+    color: var(--gray-800);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.duration-editor {
+    background: var(--beige-light);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.duration-editor h4 {
+    color: var(--taupe-dark);
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.duration-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.duration-btn {
+    background: white;
+    border: 2px solid var(--taupe-light);
+    color: var(--taupe-dark);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.duration-btn:hover, .duration-btn.active {
+    background: var(--taupe);
+    color: white;
+    border-color: var(--taupe);
+    transform: translateY(-1px);
+}
+
+.custom-duration {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.custom-duration label {
+    color: var(--taupe-dark);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.appointment-modal-actions {
+    padding: 0 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.action-btn {
+    background: var(--gray-200);
+    border: none;
+    color: var(--gray-700);
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+}
+
+.edit-btn:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+}
+
+.duration-btn-toggle {
+    background: linear-gradient(135deg, var(--taupe-light), var(--taupe));
+    color: white;
+}
+
+.duration-btn-toggle:hover {
+    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+}
+
+.delete-btn {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.delete-btn:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.save-btn:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+.cancel-btn {
+    background: var(--gray-400);
+    color: white;
+}
+
+.cancel-btn:hover {
+    background: var(--gray-500);
+}
+
+/* Amélioration visibilité RDV dans toutes les vues */
+.appointment-card {
+    box-shadow: 0 4px 16px rgba(162, 78, 50, 0.3) !important;
+    border: 2px solid rgba(255,255,255,0.25) !important;
+    font-weight: 600 !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.appointment-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.2));
+}
+
+.appointment-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.4) !important;
+    border-color: rgba(255,255,255,0.4) !important;
+}
+
+.appointment-card:active {
+    transform: translateY(-1px) !important;
+    transition: all 0.1s !important;
+}
+
+/* Couleur unique harmonieuse pour tous les services */
+.service-color-1, 
+.service-color-2, 
+.service-color-3, 
+.service-color-4, 
+.service-color-5, 
+.service-color-6 { 
+    background: linear-gradient(135deg, var(--beige), var(--taupe)) !important; 
+}
+
+
+/* Effet de pulsation pour indiquer que les RDV sont cliquables */
+@keyframes pulseClick {
+    0% { box-shadow: 0 0 0 0 rgba(162, 78, 50, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(162, 78, 50, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(162, 78, 50, 0); }
+}
+
+.appointment-card, .week-appointment, .month-appointment {
+    position: relative;
+}
+
+.appointment-card::after, .week-appointment::after, .month-appointment::after {
+    content: '👆';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 0.7rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.appointment-card:hover::after, .week-appointment:hover::after, .month-appointment:hover::after {
+    opacity: 0.8;
+    animation: pulseClick 1.5s infinite;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    /* Variables peuvent être ajustées pour le mode sombre si nécessaire */
+}
+
+/* Effets hover pour les blocs timeline */
+.appointment-timeline-block:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.3);
+    background: rgba(139, 115, 85, 0.15) !important;
+    border-color: rgba(139, 115, 85, 0.5) !important;
+}
+
+.appointment-timeline-block:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(139, 115, 85, 0.2);
+}
+
+/* Timeline container styles */
+.timeline-container {
+    background: #fafafa;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e5e5;
+}
+
+.timeline-hour {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.timeline-hour:last-child {
+    border-bottom: none;
+}
+
+.timeline-hour-label {
+    font-weight: 500;
+    color: #8B7355;
+    border-right: 1px solid #e5e5e5;
+}
+
+/* Responsive pour les blocs timeline */
+@media (max-width: 768px) {
+    .appointment-timeline-block {
+        left: 50px !important;
+        right: 5px !important;
+        padding: 6px !important;
+    }
+    
+    .timeline-hour-label {
+        width: 45px !important;
+        font-size: 0.8em !important;
+    }
+}
+</style>
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/locales/fr.js"></script>
-{% endblock %}
-
-{% block body %}
-    <div class="container mt-4">
-        <h1 class="mb-4">Calendrier des Rendez-vous</h1>
-        <div id="calendar"></div>
-    </div>
-
-    <!-- Modal pour la création de rendez-vous -->
-    <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="appointmentModalLabel">Nouveau Rendez-vous</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="appointmentForm">
-                        <!-- Champ pour la date et l'heure de début -->
-                        <div class="mb-3">
-                            <label for="appointmentDate" class="form-label">Date et heure de début:</label>
-                            <input type="datetime-local" class="form-control" id="appointmentDate" name="date" required>
-                        </div>
-                        <!-- Sélecteur pour le service -->
-                        <div class="mb-3">
-                            <label for="serviceId" class="form-label">Service:</label>
-                            <select class="form-select" id="serviceId" name="serviceId" required>
-                                <option value="">Sélectionnez un service</option>
-                            </select>
-                        </div>
-                        <!-- Affichage de la durée du service sélectionné -->
-                        <div id="serviceDuration" class="mb-3" style="display: none;">
-                            <p class="text-muted">Durée: <span id="durationValue"></span> minutes</p>
-                        </div>
-                        <!-- Sélecteur pour le client -->
-                        <div class="mb-3">
-                            <label for="clientId" class="form-label">Client:</label>
-                            <select class="form-select" id="clientId" name="clientId" required>
-                                <option value="">Sélectionnez un client</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" id="saveAppointment">Créer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal pour la modification de rendez-vous -->
-    <div class="modal fade" id="editAppointmentModal" tabindex="-1" aria-labelledby="editAppointmentModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editAppointmentModalLabel">Modifier le Rendez-vous</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editAppointmentForm">
-                        <!-- Champ caché pour l'identifiant du rendez-vous -->
-                        <input type="hidden" id="editAppointmentId" name="id">
-                        <!-- Champ pour la date et l'heure de début -->
-                        <div class="mb-3">
-                            <label for="editAppointmentDate" class="form-label">Date et heure de début:</label>
-                            <input type="datetime-local" class="form-control" id="editAppointmentDate" name="date" required>
-                        </div>
-                        <!-- Sélecteur pour le service -->
-                        <div class="mb-3">
-                            <label for="editServiceId" class="form-label">Service:</label>
-                            <select class="form-select" id="editServiceId" name="serviceId" required>
-                                <option value="">Sélectionnez un service</option>
-                            </select>
-                        </div>
-                        <!-- Affichage de la durée du service sélectionné -->
-                        <div id="editServiceDuration" class="mb-3" style="display: none;">
-                            <p class="text-muted">Durée: <span id="editDurationValue"></span> minutes</p>
-                        </div>
-                        <!-- Sélecteur pour le client -->
-                        <div class="mb-3">
-                            <label for="editClientId" class="form-label">Client:</label>
-                            <select class="form-select" id="editClientId" name="clientId" required>
-                                <option value="">Sélectionnez un client</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" id="updateAppointment">Modifier</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal pour afficher les détails d'un rendez-vous -->
-    <div class="modal fade" id="viewAppointmentModal" tabindex="-1" aria-labelledby="viewAppointmentModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="viewAppointmentModalLabel">Détails du rendez-vous</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Affichage des détails du rendez-vous -->
-                    <p>Prestation: <span id="viewAppointmentService"></span></p>
-                    <p>Client: <span id="viewAppointmentClient"></span></p>
-                    <p>Date: <span id="viewAppointmentDate"></span></p>
-                    <p>Heure de début: <span id="viewAppointmentStartTime"></span></p>
-                    <p>Heure de fin: <span id="viewAppointmentEndTime"></span></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="editAppointmentBtn">Modifier</button>
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="deleteAppointmentBtn">Supprimer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const calendarEl = document.getElementById('calendar');
-    const modal = new bootstrap.Modal(document.getElementById('appointmentModal'));
-    const editModal = new bootstrap.Modal(document.getElementById('editAppointmentModal'));
-    const form = document.getElementById('appointmentForm');
-    const editForm = document.getElementById('editAppointmentForm');
-    const saveButton = document.getElementById('saveAppointment');
-    const updateButton = document.getElementById('updateAppointment');
+    // Variables globales
+    let currentDate = new Date();
+    let currentView = 'day';
+    let appointments = [];
+    let services = [];
+    let clients = [];
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    // Couleurs des services
     const serviceColors = [
-        'bg-default', // 0
-        'bg-service-1', // 1
-        'bg-service-2', // 2
-        'bg-service-3', // 3
-        'bg-service-4', // 4
-        'bg-service-5', // 5
-        'bg-service-6', // 6
-        'bg-service-7', // 7
-        'bg-service-8', // 8
-        'bg-service-9', // 9
-        'bg-service-10', // 10
-        'bg-service-11', // 11
-        'bg-service-12', // 12
-        'bg-service-13', // 13
-        'bg-service-14', // 14
-        'bg-service-15', // 15
-        'bg-service-16', // 16
-        'bg-service-17', // 17
-        'bg-service-18', // 18
-        'bg-service-19', // 19
-        'bg-service-20'  // 20
+        '', 'service-color-1', 'service-color-2', 'service-color-3', 'service-color-4',
+        'service-color-5', 'service-color-6', 'service-color-7', 'service-color-8', 'service-color-9', 'service-color-10'
     ];
-    const services = []; // Stocke les services disponibles
-    let currentEventId;
-    let currentServiceId;
-    let currentClientId;
-    let currentDate;
 
-    // Initialisation du calendrier
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        locale: 'fr',
-        initialView: 'timeGridWeek',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        slotMinTime: '09:00:00',
-        slotMaxTime: '20:00:00',
-        allDaySlot: false,
-        weekends: true,
-        editable: true,
-        selectable: true,
-        events: '{{ path('app_calendar_events') }}', // URL pour obtenir les événements du calendrier
-        select: function(info) {
-            openModal(info.startStr); // Ouvre le modal de création avec la date sélectionnée
-        },
-        eventClick: function(info) {
-            openViewModal(info.event); // Ouvre le modal de détails lors du clic sur un événement
-        },
-        eventContent: function(info) {
-            const serviceId = info.event.extendedProps.serviceId;
-            const backgroundColor = serviceColors[serviceId] || 'bg-default'; // Utilise la couleur par défaut si le service n'est pas trouvé
+    // Initialisation
+    init();
 
-            return {
-                html: `<div class="fc-content ${backgroundColor}">
-                    <span class="fc-title">${info.event.extendedProps.clientFirstName} ${info.event.extendedProps.clientName}</span>
-                </div>`
-            };
-        },
-        eventDrop: function(info) {
-            modifierRendezVous({
-                id: info.event.id,
-                date: info.event.start,
-                endDate: info.event.end,
-                serviceId: info.event.extendedProps.serviceId,
-                clientId: info.event.extendedProps.clientId
-            }, true); // Modifie le rendez-vous lorsque l'événement est déplacé
-        },
-        eventResize: function(info) {
-            modifierRendezVous({
-                id: info.event.id,
-                date: info.event.start,
-                endDate: info.event.end,
-                serviceId: info.event.extendedProps.serviceId,
-                clientId: info.event.extendedProps.clientId
-            }, true); // Modifie le rendez-vous lorsque l'événement est redimensionné
-        },
-        eventOverlap: false, // Empêche la superposition des événements
-    });
-
-    calendar.render();
-
-    // Ouvre le modal de création d'un rendez-vous
-    function openModal(start) {
-        document.getElementById('appointmentDate').value = start.slice(0, 16);
-        document.getElementById('serviceId').selectedIndex = 0;
-        document.getElementById('clientId').selectedIndex = 0;
-        document.getElementById('serviceDuration').style.display = 'none';
-        modal.show();
+    function init() {
+        setupEventListeners();
+        loadData();
+        updateDateDisplay();
+        showView(currentView);
     }
 
-    // Ouvre le modal de modification avec les détails du rendez-vous sélectionné
-    function openEditModal(event) {
-        const formattedDate = currentDate instanceof Date ? new Date(currentDate.getTime() + (2 * 60 * 60 * 1000)).toISOString().slice(0, 16) : new Date(currentDate).toISOString().slice(0, 16);
-        document.getElementById('editAppointmentId').value = currentEventId;
-        document.getElementById('editAppointmentDate').value = formattedDate;
-        document.getElementById('editServiceId').value = currentServiceId;
-        document.getElementById('editClientId').value = currentClientId;
-        updateServiceDuration('edit'); // Met à jour la durée du service dans le modal de modification
-        editModal.show();
+    function setupEventListeners() {
+        // Navigation principale
+        document.getElementById('prevPeriod').addEventListener('click', () => navigatePeriod(-1));
+        document.getElementById('nextPeriod').addEventListener('click', () => navigatePeriod(1));
+        document.getElementById('todayBtn').addEventListener('click', goToToday);
+        document.getElementById('yearViewBtn').addEventListener('click', showYearSelector);
+
+        // Navigation semaine
+        document.getElementById('prevWeek').addEventListener('click', () => navigateWeek(-1));
+        document.getElementById('nextWeek').addEventListener('click', () => navigateWeek(1));
+
+        // Navigation mois
+        document.getElementById('prevMonth').addEventListener('click', () => navigateMonth(-1));
+        document.getElementById('nextMonth').addEventListener('click', () => navigateMonth(1));
+
+        // Vue tabs
+        document.querySelectorAll('.view-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const view = e.target.dataset.view;
+                switchView(view);
+            });
+        });
+
+        // Bouton nouveau RDV
+        document.getElementById('newAppointmentBtn').addEventListener('click', showNewAppointmentModal);
+
+        // Stats period
+        document.getElementById('statsPeriod').addEventListener('change', updateStats);
+
+        // Swipe detection
+        document.addEventListener('touchstart', handleTouchStart, { passive: true });
+        document.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+        // Year selector
+        setupYearSelector();
+        
+        // Appointment modal
+        setupAppointmentModal();
+        
+        // New appointment modal
+        setupNewAppointmentModal();
     }
 
-    // Ouvre le modal d'affichage des détails du rendez-vous
-    function openViewModal(event) {
-        currentEventId = event.id;
-        currentClientId = event.extendedProps.clientId;
-        currentServiceId = event.extendedProps.serviceId;
-        currentDate = event.start;
-        document.getElementById('viewAppointmentService').textContent = event.title;
-        document.getElementById('viewAppointmentClient').textContent = event.extendedProps.clientFirstName + " " + event.extendedProps.clientName;
-        document.getElementById('viewAppointmentDate').textContent = event.start.toLocaleDateString();
-        document.getElementById('viewAppointmentStartTime').textContent = event.start.toLocaleTimeString();
-        document.getElementById('viewAppointmentEndTime').textContent = event.end.toLocaleTimeString();
 
-        const viewAppointmentModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
-        viewAppointmentModal.show();
-        viewAppointmentModal.hide(); // Ferme le modal après affichage des détails
+
+    // Navigation par swipe
+    function handleTouchStart(e) {
+        touchStartX = e.changedTouches[0].screenX;
     }
 
-    // Met à jour la durée du service en fonction de la sélection
-    function updateServiceDuration(prefix) {
-        const serviceId = document.getElementById(prefix + 'ServiceId').value;
-        const selectedService = services.find(s => s.id == serviceId);
-        if (selectedService) {
-            document.getElementById(prefix + 'DurationValue').textContent = selectedService.duration;
-            document.getElementById(prefix + 'ServiceDuration').style.display = 'block';
-        } else {
-            document.getElementById(prefix + 'ServiceDuration').style.display = 'none';
+    function handleTouchEnd(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }
+
+    function handleSwipe() {
+        const threshold = 50;
+        const diff = touchStartX - touchEndX;
+
+        if (Math.abs(diff) > threshold) {
+            if (diff > 0) {
+                // Swipe left - jour suivant
+                navigateDay(1);
+            } else {
+                // Swipe right - jour précédent
+                navigateDay(-1);
+            }
         }
     }
 
-    // Charge les options de services et de clients depuis le serveur
-    function loadOptions() {
-        fetch('{{ path('app_get_services') }}')
-            .then(response => response.json())
-            .then(data => {
-                services.push(...data);
-                const serviceSelects = [document.getElementById('serviceId'), document.getElementById('editServiceId')];
-                serviceSelects.forEach(select => {
-                    data.forEach(service => {
-                        const option = document.createElement('option');
-                        option.value = service.id;
-                        option.textContent = service.name;
-                        select.appendChild(option);
-                    });
-                });
-            });
+    // Navigation générale
+    function navigatePeriod(direction) {
+        switch(currentView) {
+            case 'day':
+                navigateDay(direction);
+                break;
+            case 'week':
+                navigateWeek(direction);
+                break;
+            case 'month':
+                navigateMonth(direction);
+                break;
+        }
+    }
 
-        fetch('{{ path('app_get_clients') }}')
-            .then(response => response.json())
-            .then(clients => {
-                const clientSelects = [document.getElementById('clientId'), document.getElementById('editClientId')];
-                clientSelects.forEach(select => {
-                    clients.forEach(client => {
-                        const option = document.createElement('option');
-                        option.value = client.id;
-                        option.textContent = client.firstName + " " + client.name;
-                        select.appendChild(option);
-                    });
-                });
+    function navigateDay(direction) {
+        currentDate.setDate(currentDate.getDate() + direction);
+        updateDateDisplay();
+        renderDayView();
+        
+        // Animation
+        const container = document.getElementById('dayView');
+        container.classList.remove('slide-in-left', 'slide-in-right');
+        container.classList.add(direction > 0 ? 'slide-in-right' : 'slide-in-left');
+    }
+
+    function navigateWeek(direction) {
+        currentDate.setDate(currentDate.getDate() + (direction * 7));
+        updateDateDisplay();
+        renderWeekView();
+        
+        // Animation
+        const container = document.getElementById('weekView');
+        container.classList.remove('slide-in-left', 'slide-in-right');
+        container.classList.add(direction > 0 ? 'slide-in-right' : 'slide-in-left');
+    }
+
+    function navigateMonth(direction) {
+        currentDate.setMonth(currentDate.getMonth() + direction);
+        updateDateDisplay();
+        renderMonthView();
+        
+        // Animation
+        const container = document.getElementById('monthView');
+        container.classList.remove('slide-in-left', 'slide-in-right');
+        container.classList.add(direction > 0 ? 'slide-in-right' : 'slide-in-left');
+    }
+
+    function goToToday() {
+        currentDate = new Date();
+        updateDateDisplay();
+        showView(currentView);
+    }
+
+    function updateDateDisplay() {
+        let displayText;
+        
+        switch(currentView) {
+            case 'day':
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                };
+                displayText = currentDate.toLocaleDateString('fr-FR', options);
+                break;
+            case 'week':
+                displayText = 'Semaine';
+                updateWeekDisplay();
+                break;
+            case 'month':
+                displayText = currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+                break;
+            case 'list':
+                displayText = 'Liste des rendez-vous';
+                break;
+            case 'stats':
+                displayText = 'Statistiques';
+                break;
+            default:
+                displayText = 'Calendrier';
+        }
+        
+        document.getElementById('currentDate').textContent = displayText;
+        document.getElementById('currentYear').textContent = currentDate.getFullYear();
+    }
+
+    // Gestion des vues
+    function switchView(view) {
+        currentView = view;
+        
+        // Update tabs
+        document.querySelectorAll('.view-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.view === view);
+        });
+        
+        showView(view);
+    }
+
+    function showView(view) {
+        // Hide all views
+        document.querySelectorAll('.view-content').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        // Show selected view
+        const viewElement = document.getElementById(`${view}View`);
+        if (viewElement) {
+            viewElement.style.display = 'block';
+            viewElement.classList.add('fade-in');
+        }
+
+        // Render view content
+        switch(view) {
+            case 'day':
+                renderDayView();
+                break;
+            case 'week':
+                renderWeekView();
+                break;
+            case 'month':
+                renderMonthView();
+                break;
+            case 'list':
+                renderListView();
+                break;
+            case 'stats':
+                renderStatsView();
+                break;
+        }
+        
+        // Mettre à jour l'affichage de la date selon la vue
+        updateDateDisplay();
+    }
+
+    // Rendu vue jour
+    function renderDayView() {
+        
+        const container = document.getElementById('dayAppointments');
+        const dayAppointments = getDayAppointments(currentDate);
+        
+        
+        if (dayAppointments.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="empty-title">Aucun rendez-vous</div>
+                    <div class="empty-subtitle">Votre journée est libre</div>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculer la plage horaire nécessaire
+        const timeRange = calculateTimeRange(dayAppointments);
+        
+        // Créer la structure de timeline
+        container.innerHTML = createTimelineStructure(timeRange, dayAppointments);
+        
+        // Ajouter les event listeners pour les RDV
+        setupAppointmentEvents();
+    }
+
+    // Créer la structure HTML de la timeline avec RDV positionnés
+    function createTimelineStructure(timeRange, appointments) {
+        const HOUR_HEIGHT = 80; // Hauteur d'une heure en pixels
+        const totalHours = timeRange.end - timeRange.start + 1;
+        const totalHeight = totalHours * HOUR_HEIGHT;
+        
+        let html = `<div class="timeline-container" style="position: relative; height: ${totalHeight}px;">`;
+        
+        // Créer les lignes d'heures
+        for (let hour = timeRange.start; hour <= timeRange.end; hour++) {
+            const top = (hour - timeRange.start) * HOUR_HEIGHT;
+            html += `
+                <div class="timeline-hour" style="position: absolute; top: ${top}px; left: 0; right: 0; height: ${HOUR_HEIGHT}px; border-bottom: 1px solid #e5e5e5;">
+                    <div class="timeline-hour-label" style="position: absolute; left: 0; top: 0; width: 60px; text-align: center; font-size: 0.9em; color: #666; background: white; padding: 4px 0;">
+                        ${hour.toString().padStart(2, '0')}:00
+                    </div>
+                    <div class="timeline-hour-content" style="margin-left: 70px; height: 100%;"></div>
+                </div>
+            `;
+        }
+        
+        // Ajouter les RDV positionnés
+        appointments.forEach(apt => {
+            const startDate = new Date(apt.start);
+            const endDate = new Date(apt.end);
+            
+            const startHour = startDate.getHours();
+            const startMinutes = startDate.getMinutes();
+            const endHour = endDate.getHours();
+            const endMinutes = endDate.getMinutes();
+            
+            // Calculer la position et la hauteur
+            const startOffset = (startHour - timeRange.start) + (startMinutes / 60);
+            const duration = ((endHour * 60 + endMinutes) - (startHour * 60 + startMinutes)) / 60;
+            
+            const top = startOffset * HOUR_HEIGHT;
+            const height = duration * HOUR_HEIGHT - 2; // -2px pour éviter le chevauchement des bordures
+            
+            html += createAppointmentBlock(apt, top, height);
+        });
+        
+        html += '</div>';
+        return html;
+    }
+
+    // Créer le HTML d'un bloc de RDV positionné
+    function createAppointmentBlock(appointment, top, height) {
+        const service = services.find(s => s.id == appointment.extendedProps.serviceId);
+        const client = clients.find(c => c.id == appointment.extendedProps.clientId);
+        const colorClass = serviceColors[appointment.extendedProps.serviceId] || 'service-color-1';
+        
+        const startTime = new Date(appointment.start).toLocaleTimeString('fr-FR', {
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'Europe/Paris'
+        });
+        
+        const endTime = new Date(appointment.end).toLocaleTimeString('fr-FR', {
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'Europe/Paris'
+        });
+
+        const clientInitials = client ? 
+            (client.firstName.charAt(0) + client.name.charAt(0)).toUpperCase() : '??';
+
+        return `
+            <div class="appointment-timeline-block ${colorClass}" 
+                 data-id="${appointment.id}"
+                 style="position: absolute; 
+                        top: ${top}px; 
+                        height: ${height}px; 
+                        left: 70px; 
+                        right: 10px; 
+                        background: rgba(139, 115, 85, 0.1);
+                        border: 1px solid rgba(139, 115, 85, 0.3);
+                        border-radius: 8px;
+                        padding: 8px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        overflow: hidden;">
+                
+                <div class="appointment-timeline-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                    <div class="appointment-timeline-time" style="font-weight: 600; color: #8B7355; font-size: 0.85em;">
+                        ${startTime} - ${endTime}
+                    </div>
+                    <div class="appointment-timeline-avatar" style="width: 24px; height: 24px; border-radius: 50%; background: #8B7355; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.7em; font-weight: 600;">
+                        ${clientInitials}
+                    </div>
+                </div>
+                
+                <div class="appointment-timeline-service" style="font-weight: 600; color: #333; margin-bottom: 2px; font-size: 0.9em;">
+                    ${appointment.title}
+                </div>
+                
+                <div class="appointment-timeline-client" style="color: #666; font-size: 0.85em;">
+                    ${appointment.extendedProps.clientFirstName} ${appointment.extendedProps.clientName}
+                </div>
+                
+                ${height > 60 ? `
+                    <div class="appointment-timeline-details" style="margin-top: 8px; font-size: 0.8em; color: #888;">
+                        <div>💰 ${appointment.extendedProps.price || service?.price || 0}€</div>
+                        <div>⏱️ ${formatDurationFromMinutes(appointment.extendedProps.duration || service?.duration || 60)}</div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // Formater la durée en minutes vers texte lisible
+    function formatDurationFromMinutes(minutes) {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        
+        if (hours === 0) {
+            return `${mins} min`;
+        } else if (mins === 0) {
+            return `${hours}h`;
+        } else {
+            return `${hours}h${mins.toString().padStart(2, '0')}`;
+        }
+    }
+
+    // Calculer la plage horaire nécessaire pour afficher tous les RDV
+    function calculateTimeRange(appointments) {
+        if (appointments.length === 0) {
+            return { start: 9, end: 18 }; // Défaut 9h-18h
+        }
+
+        let earliestStart = 24;
+        let latestEnd = 0;
+
+        appointments.forEach(apt => {
+            const startHour = new Date(apt.start).getHours();
+            const endHour = new Date(apt.end).getHours();
+            const endMinutes = new Date(apt.end).getMinutes();
+            
+            earliestStart = Math.min(earliestStart, startHour);
+            latestEnd = Math.max(latestEnd, endMinutes > 0 ? endHour + 1 : endHour);
+        });
+
+        // Ajouter une marge d'une heure avant et après
+        return {
+            start: Math.max(7, earliestStart - 1), // Pas avant 7h
+            end: Math.min(22, latestEnd + 1)       // Pas après 22h
+        };
+    }
+
+    // Rendu vue liste
+    function renderListView() {
+        const container = document.getElementById('listAppointments');
+        const upcomingAppointments = getUpcomingAppointments();
+        
+        if (upcomingAppointments.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="empty-title">Aucun rendez-vous à venir</div>
+                    <div class="empty-subtitle">Votre planning est vide</div>
+                </div>
+            `;
+            return;
+        }
+
+        let currentDateStr = '';
+        let html = '';
+
+        upcomingAppointments.forEach(apt => {
+            const aptDate = new Date(apt.start).toLocaleDateString('fr-FR');
+            
+            if (aptDate !== currentDateStr) {
+                currentDateStr = aptDate;
+                html += `<div class="list-date-header">${aptDate}</div>`;
+            }
+            
+            html += renderAppointmentCard(apt);
+        });
+
+        container.innerHTML = html;
+        
+        // Ajouter les event listeners pour les RDV
+        setupAppointmentEvents();
+    }
+
+    // Rendu vue semaine
+    function renderWeekView() {
+        const container = document.getElementById('weekGrid');
+        const weekStart = getWeekStart(currentDate);
+        
+        // Mise à jour de l'affichage de la semaine
+        updateWeekDisplay();
+        
+        const weekDays = [];
+        
+        // Générer les 7 jours de la semaine
+        for (let i = 1; i < 6; i++) {
+            const day = new Date(weekStart);
+            day.setDate(weekStart.getDate() + i);
+            weekDays.push(day);
+        }
+
+        let html = '<div class="week-header">';
+        weekDays.forEach(day => {
+            const isToday = day.toDateString() === new Date().toDateString();
+            const dayAppointments = getDayAppointments(day);
+            
+            html += `
+                <div class="week-day ${isToday ? 'today' : ''}" data-date="${day.toISOString()}">
+                    <div class="week-day-header">
+                        <div class="week-day-name">${day.toLocaleDateString('fr-FR', { weekday: 'short' })}</div>
+                        <div class="week-day-number">${day.getDate()}</div>
+                    </div>
+                    <div class="week-day-appointments">
+                        ${dayAppointments.slice(0, 3).map(apt => `
+                            <div class="week-appointment ${serviceColors[apt.extendedProps.serviceId] || ''}" data-id="${apt.id}">
+                                <div class="week-apt-time">${new Date(apt.start).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris'})}</div>
+                                <div class="week-apt-client">${apt.extendedProps.clientFirstName}</div>
+                            </div>
+                        `).join('')}
+                        ${dayAppointments.length > 3 ? `<div class="week-more">+${dayAppointments.length - 3}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        container.innerHTML = html;
+        
+        // Ajouter les event listeners pour les RDV
+        setupAppointmentEvents();
+    }
+
+    function getWeekStart(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Lundi = début de semaine
+        return new Date(d.setDate(diff));
+    }
+
+    // Mise à jour de l'affichage de la semaine
+    function updateWeekDisplay() {
+        const weekStart = getWeekStart(currentDate);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        
+        const startStr = weekStart.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        const endStr = weekEnd.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        
+        document.getElementById('weekRange').textContent = `${startStr} - ${endStr}`;
+    }
+
+    // Rendu vue mois
+    function renderMonthView() {
+        const container = document.getElementById('monthGrid');
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        // Mise à jour du titre
+        document.getElementById('monthTitle').textContent = 
+            currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        
+        // Première date du calendrier (peut être du mois précédent)
+        const firstDay = new Date(year, month, 1);
+        const startDate = getWeekStart(firstDay);
+        
+        let html = '';
+        
+        // Headers des jours
+        const dayHeaders = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+        dayHeaders.forEach(day => {
+            html += `<div class="month-day-header">${day}</div>`;
+        });
+        
+        // Générer 6 semaines (42 jours)
+        for (let i = 0; i < 42; i++) {
+            const currentDay = new Date(startDate);
+            currentDay.setDate(startDate.getDate() + i);
+            
+            const isCurrentMonth = currentDay.getMonth() === month;
+            const isToday = currentDay.toDateString() === new Date().toDateString();
+            const dayAppointments = getDayAppointments(currentDay);
+            
+            const classes = [
+                'month-day',
+                !isCurrentMonth ? 'other-month' : '',
+                isToday ? 'today' : ''
+            ].filter(c => c).join(' ');
+            
+            html += `
+                <div class="${classes}" data-date="${currentDay.toISOString()}">
+                    <div class="month-day-number">${currentDay.getDate()}</div>
+                    <div class="month-appointments">
+                        ${dayAppointments.slice(0, 2).map(apt => `
+                            <div class="month-appointment ${serviceColors[apt.extendedProps.serviceId] || ''}" data-id="${apt.id}">
+                                ${new Date(apt.start).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris'})} ${apt.extendedProps.clientFirstName}
+                            </div>
+                        `).join('')}
+                        ${dayAppointments.length > 2 ? `<div class="month-more">+${dayAppointments.length - 2}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+        
+        // Ajouter les event listeners pour cliquer sur un jour
+        container.querySelectorAll('.month-day').forEach(dayEl => {
+            dayEl.addEventListener('click', (e) => {
+                const clickedDate = new Date(e.currentTarget.dataset.date);
+                currentDate = clickedDate;
+                switchView('day');
+            });
+        });
+    }
+
+    // Rendu vue statistiques
+    function renderStatsView() {
+        updateStats();
+        renderCharts();
+    }
+
+    // Mise à jour des statistiques
+    function updateStats() {
+        const period = document.getElementById('statsPeriod').value;
+        const filteredAppointments = getFilteredAppointments(period);
+        
+        // KPIs
+        document.getElementById('totalAppointments').textContent = filteredAppointments.length;
+        
+        const totalRevenue = filteredAppointments.reduce((sum, apt) => {
+            const service = services.find(s => s.id == apt.extendedProps.serviceId);
+            return sum + (service ? service.price : 0);
+        }, 0);
+        document.getElementById('totalRevenue').textContent = totalRevenue + '€';
+        
+        const uniqueClients = new Set(filteredAppointments.map(apt => apt.extendedProps.clientId));
+        document.getElementById('totalClients').textContent = uniqueClients.size;
+        
+        const avgTicket = filteredAppointments.length > 0 ? Math.round(totalRevenue / filteredAppointments.length) : 0;
+        document.getElementById('avgTicket').textContent = avgTicket + '€';
+        
+        // Top clients
+        updateTopClients(filteredAppointments);
+    }
+
+    function getFilteredAppointments(period) {
+        const now = new Date();
+        let startDate;
+        
+        switch(period) {
+            case 'month':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                break;
+            case 'quarter':
+                const quarter = Math.floor(now.getMonth() / 3);
+                startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                break;
+            case 'year':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                break;
+            case 'all':
+            default:
+                startDate = new Date(2020, 0, 1); // Date très ancienne
+                break;
+        }
+        
+        return appointments.filter(apt => new Date(apt.start) >= startDate);
+    }
+
+    function updateTopClients(filteredAppointments) {
+        const clientStats = {};
+        
+        filteredAppointments.forEach(apt => {
+            const clientId = apt.extendedProps.clientId;
+            const service = services.find(s => s.id == apt.extendedProps.serviceId);
+            const price = service ? service.price : 0;
+            
+            if (!clientStats[clientId]) {
+                clientStats[clientId] = {
+                    name: `${apt.extendedProps.clientFirstName} ${apt.extendedProps.clientName}`,
+                    count: 0,
+                    total: 0
+                };
+            }
+            
+            clientStats[clientId].count++;
+            clientStats[clientId].total += price;
+        });
+        
+        const topClients = Object.values(clientStats)
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 5);
+        
+        let html = '';
+        topClients.forEach((client, index) => {
+            html += `
+                <div class="top-item">
+                    <div class="top-item-info">
+                        <div class="top-item-name">#${index + 1} ${client.name}</div>
+                        <div class="top-item-details">${client.count} rendez-vous</div>
+                    </div>
+                    <div class="top-item-value">${client.total}€</div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('topClients').innerHTML = html || '<div class="empty-state">Aucune donnée</div>';
+    }
+
+    // Graphiques avec Chart.js
+    let servicesChart, monthlyChart, hourlyChart;
+
+    function renderCharts() {
+        const period = document.getElementById('statsPeriod').value;
+        const filteredAppointments = getFilteredAppointments(period);
+        
+        renderServicesChart(filteredAppointments);
+        renderMonthlyChart(filteredAppointments);
+        renderHourlyChart(filteredAppointments);
+    }
+
+    function renderServicesChart(filteredAppointments) {
+        const ctx = document.getElementById('servicesChart').getContext('2d');
+        
+        // Destruction du graphique précédent
+        if (servicesChart) {
+            servicesChart.destroy();
+        }
+        
+        const serviceStats = {};
+        filteredAppointments.forEach(apt => {
+            const serviceId = apt.extendedProps.serviceId;
+            const service = services.find(s => s.id == serviceId);
+            const serviceName = service ? service.name : 'Service inconnu';
+            
+            serviceStats[serviceName] = (serviceStats[serviceName] || 0) + 1;
+        });
+        
+        const colors = [
+            'rgb(162, 78, 50)', 'rgb(200, 149, 109)', 'rgb(184, 149, 109)', 
+            'rgb(166, 124, 82)', 'rgb(139, 115, 85)', 'rgb(155, 139, 114)'
+        ];
+        
+        servicesChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(serviceStats),
+                datasets: [{
+                    data: Object.values(serviceStats),
+                    backgroundColor: colors,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+
+    function renderMonthlyChart(filteredAppointments) {
+        const ctx = document.getElementById('monthlyChart').getContext('2d');
+        
+        if (monthlyChart) {
+            monthlyChart.destroy();
+        }
+        
+        const monthlyStats = {};
+        filteredAppointments.forEach(apt => {
+            const date = new Date(apt.start);
+            const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+            
+            if (!monthlyStats[monthKey]) {
+                monthlyStats[monthKey] = { count: 0, revenue: 0 };
+            }
+            
+            monthlyStats[monthKey].count++;
+            const service = services.find(s => s.id == apt.extendedProps.serviceId);
+            monthlyStats[monthKey].revenue += service ? service.price : 0;
+        });
+        
+        const sortedMonths = Object.keys(monthlyStats).sort();
+        
+        monthlyChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sortedMonths.map(month => {
+                    const [year, monthNum] = month.split('-');
+                    return new Date(year, monthNum - 1).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Chiffre d\'affaires',
+                    data: sortedMonths.map(month => monthlyStats[month].revenue),
+                    borderColor: 'rgb(162, 78, 50)',
+                    backgroundColor: 'rgba(162, 78, 50, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '€';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderHourlyChart(filteredAppointments) {
+        const ctx = document.getElementById('hourlyChart').getContext('2d');
+        
+        if (hourlyChart) {
+            hourlyChart.destroy();
+        }
+        
+        const hourlyStats = {};
+        for (let hour = 9; hour <= 19; hour++) {
+            hourlyStats[hour] = 0;
+        }
+        
+        filteredAppointments.forEach(apt => {
+            const hour = new Date(apt.start).getHours();
+            if (hourlyStats[hour] !== undefined) {
+                hourlyStats[hour]++;
+            }
+        });
+        
+        hourlyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(hourlyStats).map(hour => hour + 'h'),
+                datasets: [{
+                    label: 'Rendez-vous',
+                    data: Object.values(hourlyStats),
+                    backgroundColor: 'rgba(162, 78, 50, 0.8)',
+                    borderColor: 'rgb(162, 78, 50)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Sélecteur d'année
+    function setupYearSelector() {
+        const yearSelector = document.getElementById('yearSelector');
+        
+        yearSelector.addEventListener('click', (e) => {
+            if (e.target === yearSelector) {
+                hideYearSelector();
+            }
+        });
+    }
+
+    function showYearSelector() {
+        const yearGrid = document.getElementById('yearGrid');
+        const currentYear = new Date().getFullYear();
+        
+        let html = '';
+        for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+            const isCurrentYear = year === currentDate.getFullYear();
+            html += `
+                <div class="year-item ${isCurrentYear ? 'current' : ''}" data-year="${year}">
+                    ${year}
+                </div>
+            `;
+        }
+        
+        yearGrid.innerHTML = html;
+        
+        // Event listeners pour les années
+        yearGrid.querySelectorAll('.year-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const selectedYear = parseInt(e.target.dataset.year);
+                currentDate.setFullYear(selectedYear);
+                updateDateDisplay();
+                showView(currentView);
+                hideYearSelector();
+            });
+        });
+        
+        document.getElementById('yearSelector').style.display = 'flex';
+    }
+
+    function hideYearSelector() {
+        document.getElementById('yearSelector').style.display = 'none';
+    }
+
+    // Gestion du modal des RDV
+    let currentAppointment = null;
+    let originalDuration = null;
+
+    function setupAppointmentModal() {
+        // Fermeture du modal
+        document.getElementById('closeAppointmentModal').addEventListener('click', hideAppointmentModal);
+        document.getElementById('appointmentModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('appointmentModal')) {
+                hideAppointmentModal();
+            }
+        });
+
+        // Actions du modal
+        document.getElementById('editAppointmentBtn').addEventListener('click', editAppointment);
+        document.getElementById('changeDurationBtn').addEventListener('click', toggleDurationEditor);
+        document.getElementById('deleteAppointmentBtn').addEventListener('click', deleteAppointment);
+        document.getElementById('saveDurationBtn').addEventListener('click', saveDuration);
+        document.getElementById('cancelDurationBtn').addEventListener('click', cancelDurationEdit);
+
+        // Boutons de durée prédéfinie
+        document.querySelectorAll('.duration-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const minutes = parseInt(e.target.dataset.minutes);
+                if (minutes) {
+                    selectDuration(minutes);
+                    document.getElementById('customDuration').value = minutes;
+                }
+            });
+        });
+
+        // Durée personnalisée
+        document.getElementById('customDuration').addEventListener('input', (e) => {
+            const minutes = parseInt(e.target.value);
+            if (minutes && minutes >= 5) {
+                selectDuration(minutes);
+            }
+        });
+    }
+
+    function showAppointmentModal(appointment) {
+        currentAppointment = appointment;
+        const service = services.find(s => s.id == appointment.extendedProps.serviceId);
+        originalDuration = appointment.extendedProps.duration || (service ? service.duration : 60);
+
+        // Remplir les informations
+        document.getElementById('appointmentClientName').textContent = 
+            `${appointment.extendedProps.clientFirstName} ${appointment.extendedProps.clientName}`;
+        document.getElementById('appointmentServiceName').textContent = 
+            service ? service.name : 'Service inconnu';
+        
+        const startDate = new Date(appointment.start);
+        const endDate = new Date(appointment.end);
+        document.getElementById('appointmentDateTime').textContent = 
+            startDate.toLocaleDateString('fr-FR', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        
+        const durationMinutes = Math.round((endDate - startDate) / (1000 * 60));
+        document.getElementById('appointmentDuration').textContent = formatDuration(durationMinutes);
+        document.getElementById('appointmentPrice').textContent = service ? service.price + '€' : 'N/A';
+
+        // Réinitialiser l'éditeur de durée
+        document.getElementById('durationEditor').style.display = 'none';
+        document.getElementById('changeDurationBtn').style.display = 'block';
+        document.getElementById('saveDurationBtn').style.display = 'none';
+        document.getElementById('cancelDurationBtn').style.display = 'none';
+        document.getElementById('customDuration').value = durationMinutes;
+        
+        // Afficher le modal
+        document.getElementById('appointmentModal').style.display = 'flex';
+    }
+
+    function hideAppointmentModal() {
+        document.getElementById('appointmentModal').style.display = 'none';
+        currentAppointment = null;
+        originalDuration = null;
+    }
+
+    function editAppointment() {
+        if (currentAppointment) {
+            hideAppointmentModal();
+            // Rediriger vers la page d'édition des RDV
+            window.location.href = `/appointment/${currentAppointment.id}/editer`;
+        }
+    }
+
+    function toggleDurationEditor() {
+        const editor = document.getElementById('durationEditor');
+        const isVisible = editor.style.display !== 'none';
+        
+        editor.style.display = isVisible ? 'none' : 'block';
+        document.getElementById('changeDurationBtn').style.display = isVisible ? 'block' : 'none';
+        document.getElementById('saveDurationBtn').style.display = isVisible ? 'none' : 'block';
+        document.getElementById('cancelDurationBtn').style.display = isVisible ? 'none' : 'block';
+        
+        if (!isVisible) {
+            // Sélectionner la durée actuelle
+            const currentDuration = originalDuration;
+            selectDuration(currentDuration);
+            document.getElementById('customDuration').value = currentDuration;
+        }
+    }
+
+    function selectDuration(minutes) {
+        // Désélectionner tous les boutons
+        document.querySelectorAll('.duration-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Sélectionner le bouton correspondant
+        const btn = document.querySelector(`[data-minutes="${minutes}"]`);
+        if (btn) {
+            btn.classList.add('active');
+        }
+    }
+
+    function saveDuration() {
+        const newDuration = parseInt(document.getElementById('customDuration').value);
+        
+        if (!newDuration || newDuration < 5) {
+            alert('Veuillez saisir une durée valide (minimum 5 minutes)');
+            return;
+        }
+
+        if (!currentAppointment) return;
+
+        // Calculer la nouvelle heure de fin
+        const startDate = new Date(currentAppointment.start);
+        const newEndDate = new Date(startDate.getTime() + (newDuration * 60 * 1000));
+
+        // Mettre à jour l'appointment
+        currentAppointment.end = newEndDate.toISOString();
+        currentAppointment.extendedProps.duration = newDuration;
+
+        // Faire la requête AJAX pour sauvegarder
+        updateAppointmentDuration(currentAppointment.id, newDuration)
+            .then(() => {
+                // Mettre à jour l'affichage
+                document.getElementById('appointmentDuration').textContent = formatDuration(newDuration);
+                originalDuration = newDuration;
+                
+                // Fermer l'éditeur
+                toggleDurationEditor();
+                
+                // Rafraîchir la vue
+                showView(currentView);
+                
+                            })
+            .catch(error => {
+                console.error('Erreur lors de la mise à jour:', error);
+    
             });
     }
 
-    loadOptions();
+    function cancelDurationEdit() {
+        toggleDurationEditor();
+        document.getElementById('customDuration').value = originalDuration;
+        selectDuration(originalDuration);
+    }
 
-    // Met à jour la durée du service lorsqu'un service est sélectionné dans le modal de création
-    document.getElementById('serviceId').addEventListener('change', function(e) {
-        updateServiceDuration('');
-    });
+    function deleteAppointment() {
+        if (!currentAppointment) return;
 
-    // Met à jour la durée du service lorsqu'un service est sélectionné dans le modal de modification
-    document.getElementById('editServiceId').addEventListener('change', function(e) {
-        updateServiceDuration('edit');
-    });
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')) {
+            // Faire la requête AJAX pour supprimer
+            deleteAppointmentById(currentAppointment.id)
+                .then(() => {
+                    // Retirer de la liste locale
+                    appointments = appointments.filter(apt => apt.id !== currentAppointment.id);
+                    
+                    hideAppointmentModal();
+                    showView(currentView);
+                    
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la suppression:', error);
+                });
+        }
+    }
 
-    // Crée un nouveau rendez-vous
-    saveButton.addEventListener('click', function() {
+    function formatDuration(minutes) {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        
+        if (hours === 0) {
+            return `${mins} min`;
+        } else if (mins === 0) {
+            return `${hours}h`;
+        } else {
+            return `${hours}h${mins.toString().padStart(2, '0')}`;
+        }
+    }
+
+    // API calls pour mise à jour et suppression
+    async function updateAppointmentDuration(appointmentId, newDuration) {
+        // Récupérer l'appointment complet depuis la liste locale
+        const appointment = appointments.find(apt => apt.id == appointmentId);
+        if (!appointment) {
+            throw new Error('Rendez-vous introuvable');
+        }
+
+        // Calculer la nouvelle heure de fin
+        const startDate = new Date(appointment.start);
+        const newEndDate = new Date(startDate.getTime() + (newDuration * 60 * 1000));
+
+        const response = await fetch('{{ path('app_appointment_update') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ 
+                id: appointmentId,
+                date: appointment.start,
+                endDate: newEndDate.toISOString(),
+                serviceId: appointment.extendedProps.serviceId,
+                clientId: appointment.extendedProps.clientId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur réseau');
+        }
+
+        return response.json();
+    }
+
+    async function deleteAppointmentById(appointmentId) {
+        const response = await fetch('{{ path('app_appointment_delete') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ id: appointmentId })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur réseau');
+        }
+
+        const result = await response.json();
+        return result.success;
+    }
+
+
+
+    // Mise à jour de la fonction de clic sur les RDV
+    function setupAppointmentEvents() {
+        document.querySelectorAll('.appointment-card, .week-appointment, .month-appointment, .appointment-timeline-block').forEach(card => {
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const appointmentId = card.dataset.id;
+                const appointment = appointments.find(apt => apt.id == appointmentId);
+                if (appointment) {
+                    showAppointmentModal(appointment);
+                }
+            });
+        });
+    }
+
+    // Génération des créneaux horaires
+    function generateTimeSlots() {
+        const slots = [];
+        for (let hour = 9; hour <= 19; hour++) {
+            slots.push(`${hour.toString().padStart(2, '0')}:00`);
+        }
+        return slots;
+    }
+
+    // Rendu carte RDV
+    function renderAppointmentCard(appointment) {
+        const service = services.find(s => s.id == appointment.extendedProps.serviceId);
+        const client = clients.find(c => c.id == appointment.extendedProps.clientId);
+        const colorClass = serviceColors[appointment.extendedProps.serviceId] || '';
+        
+        const startTime = new Date(appointment.start).toLocaleTimeString('fr-FR', {
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'Europe/Paris'
+        });
+        
+        const endTime = new Date(appointment.end).toLocaleTimeString('fr-FR', {
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'Europe/Paris'
+        });
+
+        const clientInitials = client ? 
+            (client.firstName.charAt(0) + client.name.charAt(0)).toUpperCase() : '??';
+
+        return `
+            <div class="appointment-card ${colorClass}" data-id="${appointment.id}">
+                <div class="appointment-header">
+                    <div class="appointment-service">${appointment.title}</div>
+                    <div class="appointment-time">${startTime} - ${endTime}</div>
+                </div>
+                <div class="appointment-client">
+                    <div class="client-avatar">${clientInitials}</div>
+                    <div class="client-info">
+                        <div class="client-name">${appointment.extendedProps.clientFirstName} ${appointment.extendedProps.clientName}</div>
+                    </div>
+                </div>
+                <div class="appointment-details">
+                    <div class="appointment-duration">
+                        <i class="fas fa-clock"></i>
+                        ${(() => {
+                            const duration = appointment.extendedProps.duration || service?.duration || Math.round((new Date(appointment.end) - new Date(appointment.start)) / (1000 * 60));
+                            return formatDuration(duration);
+                        })()}
+                    </div>
+                    <div class="appointment-price">
+                        ${appointment.extendedProps.price || service?.price || 0}€
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Utilitaires de données
+    function getDayAppointments(date) {
+    
+        const filtered = appointments.filter(appointment => {
+            const appointmentDate = new Date(appointment.start);
+            const match = appointmentDate.toDateString() === date.toDateString();
+            return match;
+        })
+            .sort((a, b) => new Date(a.start) - new Date(b.start))
+            .slice(0, 20);
+        
+        return filtered;
+    }
+
+    function getUpcomingAppointments() {
+        const now = new Date();
+        return appointments
+            .filter(apt => new Date(apt.start) >= now)
+            .sort((a, b) => new Date(a.start) - new Date(b.start))
+            .slice(0, 20); // Limite à 20 RDV
+    }
+
+    // Chargement des données
+    function loadData() {
+        Promise.all([
+            loadAppointments(),
+            loadServices(),
+            loadClients()
+        ]).then(() => {
+    
+            renderDayView();
+        }).catch(error => {
+            console.error('Erreur lors du chargement des données:', error);
+            showToast('Erreur lors du chargement des données', 'error');
+        });
+    }
+
+    function loadAppointments() {
+        return fetch('{{ path('app_calendar_events') }}')
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                appointments = data;
+            })
+            .catch(error => {
+                console.error('Erreur chargement RDV:', error);
+            });
+    }
+
+    function loadServices() {
+        return fetch('{{ path('app_get_services') }}')
+            .then(response => response.json())
+            .then(data => {
+                services = data;
+                populateServiceSelect();
+            })
+            .catch(error => {
+                console.error('Erreur chargement services:', error);
+            });
+    }
+
+    function loadClients() {
+        return fetch('{{ path('app_get_clients') }}')
+            .then(response => response.json())
+            .then(data => {
+                clients = data;
+                populateClientSelect();
+            })
+            .catch(error => {
+                console.error('Erreur chargement clients:', error);
+            });
+    }
+
+    function populateServiceSelect() {
+        const select = document.getElementById('serviceSelect');
+        if (!select) {
+            console.error('Élément serviceSelect introuvable');
+            return;
+        }
+        
+        // Vider les options existantes sauf la première
+        while (select.children.length > 1) {
+            select.removeChild(select.lastChild);
+        }
+        
+        services.forEach(service => {
+            const option = document.createElement('option');
+            option.value = service.id;
+            option.textContent = service.name;
+            select.appendChild(option);
+        });
+    }
+
+    function populateClientSelect() {
+        const select = document.getElementById('clientSelect');
+        if (!select) {
+            console.error('Élément clientSelect introuvable');
+            return;
+        }
+        
+        // Vider les options existantes sauf la première
+        while (select.children.length > 1) {
+            select.removeChild(select.lastChild);
+        }
+        
+        clients.forEach(client => {
+            const option = document.createElement('option');
+            option.value = client.id;
+            option.textContent = `${client.firstName} ${client.name}`;
+            select.appendChild(option);
+        });
+    }
+
+    // Modal management
+    function showNewAppointmentModal() {
+        const modal = document.getElementById('newAppointmentModal');
+        modal.classList.add('show');
+        
+        // Set default date to current selected date
+        const dateInput = document.getElementById('appointmentDate');
+        const defaultDateTime = new Date(currentDate);
+        defaultDateTime.setHours(9, 0, 0, 0);
+        dateInput.value = defaultDateTime.toISOString().slice(0, 16);
+    }
+
+    function hideNewAppointmentModal() {
+        const modal = document.getElementById('newAppointmentModal');
+        modal.classList.remove('show');
+    }
+
+    // Configuration du modal de nouveau RDV
+    function setupNewAppointmentModal() {
+        // Fermeture du modal
+        document.querySelectorAll('#newAppointmentModal .modal-close').forEach(btn => {
+            btn.addEventListener('click', hideNewAppointmentModal);
+        });
+        
+        document.getElementById('newAppointmentModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('newAppointmentModal')) {
+                hideNewAppointmentModal();
+            }
+        });
+
+        // Bouton de sauvegarde
+        document.getElementById('saveAppointment').addEventListener('click', saveAppointment);
+    }
+
+    function saveAppointment() {
+        const form = document.getElementById('appointmentForm');
         const formData = new FormData(form);
         const data = Object.fromEntries(formData);
 
+        if (!data.date || !data.serviceId || !data.clientId) {
+            showToast('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
         const selectedService = services.find(s => s.id == data.serviceId);
+        if (!selectedService) {
+            showToast('Service introuvable', 'error');
+            return;
+        }
+
+
         const startDate = new Date(data.date);
-        const endDate = new Date(startDate.getTime() + selectedService.duration * 60000);
+        const durationInMinutes = parseInt(selectedService.duration) || 0;
+        const durationInMs = durationInMinutes * 60000;
+        const endDate = new Date(startDate.getTime() + durationInMs);
+        
+        // Formater l'endDate dans le même format que la date de début (format local)
+        const year = endDate.getFullYear();
+        const month = String(endDate.getMonth() + 1).padStart(2, '0');
+        const day = String(endDate.getDate()).padStart(2, '0');
+        const hours = String(endDate.getHours()).padStart(2, '0');
+        const minutes = String(endDate.getMinutes()).padStart(2, '0');
+        
+        data.endDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+        
 
-        data.endDate = endDate.toISOString();
-
-        creerRendezVous(data);
-    });
-
-    // Envoie les données pour créer un rendez-vous
-    function creerRendezVous(data) {
         fetch('{{ path('app_appointment_create') }}', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body: JSON.stringify(data)
         })
         .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                calendar.addEvent({
-                    id: data.id,
-                    title: data.serviceName,
-                    start: data.date,
-                    end: data.endDate,
+        .then(result => {
+            if (result.success) {
+                // Add to local appointments array
+                appointments.push({
+                    id: result.id,
+                    title: result.serviceName,
+                    start: result.date,
+                    end: result.endDate,
                     extendedProps: {
-                        clientName: data.clientName,
-                        clientFirstName: data.clientFirstName,
-                        serviceId: data.serviceId,
-                        clientId: data.clientId
+                        clientName: result.clientName,
+                        clientFirstName: result.clientFirstName,
+                        serviceId: result.serviceId,
+                        clientId: result.clientId,
+                        duration: selectedService.duration,
+                        price: selectedService.price
                     }
                 });
-                modal.hide(); // Cache le modal après création
+                
+                hideNewAppointmentModal();
+                form.reset();
+                showView(currentView);
+                showToast('Rendez-vous créé avec succès', 'success');
             } else {
-                alert('Erreur lors de la création du rendez-vous');
-            }
-        });
-    }
-
-    // Modifie un rendez-vous existant
-    function modifierRendezVous(data, isEdit) {
-        fetch('{{ path('app_appointment_update') }}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                let event = calendar.getEventById(data.id);
-                if (event) {
-                    event.remove(); // Supprime l'événement existant
-                }
-                let startDate = new Date(data.date);
-                if(!isEdit){
-                    startDate.setHours(startDate.getHours() - 2); // Ajuste la date pour l'édition si nécessaire
-                }
-
-                calendar.addEvent({
-                    id: data.id,
-                    title: data.serviceName,
-                    start: startDate.toISOString(),
-                    end: data.endDate,
-                    extendedProps: {
-                        clientName: data.clientName,
-                        clientFirstName: data.clientFirstName,
-                        serviceId: data.serviceId,
-                        clientId: data.clientId
-                    }
-                });
-                editModal.hide(); // Cache le modal après modification
-            } else {
-                alert('Erreur lors de la modification du rendez-vous');
-                calendar.refetchEvents(); // Recharger les événements si la modification échoue
-            }
-        });
-    }
-
-    // Supprime un rendez-vous
-    function supprimerRendezVous(id) {
-        fetch('{{ path('app_appointment_delete') }}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: id })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                calendar.getEventById(id).remove(); // Supprime l'événement du calendrier
-                editModal.hide(); // Cache le modal après suppression
-            } else {
-                alert('Erreur lors de la suppression du rendez-vous');
+                showToast('Erreur lors de la création: ' + (result.error || 'Erreur inconnue'), 'error');
             }
         })
         .catch(error => {
             console.error('Erreur:', error);
-            alert('Une erreur est survenue lors de la suppression du rendez-vous');
+            showToast('Erreur de connexion', 'error');
         });
     }
-
-    // Gère la modification du rendez-vous lorsque le bouton est cliqué
-    updateButton.addEventListener('click', function() {
-        const formData = new FormData(editForm);
-        const data = Object.fromEntries(formData);
-        const selectedService = services.find(s => s.id == data.serviceId);
-        const startDate = new Date(data.date);
-        const endDate = new Date(startDate.getTime() + selectedService.duration * 60000);
-        data.endDate = endDate.toISOString();
-        modifierRendezVous(data);
-    });
-
-    // Ouvre le modal de modification lorsque le bouton de modification est cliqué
-    document.getElementById('editAppointmentBtn').addEventListener('click', function() {
-        openEditModal(currentEventId);
-    });
-
-    // Supprime le rendez-vous lorsqu'on confirme la suppression
-    document.getElementById('deleteAppointmentBtn').addEventListener('click', function() {
-        if (confirm("Êtes-vous sûr de vouloir supprimer ce rendez-vous ?")) {
-            supprimerRendezVous(currentEventId);
-        }
-    });
 });
 </script>
+{% endblock %}
+
+{% block body %}
+<div class="mobile-calendar">
+    <!-- Header mobile -->
+    <div class="mobile-header">
+        <div class="header-top">
+            <div class="header-title">
+                <i class="fas fa-calendar-alt"></i>
+                Calendrier
+            </div>
+            <div class="header-date" id="headerDate">
+                {{ "now"|date("d M Y") }}
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="mobile-nav">
+            <button class="nav-btn" id="prevPeriod">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="nav-current-date" id="currentDate">
+                Aujourd'hui
+            </div>
+            <button class="nav-btn" id="nextPeriod">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation rapide -->
+        <div class="quick-nav">
+            <button class="quick-nav-btn" id="todayBtn">
+                <i class="fas fa-home"></i>
+                Aujourd'hui
+            </button>
+            <button class="quick-nav-btn" id="yearViewBtn">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="currentYear">2024</span>
+            </button>
+        </div>
+
+        <!-- Vue tabs -->
+        <div class="view-tabs">
+            <button class="view-tab active" data-view="day">
+                <i class="fas fa-calendar-day"></i>
+                Jour
+            </button>
+            <button class="view-tab" data-view="week">
+                <i class="fas fa-calendar-week"></i>
+                Semaine
+            </button>
+            <button class="view-tab" data-view="month">
+                <i class="fas fa-calendar"></i>
+                Mois
+            </button>
+            <button class="view-tab" data-view="list">
+                <i class="fas fa-list"></i>
+                Liste
+            </button>
+            <button class="view-tab" data-view="stats">
+                <i class="fas fa-chart-bar"></i>
+                Stats
+            </button>
+        </div>
+    </div>
+
+    <!-- Vue Jour -->
+    <div class="day-view view-content" id="dayView">
+        <div class="day-header">
+            <div class="day-title" id="dayTitle">Aujourd'hui</div>
+            <div class="day-subtitle">Vos rendez-vous du jour</div>
+        </div>
+        
+        <div class="timeline" id="dayAppointments">
+            <!-- Les RDV seront chargés ici -->
+        </div>
+    </div>
+
+    <!-- Vue Liste -->
+    <div class="list-view view-content" id="listView" style="display: none;">
+        <div class="list-filters">
+            <div class="filter-row">
+                <input type="text" class="filter-input" placeholder="Rechercher un client..." id="searchClient">
+            </div>
+            <div class="filter-row">
+                <select class="filter-input" id="filterService">
+                    <option value="">Tous les services</option>
+                </select>
+                <input type="date" class="filter-input" id="filterDate">
+            </div>
+        </div>
+        
+        <div id="listAppointments">
+            <!-- Les RDV seront chargés ici -->
+        </div>
+    </div>
+
+    <!-- Vue Semaine -->
+    <div class="week-view view-content" id="weekView" style="display: none;">
+        <div class="week-nav">
+            <button class="week-nav-btn" id="prevWeek">
+                <i class="fas fa-chevron-left"></i>
+                Semaine précédente
+            </button>
+            <div class="week-range" id="weekRange">
+                <!-- Range de la semaine -->
+            </div>
+            <button class="week-nav-btn" id="nextWeek">
+                Semaine suivante
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="week-grid" id="weekGrid">
+            <!-- La semaine sera chargée ici -->
+        </div>
+    </div>
+
+    <!-- Vue Mois -->
+    <div class="month-view view-content" id="monthView" style="display: none;">
+        <div class="month-nav">
+            <button class="month-nav-btn" id="prevMonth">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="month-title" id="monthTitle">
+                <!-- Titre du mois -->
+            </div>
+            <button class="month-nav-btn" id="nextMonth">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="month-grid" id="monthGrid">
+            <!-- Le mois sera chargé ici -->
+        </div>
+    </div>
+
+    <!-- Vue Statistiques -->
+    <div class="stats-view view-content" id="statsView" style="display: none;">
+        <div class="stats-header">
+            <h2>Statistiques L'Atelier de Marie</h2>
+            <div class="stats-period">
+                <select id="statsPeriod" class="form-input-mobile">
+                    <option value="month">Ce mois</option>
+                    <option value="quarter">Ce trimestre</option>
+                    <option value="year">Cette année</option>
+                    <option value="all">Tout</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- KPIs rapides -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-number" id="totalAppointments">0</div>
+                    <div class="kpi-label">Rendez-vous</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-number" id="totalRevenue">0€</div>
+                    <div class="kpi-label">Chiffre d'affaires</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-number" id="totalClients">0</div>
+                    <div class="kpi-label">Clients uniques</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-number" id="avgTicket">0€</div>
+                    <div class="kpi-label">Ticket moyen</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3>Répartition par service</h3>
+                <canvas id="servicesChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Évolution mensuelle</h3>
+                <canvas id="monthlyChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Top clients</h3>
+                <div id="topClients" class="top-list">
+                    <!-- Top clients sera chargé ici -->
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>Répartition horaire</h3>
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sélecteur d'année -->
+    <div class="year-selector" id="yearSelector" style="display: none;">
+        <div class="year-grid" id="yearGrid">
+            <!-- Les années seront chargées ici -->
+        </div>
+    </div>
+
+    <!-- Modal de gestion des RDV -->
+    <div class="appointment-modal" id="appointmentModal" style="display: none;">
+        <div class="appointment-modal-content">
+            <div class="appointment-modal-header">
+                <h3 id="appointmentModalTitle">Gérer le rendez-vous</h3>
+                <button class="close-btn" id="closeAppointmentModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="appointment-modal-body">
+                <div class="appointment-info">
+                    <div class="appointment-detail">
+                        <i class="fas fa-user"></i>
+                        <span id="appointmentClientName">Client</span>
+                    </div>
+                    <div class="appointment-detail">
+                        <i class="fas fa-cut"></i>
+                        <span id="appointmentServiceName">Service</span>
+                    </div>
+                    <div class="appointment-detail">
+                        <i class="fas fa-clock"></i>
+                        <span id="appointmentDateTime">Date et heure</span>
+                    </div>
+                    <div class="appointment-detail">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span id="appointmentDuration">Durée</span>
+                    </div>
+                    <div class="appointment-detail">
+                        <i class="fas fa-euro-sign"></i>
+                        <span id="appointmentPrice">Prix</span>
+                    </div>
+                </div>
+
+                <div class="duration-editor" id="durationEditor" style="display: none;">
+                    <h4>Modifier la durée</h4>
+                    <div class="duration-controls">
+                        <button class="duration-btn" data-minutes="15">15 min</button>
+                        <button class="duration-btn" data-minutes="30">30 min</button>
+                        <button class="duration-btn" data-minutes="45">45 min</button>
+                        <button class="duration-btn" data-minutes="60">1h</button>
+                        <button class="duration-btn" data-minutes="90">1h30</button>
+                        <button class="duration-btn" data-minutes="120">2h</button>
+                    </div>
+                    <div class="custom-duration">
+                        <label for="customDuration">Durée personnalisée (minutes) :</label>
+                        <input type="number" id="customDuration" min="5" max="480" step="5" class="form-input-mobile">
+                    </div>
+                </div>
+            </div>
+
+            <div class="appointment-modal-actions">
+                <button class="action-btn edit-btn" id="editAppointmentBtn">
+                    <i class="fas fa-edit"></i>
+                    Modifier
+                </button>
+                <button class="action-btn duration-btn-toggle" id="changeDurationBtn">
+                    <i class="fas fa-clock"></i>
+                    Changer durée
+                </button>
+                <button class="action-btn delete-btn" id="deleteAppointmentBtn">
+                    <i class="fas fa-trash"></i>
+                    Supprimer
+                </button>
+                <button class="action-btn save-btn" id="saveDurationBtn" style="display: none;">
+                    <i class="fas fa-save"></i>
+                    Sauvegarder
+                </button>
+                <button class="action-btn cancel-btn" id="cancelDurationBtn" style="display: none;">
+                    <i class="fas fa-times"></i>
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bouton flottant -->
+    <button class="fab" id="newAppointmentBtn">
+        <i class="fas fa-plus"></i>
+    </button>
+</div>
+
+<!-- Modal Nouveau RDV -->
+<div class="mobile-modal" id="newAppointmentModal">
+    <div class="modal-content-mobile">
+        <div class="modal-header-mobile">
+            <div class="modal-title-mobile">Nouveau Rendez-vous</div>
+            <button class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body-mobile">
+            <form id="appointmentForm">
+                <div class="form-group-mobile">
+                    <label class="form-label-mobile">Date et heure</label>
+                    <input type="datetime-local" class="form-input-mobile" id="appointmentDate" name="date" required>
+                </div>
+                <div class="form-group-mobile">
+                    <label class="form-label-mobile">Service</label>
+                    <select class="form-input-mobile" id="serviceSelect" name="serviceId" required>
+                        <option value="">Choisir un service</option>
+                    </select>
+                </div>
+                <div class="form-group-mobile">
+                    <label class="form-label-mobile">Client</label>
+                    <select class="form-input-mobile" id="clientSelect" name="clientId" required>
+                        <option value="">Choisir un client</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-mobile">
+            <button type="button" class="btn-mobile btn-secondary-mobile modal-close">Annuler</button>
+            <button type="button" class="btn-mobile btn-primary-mobile" id="saveAppointment">Créer</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
