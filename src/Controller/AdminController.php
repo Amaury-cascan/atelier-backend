@@ -25,18 +25,31 @@ class AdminController extends AbstractController
         $today = new DateTime('now', $timezone);
         $currentWeek = $today->format('W');
         $currentMonth = $today->format('Y-m');
+        // le mois d'avant
+        $lastMonth = $today->modify('-1 month')->format('Y-m');
+        // le mois encore avant 
+        $lastMonth2 = $today->modify('-1 month')->format('Y-m');
+        // le mois encore avant 
+        $lastMonth3 = $today->modify('-1 month')->format('Y-m');
+        
         $currentYear = $today->format('Y');
 
         // Initialiser les totaux
         $totalByDay = 0;
         $totalByWeek = 0;
         $totalByMonth = 0;
+        $totalByMonth1 = 0;
+        $totalByMonth2 = 0;
+        $totalByMonth3 = 0;
         $totalByYear = 0;
 
         // Initialiser les compteurs de rendez-vous
         $countByDay = 0;
         $countByWeek = 0;
         $countByMonth = 0;
+        $countByMonth1 = 0;
+        $countByMonth2 = 0;
+        $countByMonth3 = 0;
         $countByYear = 0;
 
         // Calculer les totaux et les quantités
@@ -61,6 +74,21 @@ class AdminController extends AbstractController
                     $totalByMonth += $price;
                     $countByMonth++;
                 }
+                //Total mois d'avant
+                if ($appointmentDate->format('Y-m') === $lastMonth) {
+                    $totalByMonth1 += $price;
+                    $countByMonth1++;
+                }
+                //Total mois d'avant
+                if ($appointmentDate->format('Y-m') === $lastMonth2) {
+                    $totalByMonth2 += $price;
+                    $countByMonth2++;
+                }
+                //Total mois d'avant
+                if ($appointmentDate->format('Y-m') === $lastMonth3) {
+                    $totalByMonth3 += $price;
+                    $countByMonth3++;
+                }
 
                 // Total par an
                 if ($appointmentDate->format('Y') === $currentYear) {
@@ -74,6 +102,9 @@ class AdminController extends AbstractController
             'totalByDay' => $totalByDay,
             'totalByWeek' => $totalByWeek,
             'totalByMonth' => $totalByMonth,
+            'totalByMonth1' => $totalByMonth1,
+            'totalByMonth2' => $totalByMonth2,
+            'totalByMonth3' => $totalByMonth3,
             'totalByYear' => $totalByYear,
             'countByDay' => $countByDay,
             'countByWeek' => $countByWeek,

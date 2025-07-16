@@ -27,7 +27,7 @@
     font-size: 2.5rem;
     font-weight: 700;
     margin: 0;
-    background: linear-gradient(135deg, #8B7355, #6F5B47);
+    background: var(--primary-color);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -55,7 +55,7 @@
 /* KPI Cards modernes */
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -530,24 +530,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('revenueChart').getContext('2d');
     
     const colors = [
-        'rgba(139, 115, 85, 0.8)',   // Primary
-        'rgba(166, 139, 91, 0.8)',   // Primary light
-        'rgba(111, 91, 71, 0.8)',    // Primary dark
-        'rgba(212, 196, 168, 0.8)'   // Accent
+        'rgba(56, 189, 248, 0.8)',   // Bleu ciel moderne
+        'rgba(34, 197, 94, 0.8)',    // Vert émeraude
+        'rgba(249, 115, 22, 0.8)',   // Orange vibrant
+        'rgba(168, 85, 247, 0.8)'    // Violet moderne
     ];
     
     const borderColors = [
-        '#8B7355',
-        '#A68B5B', 
-        '#6F5B47',
-        '#D4C4A8'
+        '#38BDF8',  // Bleu ciel
+        '#22C55E',  // Vert émeraude
+        '#F97316',  // Orange vibrant
+        '#A855F7'   // Violet moderne
     ];
     
     const monthlyData = [
         {{ totalByMonth|default(0) }}, 
-        {{ (totalByMonth * 0.8)|number_format(0, '.', '') }}, 
-        {{ (totalByMonth * 1.2)|number_format(0, '.', '') }}, 
-        {{ (totalByMonth * 0.9)|number_format(0, '.', '') }}
+        {{ totalByMonth1|default(0) }}, 
+        {{ totalByMonth2|default(0) }}, 
+        {{ totalByMonth3|default(0) }}
     ];
     
     new Chart(ctx, {

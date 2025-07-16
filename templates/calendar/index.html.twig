@@ -456,7 +456,6 @@ body {
 
 .modal-close:hover {
     background: rgba(255,255,255,0.2);
-    transform: rotate(90deg);
 }
 
 .modal-body-mobile {
@@ -1249,7 +1248,7 @@ body {
     
     .quick-nav {
         max-width: 300px;
-        margin: 1rem auto 0;
+        margin: 1rem auto;
     }
 }
 
@@ -1722,12 +1721,12 @@ body {
 }
 
 .cancel-btn {
-    background: var(--gray-400);
-    color: white;
+    background: #6B7280 !important;
+    color: white !important;
 }
 
 .cancel-btn:hover {
-    background: var(--gray-500);
+    background: #4B5563 !important;
 }
 
 /* Amélioration visibilité RDV dans toutes les vues */
@@ -2471,25 +2470,41 @@ document.addEventListener('DOMContentLoaded', function() {
     function getFilteredAppointments(period) {
         const now = new Date();
         let startDate;
+        let endDate;
         
         switch(period) {
             case 'month':
+                // Mois courant : du 1er au dernier jour du mois
                 startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Dernier jour du mois
                 break;
             case 'quarter':
-                const quarter = Math.floor(now.getMonth() / 3);
-                startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                // 3 derniers mois complets
+                startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Fin du mois courant
                 break;
             case 'year':
+                // Cette année complète : du 1er janvier au 31 décembre
                 startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = new Date(now.getFullYear(), 11, 31); // 31 décembre
                 break;
             case 'all':
             default:
+                // Tous les rendez-vous
                 startDate = new Date(2020, 0, 1); // Date très ancienne
+                endDate = new Date(2060, 11, 31); // Date très future
                 break;
         }
         
-        return appointments.filter(apt => new Date(apt.start) >= startDate);
+        return appointments.filter(apt => {
+            const aptDate = new Date(apt.start);
+            // Vérifier si c'est un vrai RDV (pas "Pas de rdv")
+            const isValidAppointment = apt.service?.name !== "Pas de rdv" && apt.title !== "Pas de rdv";
+            
+            return aptDate >= startDate && 
+                   aptDate <= endDate && 
+                   isValidAppointment;
+        });
     }
 
     function updateTopClients(filteredAppointments) {
@@ -2596,8 +2611,19 @@ document.addEventListener('DOMContentLoaded', function() {
             monthlyChart.destroy();
         }
         
+        // Filtrer les RDV du début de l'année au mois courant
+        const now = new Date();
+        const yearStart = new Date(now.getFullYear(), 0, 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        
+        const yearAppointments = appointments.filter(apt => {
+            const aptDate = new Date(apt.start);
+            const isValidAppointment = apt.service?.name !== "Pas de rdv" && apt.title !== "Pas de rdv";
+            return aptDate >= yearStart && aptDate <= monthEnd && isValidAppointment;
+        });
+        
         const monthlyStats = {};
-        filteredAppointments.forEach(apt => {
+        yearAppointments.forEach(apt => {
             const date = new Date(apt.start);
             const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
             
@@ -2829,12 +2855,140 @@ document.addEventListener('DOMContentLoaded', function() {
         originalDuration = null;
     }
 
+    // MODIFICATION DATE/HEURE + SERVICE (TOGGLE)
     function editAppointment() {
         if (currentAppointment) {
-            hideAppointmentModal();
-            // Rediriger vers la page d'édition des RDV
-            window.location.href = `/appointment/${currentAppointment.id}/editer`;
+            toggleEditMode();
         }
+    }
+
+    function toggleEditMode() {
+        const dateEl = document.getElementById('appointmentDateTime');
+        const isEditing = dateEl.querySelector('input') !== null;
+        
+        if (isEditing) {
+            // Mode édition → Mode affichage
+            cancelEditMode();
+        } else {
+            // Mode affichage → Mode édition
+            startEditMode();
+        }
+    }
+
+    function startEditMode() {
+        // 1. Transformer date/heure en input
+        const dateEl = document.getElementById('appointmentDateTime');
+        const currentDate = new Date(currentAppointment.start);
+        const dateValue = currentDate.toISOString().slice(0, 16);
+        dateEl.innerHTML = `<input type="datetime-local" id="editDateTime" value="${dateValue}" style="padding: 8px; border: 2px solid #A68B5B; border-radius: 8px; width: 100%; font-size: 0.9rem;">`;
+
+        // 2. Transformer service en select
+        const serviceEl = document.getElementById('appointmentServiceName');
+        let options = '';
+        services.forEach(service => {
+            const selected = service.id == currentAppointment.extendedProps.serviceId ? 'selected' : '';
+            options += `<option value="${service.id}" ${selected}>${service.name}</option>`;
+        });
+        serviceEl.innerHTML = `<select id="editService" style="padding: 8px; border: 2px solid #A68B5B; border-radius: 8px; width: 100%; font-size: 0.9rem;">${options}</select>`;
+
+        // 3. Masquer les autres boutons temporairement (comme toggleDuration)
+        document.getElementById('changeDurationBtn').style.display = 'none';
+        document.getElementById('deleteAppointmentBtn').style.display = 'none';
+        document.getElementById('editAppointmentBtn').style.display = 'none';
+
+        // 4. Ajouter boutons de contrôle
+        const actionsContainer = document.querySelector('.appointment-modal-actions');
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'action-btn save-btn';
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Sauvegarder';
+        saveBtn.onclick = saveEditChanges;
+        saveBtn.id = 'saveEditBtn';
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'action-btn cancel-btn';
+        cancelBtn.innerHTML = '<i class="fas fa-times"></i> Annuler';
+        cancelBtn.onclick = cancelEditMode;
+        cancelBtn.id = 'cancelEditBtn';
+        
+        actionsContainer.appendChild(saveBtn);
+        actionsContainer.appendChild(cancelBtn);
+    }
+
+    function saveEditChanges() {
+        const newDate = document.getElementById('editDateTime').value;
+        const newServiceId = document.getElementById('editService').value;
+
+        if (!newDate || !newServiceId) return;
+
+        // Calculer la durée actuelle à partir des anciennes dates start/end
+        const currentStart = new Date(currentAppointment.start);
+        const currentEnd = new Date(currentAppointment.end);
+        const currentDuration = Math.round((currentEnd - currentStart) / (1000 * 60)); // durée en minutes
+        
+        const endDate = new Date(new Date(newDate).getTime() + (currentDuration * 60000));
+
+        fetch('{{ path('app_appointment_update') }}', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                id: currentAppointment.id,
+                date: newDate,
+                endDate: endDate.toISOString(),
+                serviceId: newServiceId,
+                clientId: currentAppointment.extendedProps.clientId
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Mettre à jour localement
+                const index = appointments.findIndex(apt => apt.id == currentAppointment.id);
+                if (index !== -1) {
+                    const service = services.find(s => s.id == newServiceId);
+                    appointments[index].title = service ? service.name : appointments[index].title;
+                    appointments[index].start = newDate;
+                    appointments[index].end = endDate.toISOString();
+                    appointments[index].extendedProps.serviceId = newServiceId;
+                    currentAppointment = appointments[index];
+                }
+                toggleEditMode();
+                showView(currentView);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+        });
+    }
+
+    function cancelEditMode() {
+        // Restaurer l'affichage original
+        const dateEl = document.getElementById('appointmentDateTime');
+        const serviceEl = document.getElementById('appointmentServiceName');
+
+        // Restaurer date
+        const startDate = new Date(currentAppointment.start);
+        dateEl.textContent = startDate.toLocaleDateString('fr-FR', { 
+            weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
+        });
+
+        // Restaurer service
+        const service = services.find(s => s.id == currentAppointment.extendedProps.serviceId);
+        serviceEl.textContent = service ? service.name : 'Service inconnu';
+
+        // Restaurer les boutons originaux (comme toggleDuration)
+        document.getElementById('changeDurationBtn').style.display = 'block';
+        document.getElementById('deleteAppointmentBtn').style.display = 'block';
+        document.getElementById('editAppointmentBtn').style.display = 'block';
+
+        // Supprimer les boutons temporaires
+        const saveBtn = document.getElementById('saveEditBtn');
+        const cancelBtn = document.getElementById('cancelEditBtn');
+        if (saveBtn) saveBtn.remove();
+        if (cancelBtn) cancelBtn.remove();
     }
 
     function toggleDurationEditor() {
@@ -2842,7 +2996,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const isVisible = editor.style.display !== 'none';
         
         editor.style.display = isVisible ? 'none' : 'block';
+        document.getElementById('editAppointmentBtn').style.display = isVisible ? 'block' : 'none';
         document.getElementById('changeDurationBtn').style.display = isVisible ? 'block' : 'none';
+        document.getElementById('deleteAppointmentBtn').style.display = isVisible ? 'block' : 'none';
         document.getElementById('saveDurationBtn').style.display = isVisible ? 'none' : 'block';
         document.getElementById('cancelDurationBtn').style.display = isVisible ? 'none' : 'block';
         
@@ -2955,6 +3111,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // Calculer la nouvelle heure de fin
         const startDate = new Date(appointment.start);
         const newEndDate = new Date(startDate.getTime() + (newDuration * 60 * 1000));
+        
+        // Formater l'endDate dans le même format que la date de début (format local)
+        const year = newEndDate.getFullYear();
+        const month = String(newEndDate.getMonth() + 1).padStart(2, '0');
+        const day = String(newEndDate.getDate()).padStart(2, '0');
+        const hours = String(newEndDate.getHours()).padStart(2, '0');
+        const minutes = String(newEndDate.getMinutes()).padStart(2, '0');
+        
+        const endDateFormatted = `${year}-${month}-${day}T${hours}:${minutes}`;
 
         const response = await fetch('{{ path('app_appointment_update') }}', {
             method: 'POST',
@@ -2965,7 +3130,7 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({ 
                 id: appointmentId,
                 date: appointment.start,
-                endDate: newEndDate.toISOString(),
+                endDate: endDateFormatted,
                 serviceId: appointment.extendedProps.serviceId,
                 clientId: appointment.extendedProps.clientId
             })
