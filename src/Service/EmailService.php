@@ -104,4 +104,34 @@ class EmailService
             throw new \Exception('Error sending email: ' . $e->getMessage());
         }
     }
+
+    public function sendPasswordResetEmail(string $to, string $username, string $resetToken, string $frontendUrl = null): void
+    {
+        $resetUrl = ($frontendUrl ?? 'https://atelier-de-marie.com') . '/reset-password?token=' . $resetToken;
+        
+        $email = (new TemplatedEmail())
+            ->from(new Address($this->fromEmail, $this->fromName))
+            ->to($to)
+            ->subject("Réinitialisation de votre mot de passe - L'Atelier de Marie")
+            ->html(
+                "<p>Bonjour " . $username . ",</p>" .
+                "<p>Vous avez demandé la réinitialisation de votre mot de passe pour votre compte sur L'Atelier de Marie.</p>" .
+                "<p>Pour créer un nouveau mot de passe, cliquez sur le lien ci-dessous :</p>" .
+                "<p><a href='" . $resetUrl . "' style='background-color: #a24e32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Réinitialiser mon mot de passe</a></p>" .
+                "<p>Ou copiez ce lien dans votre navigateur :</p>" .
+                "<p>" . $resetUrl . "</p>" .
+                "<p><strong>Important :</strong> Ce lien expire dans 1 heure pour des raisons de sécurité.</p>" .
+                "<p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email en toute sécurité.</p>" .
+                "<p>Cordialement,</p>" .
+                "<p><strong>L'équipe de L'Atelier de Marie</strong><br>" .
+                "06.60.53.50.44</p>" .
+                "<img src='https://www.backoffice.atelier-de-marie.com/images/1.ico' alt='Atelier de Marie' />"
+            );
+
+        try {
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            throw new \Exception('Error sending password reset email: ' . $e->getMessage());
+        }
+    }
 }
