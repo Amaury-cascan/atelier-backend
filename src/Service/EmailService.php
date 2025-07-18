@@ -163,4 +163,51 @@ class EmailService
             throw new \Exception('Error sending appointment reminder email: ' . $e->getMessage());
         }
     }
+
+    public function sendDailyAppointmentsSummary(string $to, array $appointments, \DateTimeInterface $date): void
+    {
+        $formattedDate = $date->format('d/m/Y');
+        
+        $appointmentsHtml = '';
+        if (!empty($appointments)) {
+            $appointmentsHtml = '<ul>';
+            foreach ($appointments as $appointment) {
+                $client = $appointment->getClient();
+                $service = $appointment->getService();
+                $appointmentTime = $appointment->getDate()->format('H:i');
+                
+                $appointmentsHtml .= '<li>';
+                $appointmentsHtml .= '<strong>' . $appointmentTime . '</strong> - ';
+                $appointmentsHtml .= $client->getFirstName() . ' ' . $client->getName();
+                $appointmentsHtml .= ' (' . $client->getEmail() . ')';
+                if ($client->getPhoneNumber()) {
+                    $appointmentsHtml .= ' - Tel: ' . $client->getPhoneNumber();
+                }
+                $appointmentsHtml .= '<br>Service: ' . $service->getName();
+                $appointmentsHtml .= '</li>';
+            }
+            $appointmentsHtml .= '</ul>';
+        } else {
+            $appointmentsHtml = '<p>Aucun rendez-vous prévu pour cette journée.</p>';
+        }
+
+        $email = (new TemplatedEmail())
+            ->from(new Address($this->fromEmail, $this->fromName))
+            ->to($to)
+            ->subject("Récapitulatif des rendez-vous du " . $formattedDate . " - L'Atelier de Marie")
+            ->html(
+                "<h2>Récapitulatif des rendez-vous du " . $formattedDate . "</h2>" .
+                "<p>Voici la liste des rendez-vous prévus pour demain :</p>" .
+                $appointmentsHtml .
+                "<p><strong>Total :</strong> " . count($appointments) . " rendez-vous</p>" .
+                "<hr>" .
+                "<p><small>Email automatique envoyé par le système de L'Atelier de Marie</small></p>"
+            );
+
+        try {
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            throw new \Exception('Error sending daily appointments summary: ' . $e->getMessage());
+        }
+    }
 }

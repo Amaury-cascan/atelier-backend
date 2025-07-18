@@ -78,6 +78,30 @@ class SendAppointmentRemindersCommand extends Command
 
         $io->progressFinish();
         $io->success($successCount . ' rappels ont été envoyés avec succès !');
+        
+
+        // Envoyer le récapitulatif quotidien à plusieurs destinataires
+        $recipients = [
+            'amaury.cascan@hotmail.fr',
+            'latelierdemarie41@outlook.com',
+            'marie.pacreau14@outlook.fr'
+        ];
+
+        $summarySuccessCount = 0;
+        foreach ($recipients as $recipient) {
+            try {
+                $this->emailService->sendDailyAppointmentsSummary(
+                    $recipient,
+                    $appointments,
+                    $tomorrow
+                );
+                $summarySuccessCount++;
+            } catch (\Exception $e) {
+                $io->error('Impossible d\'envoyer le récapitulatif à ' . $recipient . ' : ' . $e->getMessage());
+            }
+        }
+        
+        $io->info($summarySuccessCount . ' récapitulatifs quotidiens envoyés sur ' . count($recipients));
 
         return Command::SUCCESS;
     }
