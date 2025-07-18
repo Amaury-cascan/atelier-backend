@@ -23,6 +23,7 @@ class AdminController extends AbstractController
         // Obtenir la date actuelle
         $timezone = new DateTimeZone('Europe/Paris');
         $today = new DateTime('now', $timezone);
+        $formatToday = $today->format('Y-m-d');
         $currentWeek = $today->format('W');
         $currentMonth = $today->format('Y-m');
         // le mois d'avant
@@ -58,7 +59,7 @@ class AdminController extends AbstractController
             $appointmentDate = $appointment->getDate();
             if ($price > 0) {
                 // Total par jour
-                if ($appointmentDate->format('Y-m-d') === $today->format('Y-m-d')) {
+                if ($appointmentDate->format('Y-m-d') === $formatToday) {
                     $totalByDay += $price;
                     $countByDay++;
                 }

@@ -207,7 +207,7 @@
 /* Charts and Data Section */
 .charts-section {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr;
     gap: 2rem;
     margin-bottom: 2rem;
 }
@@ -304,47 +304,106 @@
     margin-bottom: 2rem;
 }
 
-/* Data Table */
+/* Data Table Moderne */
 .data-table {
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 20px;
     overflow: hidden;
     border: 1px solid rgba(162, 78, 50, 0.1);
+    box-shadow: 0 10px 30px rgba(162, 78, 50, 0.08);
+    backdrop-filter: blur(20px);
 }
 
 .data-table table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     margin: 0;
+    table-layout: fixed;
 }
 
 .data-table thead th {
-    background: linear-gradient(135deg, rgba(162, 78, 50, 0.1), rgba(197, 101, 63, 0.05));
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.15), rgba(197, 101, 63, 0.08));
     color: var(--taupe);
     font-weight: 700;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     text-align: left;
     font-size: 0.9rem;
     border: none;
+    position: relative;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.data-table th:nth-child(1) { width: 45%; }
+.data-table th:nth-child(2), .data-table td:nth-child(2) { width: 15%; text-align: center; }
+.data-table th:nth-child(3), .data-table td:nth-child(3) { width: 15%; text-align: right; }
+.data-table th:nth-child(4) { width: 25%; }
+
+.data-table thead th:first-child {
+    border-radius: 20px 0 0 0;
+}
+
+.data-table thead th:last-child {
+    border-radius: 0 20px 0 0;
+}
+
+.data-table thead th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--taupe), var(--taupe-light));
+    opacity: 0.3;
 }
 
 .data-table tbody td {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(162, 78, 50, 0.1);
-    color: #333;
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(162, 78, 50, 0.08);
+    color: #2c2c2c;
     font-weight: 500;
+    vertical-align: middle;
+    position: relative;
+    overflow: hidden;
+}
+
+.data-table tbody td:nth-child(2) { text-align: center; }
+.data-table tbody td:nth-child(3) { text-align: right; padding-right: 1.5rem; }
+
+.data-table tbody tr {
+    transition: all 0.3s ease;
 }
 
 .data-table tbody tr:hover {
-    background: linear-gradient(135deg, rgba(162, 78, 50, 0.03), rgba(197, 101, 63, 0.01));
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.05), rgba(197, 101, 63, 0.02));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(162, 78, 50, 0.1);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:last-child td:first-child {
+    border-radius: 0 0 0 20px;
+}
+
+.data-table tbody tr:last-child td:last-child {
+    border-radius: 0 0 20px 0;
 }
 
 .service-indicator {
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     display: inline-block;
-    margin-right: 8px;
+    margin-right: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
 }
 
 .service-name {
@@ -352,52 +411,121 @@
     align-items: center;
     font-weight: 600;
     color: var(--taupe-dark);
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.service-name-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .count-badge {
     background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
     color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(162, 78, 50, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.5px;
+    min-width: 45px;
+    text-align: center;
+    display: inline-block;
 }
 
 .revenue-amount {
-    font-weight: 700;
+    font-weight: 800;
     color: var(--taupe);
-    font-size: 1rem;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(162, 78, 50, 0.1);
 }
 
 .progress-container {
     width: 100%;
-    height: 24px;
-    background: rgba(162, 78, 50, 0.1);
-    border-radius: 12px;
+    height: 32px;
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.1), rgba(197, 101, 63, 0.05));
+    border-radius: 16px;
     overflow: hidden;
     position: relative;
+    border: 1px solid rgba(162, 78, 50, 0.15);
+    box-shadow: inset 0 2px 4px rgba(162, 78, 50, 0.1);
 }
 
 .progress-bar {
     height: 100%;
-    border-radius: 12px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: width 1s ease-in-out;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    min-width: 45px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
 .total-row {
-    background: linear-gradient(135deg, rgba(162, 78, 50, 0.1), rgba(197, 101, 63, 0.05)) !important;
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.15), rgba(197, 101, 63, 0.08)) !important;
     font-weight: 700;
+    border-top: 2px solid rgba(162, 78, 50, 0.2);
+    position: relative;
+}
+
+.total-row::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--taupe), var(--taupe-light));
 }
 
 .total-row td {
     border-bottom: none !important;
     color: var(--taupe) !important;
+    font-weight: 800 !important;
+    padding: 1.5rem 1.25rem !important;
+    font-size: 1.05rem !important;
+    letter-spacing: 0.5px;
+}
+
+.total-row .count-badge {
+    background: linear-gradient(135deg, var(--taupe-dark), #5a2e1a);
+    font-size: 1rem;
+    padding: 10px 18px;
+}
+
+.total-row .revenue-amount {
+    font-size: 1.2rem;
+    font-weight: 900;
 }
 
 /* Empty State */
@@ -423,10 +551,27 @@
     opacity: 0.8;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-    .charts-section {
-        grid-template-columns: 1fr;
+/* Table Responsive améliorée */
+@media (max-width: 992px) {
+    .data-table {
+        border-radius: 16px;
+    }
+    
+    .data-table thead th {
+        padding: 1.25rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .data-table tbody td {
+        padding: 1rem;
+    }
+    
+    .progress-container {
+        height: 28px;
+    }
+    
+    .progress-bar {
+        font-size: 0.85rem;
     }
 }
 
@@ -471,26 +616,205 @@
     .date-input {
         flex: 1;
     }
+
+    .data-table thead th,
+    .data-table tbody td {
+        padding: 1rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .service-name {
+        font-size: 0.9rem;
+    }
+}
+
+/* Responsive pour très petits écrans */
+@media (max-width: 576px) {
+    .data-table {
+        margin: 0 -1rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .data-table table {
+        min-width: 500px;
+    }
+    
+    .data-table thead th,
+    .data-table tbody td {
+        padding: 0.875rem 0.5rem;
+    }
+
+    .data-table thead th {
+        font-size: 0.75rem;
+    }
+
+    .data-table tbody td {
+        font-size: 0.8rem;
+    }
+
+    .service-indicator {
+        width: 12px;
+        height: 12px;
+        margin-right: 8px;
+    }
+    
+    .service-name {
+        font-size: 0.9rem;
+        min-width: 120px;
+    }
+    
+    .count-badge {
+        padding: 4px 10px;
+        font-size: 0.8rem;
+        min-width: 30px;
+    }
+    
+    .revenue-amount {
+        font-size: 0.95rem;
+    }
+    
+    .progress-container {
+        min-width: 100px;
+        height: 24px;
+    }
+    
+    .progress-bar {
+        font-size: 0.75rem;
+        min-width: 30px;
+    }
+    
+    .total-row td {
+        padding: 1rem 0.5rem !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .total-row .count-badge {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+    }
+    
+    .total-row .revenue-amount {
+        font-size: 1.05rem;
+    }
+}
+
+/* Mode sombre pour les tables (optionnel) */
+@media (prefers-color-scheme: dark) {
+    .data-table {
+        background: rgba(40, 40, 40, 0.95);
+        border-color: rgba(162, 78, 50, 0.3);
+    }
+    
+    .data-table thead th {
+        background: linear-gradient(135deg, rgba(162, 78, 50, 0.3), rgba(197, 101, 63, 0.2));
+        color: #f0d5b8;
+    }
+    
+    .data-table tbody td {
+        color: #e0e0e0;
+        border-bottom-color: rgba(162, 78, 50, 0.2);
+    }
+    
+    .data-table tbody tr:hover {
+        background: linear-gradient(135deg, rgba(162, 78, 50, 0.15), rgba(197, 101, 63, 0.08));
+    }
+    
+    .service-name {
+        color: #f0d5b8;
+    }
+    
+    .revenue-amount {
+        color: #f0d5b8;
+    }
+    
+    .progress-container {
+        background: linear-gradient(135deg, rgba(162, 78, 50, 0.2), rgba(197, 101, 63, 0.1));
+        border-color: rgba(162, 78, 50, 0.3);
+    }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {
-    .kpi-card {
+    .stats-header {
         padding: 1.5rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-title {
+        font-size: 1.75rem;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .stats-subtitle {
+        font-size: 1rem;
+    }
+    
+    .period-filters {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .period-btn {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        gap: 4px;
+    }
+    
+    .period-badge {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .kpi-card {
+        padding: 1.25rem 1rem;
+        margin-bottom: 1rem;
     }
     
     .kpi-icon {
         width: 60px;
         height: 60px;
         font-size: 1.5rem;
+        margin-bottom: 1rem;
     }
     
     .kpi-number {
-        font-size: 2rem;
+        font-size: 1.8rem;
     }
     
-    .period-btn {
-        padding: 10px 16px;
-        font-size: 0.85rem;
+    .kpi-label {
+        font-size: 0.9rem;
+    }
+    
+    .kpi-description {
+        font-size: 0.8rem;
+    }
+    
+    .chart-card {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .chart-title {
+        font-size: 1.2rem;
+        gap: 8px;
+    }
+    
+    .chart-period-info {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .chart-container {
+        height: 300px;
     }
 }
 
@@ -528,6 +852,223 @@
     to {
         opacity: 1;
         transform: translateX(0);
+    }
+}
+
+/* Animations pour les tables */
+@keyframes fadeInTable {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRow {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(162, 78, 50, 0.1);
+    }
+    50% {
+        box-shadow: 0 8px 25px rgba(162, 78, 50, 0.2);
+    }
+}
+
+@keyframes progressFill {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: var(--target-width);
+    }
+}
+
+/* Applique les animations */
+.data-table {
+    animation: fadeInTable 0.8s ease-out;
+}
+
+.data-table tbody tr {
+    animation: slideInRow 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.data-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.data-table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+.data-table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+.data-table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+.data-table tbody tr:nth-child(5) { animation-delay: 0.5s; }
+.data-table tbody tr:nth-child(6) { animation-delay: 0.6s; }
+.data-table tbody tr:nth-child(7) { animation-delay: 0.7s; }
+.data-table tbody tr:nth-child(8) { animation-delay: 0.8s; }
+
+/* Effet hover amélioré pour les badges */
+.count-badge {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.count-badge:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(162, 78, 50, 0.4);
+}
+
+/* Effet hover pour les montants */
+.revenue-amount {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.revenue-amount:hover {
+    transform: scale(1.05);
+    text-shadow: 0 2px 4px rgba(162, 78, 50, 0.3);
+}
+
+/* Effet sur les indicateurs de service */
+.service-indicator {
+    transition: all 0.3s ease;
+}
+
+.service-name:hover .service-indicator {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation de la ligne totale */
+.total-row {
+    animation: pulseGlow 3s ease-in-out infinite;
+}
+
+.total-row:hover {
+    animation: none;
+    box-shadow: 0 8px 30px rgba(162, 78, 50, 0.25) !important;
+}
+
+/* Améliorations UX et performance */
+.data-table {
+    will-change: transform;
+}
+
+.progress-bar {
+    will-change: width;
+}
+
+/* Effet de focus pour l'accessibilité */
+.period-btn:focus,
+.filter-btn:focus,
+.date-input:focus {
+    outline: 3px solid rgba(162, 78, 50, 0.3);
+    outline-offset: 2px;
+}
+
+/* Amélioration du contraste pour l'accessibilité */
+.data-table thead th {
+    color: #2c2c2c;
+    font-weight: 800;
+}
+
+/* États de chargement */
+.chart-container.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--taupe);
+    font-weight: 600;
+}
+
+.chart-container.loading::before {
+    content: '⟳';
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+    margin-right: 12px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Amélioration des barres de progression */
+.progress-bar {
+    background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.1) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.1) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 20px 20px;
+}
+
+/* Indicateurs de tri (pour future utilisation) */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s ease;
+}
+
+.sortable:hover {
+    background: linear-gradient(135deg, rgba(162, 78, 50, 0.08), rgba(197, 101, 63, 0.04));
+    color: var(--taupe-dark);
+}
+
+.sortable::after {
+    content: '⇅';
+    margin-left: 8px;
+    opacity: 0.5;
+    font-size: 0.8rem;
+}
+
+/* Optimisations pour impression */
+@media print {
+    .stats-container {
+        background: white !important;
+    }
+    
+    .period-filters,
+    .date-filter {
+        display: none !important;
+    }
+    
+    .chart-card,
+    .kpi-card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+    
+    .data-table {
+        box-shadow: none !important;
+    }
+    
+    .progress-bar {
+        background-image: none !important;
+    }
+}
+
+/* Mode haute densité */
+@media (min-resolution: 2dppx) {
+    .service-indicator {
+        border-width: 1px;
+    }
+    
+    .progress-bar {
+        background-size: 10px 10px;
     }
 }
 </style>
@@ -620,16 +1161,7 @@
                     <div class="kpi-number">{{ (totalAmount / totalCount)|number_format(0, '.', '') }}</div>
                     <div class="kpi-label">Panier moyen</div>
                     <div class="kpi-description">Par rendez-vous</div>
-                </div>
-                
-                <div class="kpi-card">
-                    <div class="kpi-icon trend">
-                        <i class="fas fa-trending-up"></i>
-                    </div>
-                    <div class="kpi-number">{{ ((dailyStats[date]|length * 100) / 5)|round }}%</div>
-                    <div class="kpi-label">Taux d'occupation</div>
-                    <div class="kpi-description">Services utilisés</div>
-                </div>
+                </div>        
             </div>
         {% endif %}
 
@@ -700,7 +1232,7 @@
                                         <td>
                                             <div class="service-name">
                                                 <div class="service-indicator" style="background: {{ serviceColors[loop.index0 % 6] }}"></div>
-                                                {{ service }}
+                                                <span class="service-name-text">{{ service }}</span>
                                             </div>
                                         </td>
                                         <td>
@@ -777,46 +1309,110 @@
                     <div class="kpi-label">Panier moyen</div>
                     <div class="kpi-description">Par rendez-vous</div>
                 </div>
-                
-                <div class="kpi-card">
-                    <div class="kpi-icon trend">
-                        <i class="fas fa-trending-up"></i>
-                    </div>
-                    <div class="kpi-number">{{ totalCount }}</div>
-                    <div class="kpi-label">Services actifs</div>
-                    <div class="kpi-description">Nombre de services utilisés</div>
-                </div>
             </div>
         {% endif %}
 
-        <div class="chart-card">
-            <div class="chart-header">
-                <h4 class="chart-title">
-                    <i class="fas fa-calendar-week"></i>
-                    Statistiques Hebdomadaires
-                </h4>
-                <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
-                    <input type="week" name="week" class="date-input" value="{{ week }}" required>
-                    <input type="hidden" name="period" value="weekly">
-                    <button class="filter-btn" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4 class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Répartition des Services
+                    </h4>
+                    <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
+                        <input type="week" name="week" class="date-input" value="{{ week }}" required>
+                        <input type="hidden" name="period" value="weekly">
+                        <button class="filter-btn" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="chart-period-info">Analyse de la semaine {{ week }}</div>
+                
+                {% if hasWeeklyStats %}
+                    <div class="chart-container">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h5>Aucun rendez-vous cette semaine</h5>
+                        <p>Sélectionnez une autre semaine pour voir les statistiques</p>
+                    </div>
+                {% endif %}
             </div>
-            
-            <div class="chart-period-info">Analyse de la semaine {{ week }}</div>
-            
+
             {% if hasWeeklyStats %}
-                <div class="chart-container">
-                    <canvas id="weeklyChart"></canvas>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4 class="chart-title">
+                        <i class="fas fa-list"></i>
+                        Détail des Services
+                    </h4>
                 </div>
-                {% include 'statistics/_stats_table.html.twig' with {'stats': weeklyStats[week], 'period': 'weekly'} %}
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-calendar-times"></i>
-                    <h5>Aucun rendez-vous cette semaine</h5>
-                    <p>Sélectionnez une autre semaine pour voir les statistiques</p>
+                
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-concierge-bell me-1"></i>Service</th>
+                                <th><i class="fas fa-hashtag me-1"></i>Nombre</th>
+                                <th><i class="fas fa-euro-sign me-1"></i>CA</th>
+                                <th><i class="fas fa-percent me-1"></i>Part</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set totalCount = 0 %}
+                            {% set totalAmount = 0 %}
+                            {% set serviceColors = ['#a24e32', '#c5653f', '#d4864a', '#8b5a3c', '#7d3a26', '#f0d5b8'] %}
+                            {% for service, stats in weeklyStats[week] %}
+                                {% if stats.total > 0 %}
+                                    {% set totalCount = totalCount + stats.count %}
+                                    {% set totalAmount = totalAmount + stats.total %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% for service, stats in weeklyStats[week] %}
+                                {% if stats.total > 0 %}
+                                    <tr>
+                                        <td>
+                                            <div class="service-name">
+                                                <div class="service-indicator" style="background: {{ serviceColors[loop.index0 % 6] }}"></div>
+                                                <span class="service-name-text">{{ service }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="count-badge">{{ stats.count }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="revenue-amount">{{ stats.total }}€</span>
+                                        </td>
+                                        <td>
+                                            {% set percentage = (stats.total / totalAmount * 100)|round(1) %}
+                                            <div class="progress-container">
+                                                <div class="progress-bar" style="width: {{ percentage }}%; background: {{ serviceColors[loop.index0 % 6] }}">
+                                                    {{ percentage }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        {% if totalCount > 0 %}
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td><strong>Total</strong></td>
+                                    <td><span class="count-badge">{{ totalCount }}</span></td>
+                                    <td><span class="revenue-amount">{{ totalAmount }}€</span></td>
+                                    <td><strong>100%</strong></td>
+                                </tr>
+                            </tfoot>
+                        {% endif %}
+                    </table>
                 </div>
+            </div>
             {% endif %}
         </div>
 
@@ -860,46 +1456,110 @@
                     <div class="kpi-label">Panier moyen</div>
                     <div class="kpi-description">Par rendez-vous</div>
                 </div>
-                
-                <div class="kpi-card">
-                    <div class="kpi-icon trend">
-                        <i class="fas fa-trending-up"></i>
-                    </div>
-                    <div class="kpi-number">{{ totalCount }}</div>
-                    <div class="kpi-label">Services actifs</div>
-                    <div class="kpi-description">Nombre de services utilisés</div>
-                </div>
             </div>
         {% endif %}
 
-        <div class="chart-card">
-            <div class="chart-header">
-                <h4 class="chart-title">
-                    <i class="fas fa-calendar-alt"></i>
-                    Statistiques Mensuelles
-                </h4>
-                <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
-                    <input type="month" name="month" class="date-input" value="{{ month }}" required>
-                    <input type="hidden" name="period" value="monthly">
-                    <button class="filter-btn" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4 class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Répartition des Services
+                    </h4>
+                    <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
+                        <input type="month" name="month" class="date-input" value="{{ month }}" required>
+                        <input type="hidden" name="period" value="monthly">
+                        <button class="filter-btn" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="chart-period-info">Analyse du mois {{ month }}</div>
+                
+                {% if hasMonthlyStats %}
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h5>Aucun rendez-vous ce mois</h5>
+                        <p>Sélectionnez un autre mois pour voir les statistiques</p>
+                    </div>
+                {% endif %}
             </div>
-            
-            <div class="chart-period-info">Analyse du mois {{ month }}</div>
-            
+
             {% if hasMonthlyStats %}
-                <div class="chart-container">
-                    <canvas id="monthlyChart"></canvas>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4 class="chart-title">
+                        <i class="fas fa-list"></i>
+                        Détail des Services
+                    </h4>
                 </div>
-                {% include 'statistics/_stats_table.html.twig' with {'stats': monthlyStats[month], 'period': 'monthly'} %}
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-calendar-times"></i>
-                    <h5>Aucun rendez-vous ce mois</h5>
-                    <p>Sélectionnez un autre mois pour voir les statistiques</p>
+                
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-concierge-bell me-1"></i>Service</th>
+                                <th><i class="fas fa-hashtag me-1"></i>Nombre</th>
+                                <th><i class="fas fa-euro-sign me-1"></i>CA</th>
+                                <th><i class="fas fa-percent me-1"></i>Part</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set totalCount = 0 %}
+                            {% set totalAmount = 0 %}
+                            {% set serviceColors = ['#a24e32', '#c5653f', '#d4864a', '#8b5a3c', '#7d3a26', '#f0d5b8'] %}
+                            {% for service, stats in monthlyStats[month] %}
+                                {% if stats.total > 0 %}
+                                    {% set totalCount = totalCount + stats.count %}
+                                    {% set totalAmount = totalAmount + stats.total %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% for service, stats in monthlyStats[month] %}
+                                {% if stats.total > 0 %}
+                                    <tr>
+                                        <td>
+                                            <div class="service-name">
+                                                <div class="service-indicator" style="background: {{ serviceColors[loop.index0 % 6] }}"></div>
+                                                <span class="service-name-text">{{ service }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="count-badge">{{ stats.count }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="revenue-amount">{{ stats.total }}€</span>
+                                        </td>
+                                        <td>
+                                            {% set percentage = (stats.total / totalAmount * 100)|round(1) %}
+                                            <div class="progress-container">
+                                                <div class="progress-bar" style="width: {{ percentage }}%; background: {{ serviceColors[loop.index0 % 6] }}">
+                                                    {{ percentage }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        {% if totalCount > 0 %}
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td><strong>Total</strong></td>
+                                    <td><span class="count-badge">{{ totalCount }}</span></td>
+                                    <td><span class="revenue-amount">{{ totalAmount }}€</span></td>
+                                    <td><strong>100%</strong></td>
+                                </tr>
+                            </tfoot>
+                        {% endif %}
+                    </table>
                 </div>
+            </div>
             {% endif %}
         </div>
 
@@ -943,46 +1603,110 @@
                     <div class="kpi-label">Panier moyen</div>
                     <div class="kpi-description">Par rendez-vous</div>
                 </div>
-                
-                <div class="kpi-card">
-                    <div class="kpi-icon trend">
-                        <i class="fas fa-trending-up"></i>
-                    </div>
-                    <div class="kpi-number">{{ totalCount }}</div>
-                    <div class="kpi-label">Services actifs</div>
-                    <div class="kpi-description">Nombre de services utilisés</div>
-                </div>
             </div>
         {% endif %}
 
-        <div class="chart-card">
-            <div class="chart-header">
-                <h4 class="chart-title">
-                    <i class="fas fa-calendar"></i>
-                    Statistiques Annuelles
-                </h4>
-                <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
-                    <input type="number" name="year" class="date-input" value="{{ year }}" min="2020" max="2030" required>
-                    <input type="hidden" name="period" value="yearly">
-                    <button class="filter-btn" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4 class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Répartition des Services
+                    </h4>
+                    <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
+                        <input type="number" name="year" class="date-input" value="{{ year }}" min="2020" max="2030" required>
+                        <input type="hidden" name="period" value="yearly">
+                        <button class="filter-btn" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="chart-period-info">Analyse de l'année {{ year }}</div>
+                
+                {% if hasYearlyStats %}
+                    <div class="chart-container">
+                        <canvas id="yearlyChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h5>Aucun rendez-vous cette année</h5>
+                        <p>Sélectionnez une autre année pour voir les statistiques</p>
+                    </div>
+                {% endif %}
             </div>
-            
-            <div class="chart-period-info">Analyse de l'année {{ year }}</div>
-            
+
             {% if hasYearlyStats %}
-                <div class="chart-container">
-                    <canvas id="yearlyChart"></canvas>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4 class="chart-title">
+                        <i class="fas fa-list"></i>
+                        Détail des Services
+                    </h4>
                 </div>
-                {% include 'statistics/_stats_table.html.twig' with {'stats': yearlyStats[year], 'period': 'yearly'} %}
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-calendar-times"></i>
-                    <h5>Aucun rendez-vous cette année</h5>
-                    <p>Sélectionnez une autre année pour voir les statistiques</p>
+                
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-concierge-bell me-1"></i>Service</th>
+                                <th><i class="fas fa-hashtag me-1"></i>Nombre</th>
+                                <th><i class="fas fa-euro-sign me-1"></i>CA</th>
+                                <th><i class="fas fa-percent me-1"></i>Part</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set totalCount = 0 %}
+                            {% set totalAmount = 0 %}
+                            {% set serviceColors = ['#a24e32', '#c5653f', '#d4864a', '#8b5a3c', '#7d3a26', '#f0d5b8'] %}
+                            {% for service, stats in yearlyStats[year] %}
+                                {% if stats.total > 0 %}
+                                    {% set totalCount = totalCount + stats.count %}
+                                    {% set totalAmount = totalAmount + stats.total %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% for service, stats in yearlyStats[year] %}
+                                {% if stats.total > 0 %}
+                                    <tr>
+                                        <td>
+                                            <div class="service-name">
+                                                <div class="service-indicator" style="background: {{ serviceColors[loop.index0 % 6] }}"></div>
+                                                <span class="service-name-text">{{ service }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="count-badge">{{ stats.count }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="revenue-amount">{{ stats.total }}€</span>
+                                        </td>
+                                        <td>
+                                            {% set percentage = (stats.total / totalAmount * 100)|round(1) %}
+                                            <div class="progress-container">
+                                                <div class="progress-bar" style="width: {{ percentage }}%; background: {{ serviceColors[loop.index0 % 6] }}">
+                                                    {{ percentage }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        {% if totalCount > 0 %}
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td><strong>Total</strong></td>
+                                    <td><span class="count-badge">{{ totalCount }}</span></td>
+                                    <td><span class="revenue-amount">{{ totalAmount }}€</span></td>
+                                    <td><strong>100%</strong></td>
+                                </tr>
+                            </tfoot>
+                        {% endif %}
+                    </table>
                 </div>
+            </div>
             {% endif %}
         </div>
     {% endif %}
@@ -1059,6 +1783,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         callbacks: {
                             label: function(context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                if (total === 0) return context.label + ': 0€ (0%)';
                                 const percentage = ((context.parsed / total) * 100).toFixed(1);
                                 return context.label + ': ' + context.parsed + '€ (' + percentage + '%)';
                             }
@@ -1137,6 +1862,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         callbacks: {
                             label: function(context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                if (total === 0) return context.label + ': 0€ (0%)';
                                 const percentage = ((context.parsed / total) * 100).toFixed(1);
                                 return context.label + ': ' + context.parsed + '€ (' + percentage + '%)';
                             }
@@ -1215,6 +1941,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         callbacks: {
                             label: function(context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                if (total === 0) return context.label + ': 0€ (0%)';
                                 const percentage = ((context.parsed / total) * 100).toFixed(1);
                                 return context.label + ': ' + context.parsed + '€ (' + percentage + '%)';
                             }
@@ -1293,6 +2020,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         callbacks: {
                             label: function(context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                if (total === 0) return context.label + ': 0€ (0%)';
                                 const percentage = ((context.parsed / total) * 100).toFixed(1);
                                 return context.label + ': ' + context.parsed + '€ (' + percentage + '%)';
                             }
