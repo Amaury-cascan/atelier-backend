@@ -140,7 +140,7 @@ class EmailService
 
         $email = (new TemplatedEmail())
             ->from(new Address($this->fromEmail, $this->fromName))
-            ->to('amaury.cascan@hotmail.fr')
+            ->to($to)
             ->subject("Rappel de votre rendez-vous demain - L'Atelier de Marie")
             ->html(
                 "<p>Bonjour " . $username . ",</p>" .
