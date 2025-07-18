@@ -55,6 +55,21 @@ class AppointmentRepository extends ServiceEntityRepository
 //        ;
 //    }
 
+   public function findAppointmentsForDate(\DateTimeInterface $date): array
+   {
+       $startOfDay = (clone $date)->setTime(0, 0, 0);
+       $endOfDay = (clone $date)->setTime(23, 59, 59);
+
+       return $this->createQueryBuilder('a')
+           ->andWhere('a.date >= :start')
+           ->andWhere('a.date <= :end')
+           ->setParameter('start', $startOfDay)
+           ->setParameter('end', $endOfDay)
+           ->orderBy('a.date', 'ASC')
+           ->getQuery()
+           ->getResult();
+   }
+
 //    public function findOneBySomeField($value): ?Appointment
 //    {
 //        return $this->createQueryBuilder('a')

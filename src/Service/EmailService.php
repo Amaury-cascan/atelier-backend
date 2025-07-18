@@ -122,16 +122,45 @@ class EmailService
                 "<p>" . $resetUrl . "</p>" .
                 "<p><strong>Important :</strong> Ce lien expire dans 1 heure pour des raisons de sécurité.</p>" .
                 "<p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email en toute sécurité.</p>" .
-                "<p>Cordialement,</p>" .
-                "<p><strong>L'équipe de L'Atelier de Marie</strong><br>" .
-                "06.60.53.50.44</p>" .
-                "<img src='https://www.backoffice.atelier-de-marie.com/images/1.ico' alt='Atelier de Marie' />"
+                "<p>À très bientôt à l'Atelier de Marie !</p>" .
+                "<p>https://atelier-de-marie.com</p>" .
+                "<p>06.60.53.50.44</p>"
             );
 
         try {
             $this->mailer->send($email);
         } catch (\Exception $e) {
             throw new \Exception('Error sending password reset email: ' . $e->getMessage());
+        }
+    }
+
+    public function sendAppointmentReminderEmail(string $to, string $username, string $serviceName, \DateTimeInterface $appointmentDate): void
+    {
+        $formattedDate = $appointmentDate->format('d/m/Y à H:i');
+
+        $email = (new TemplatedEmail())
+            ->from(new Address($this->fromEmail, $this->fromName))
+            ->to('amaury.cascan@hotmail.fr')
+            ->subject("Rappel de votre rendez-vous demain - L'Atelier de Marie")
+            ->html(
+                "<p>Bonjour " . $username . ",</p>" .
+                "<p>Ceci est un petit rappel pour votre rendez-vous de demain à L'Atelier de Marie.</p>" .
+                "<p><strong>Détails du rendez-vous :</strong></p>" .
+                "<ul>" .
+                "<li><strong>Service :</strong> " . $serviceName . "</li>" .
+                "<li><strong>Date et heure :</strong> " . $formattedDate . "</li>" .
+                "</ul>" .
+                "<p>En cas d'empêchement, merci de prévenir Marie au plus vite au 06.60.53.50.44 afin de libérer le créneau.</p>" .
+                "<p>À très bientôt à l'Atelier de Marie !</p>" .
+                "<p>https://atelier-de-marie.com</p>"
+            );
+
+        try {
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            // Log l'erreur au lieu de la propager pour ne pas bloquer la commande
+            // Par exemple, avec un service de log : $this->logger->error(...)
+            throw new \Exception('Error sending appointment reminder email: ' . $e->getMessage());
         }
     }
 }
