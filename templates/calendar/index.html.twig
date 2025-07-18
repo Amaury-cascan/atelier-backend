@@ -2476,9 +2476,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'month':
                 // Mois courant : du 1er au dernier jour du mois
                 startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Dernier jour du mois
-                console.log('startDate', startDate);
-                console.log('endDate', endDate);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59); // Dernier jour du mois
                 break;
             case 'quarter':
                 // 3 derniers mois complets
@@ -2500,11 +2498,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return appointments.filter(apt => {
             const aptDate = new Date(apt.start);
-            // je veux les apointement qui sont entre startDate et endDate
-            const test = aptDate >= startDate && aptDate <= endDate;
-            if(aptDate >= startDate && aptDate <= endDate) {
-                console.log('aptDate', aptDate);
-            }
             // Vérifier si c'est un vrai RDV (pas "Pas de rdv")
             const isValidAppointment = apt.service?.name !== "Pas de rdv" && apt.title !== "Pas de rdv";
 
@@ -2560,7 +2553,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderCharts() {
         const period = document.getElementById('statsPeriod').value;
         const filteredAppointments = getFilteredAppointments(period);
-        console.log('filteredAppointments', filteredAppointments);
         renderServicesChart(filteredAppointments);
         renderMonthlyChart(filteredAppointments);
         renderHourlyChart(filteredAppointments);
