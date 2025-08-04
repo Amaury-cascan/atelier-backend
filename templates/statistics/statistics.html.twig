@@ -1320,7 +1320,7 @@
                         Répartition des Services
                     </h4>
                     <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
-                        <input type="week" name="week" class="date-input" value="{{ week }}" required>
+                        <input name="week" class="date-input" value="{{ week }}" required>
                         <input type="hidden" name="period" value="weekly">
                         <button class="filter-btn" type="submit">
                             <i class="fas fa-search"></i>
@@ -1467,7 +1467,7 @@
                         Répartition des Services
                     </h4>
                     <form method="get" action="{{ path('app_statistics_index') }}" class="date-filter">
-                        <input type="month" name="month" class="date-input" value="{{ month }}" required>
+                        <input name="month" class="date-input" value="{{ month }}" required>
                         <input type="hidden" name="period" value="monthly">
                         <button class="filter-btn" type="submit">
                             <i class="fas fa-search"></i>
