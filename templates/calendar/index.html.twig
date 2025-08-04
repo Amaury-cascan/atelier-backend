@@ -2613,7 +2613,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Filtrer les RDV du début de l'année au mois courant
         const now = new Date();
         const yearStart = new Date(now.getFullYear(), 0, 1);
-        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
         
         const yearAppointments = appointments.filter(apt => {
             const aptDate = new Date(apt.start);
