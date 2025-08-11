@@ -2418,31 +2418,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
         // Récupérer le nombre de jours du mois
-        function getDaysInMonth(year, month) {
-            return new Date(year, month + 1, 0).getDate();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const cutDate = new Date(2025, 8, 1); // 1 septembre 2025 (mois 0-indexé)
+        
+        // Déterminer le premier jour du mois et son jour de semaine
+        const firstDayOfMonth = new Date(year, month, 1);
+        const firstDayOfWeek = firstDayOfMonth.getDay(); // 0=dim, 1=lun, etc.
+        
+        // Déterminer quels jours afficher selon la période
+        let allowedDays;
+        if (firstDayOfMonth < cutDate) {
+            // Avant septembre : mardi (2), mercredi (3), jeudi (4), vendredi (5), samedi (6)
+            allowedDays = [2, 3, 4, 5, 6];
+        } else {
+            // Après septembre : lundi (1), vendredi (5), samedi (6)
+            allowedDays = [1, 5, 6];
+        }
+        
+        // Calculer les espaces vides au début pour aligner le calendrier
+        let startOffset = 0;
+        for (let day of allowedDays) {
+            if (day === firstDayOfWeek) break;
+            if (day < firstDayOfWeek || (firstDayOfWeek === 0 && allowedDays.includes(day))) {
+                startOffset++;
+            }
+        }
+        
+        // Ajouter les espaces vides au début
+        for (let i = 0; i < startOffset; i++) {
+            html += `<div class="month-day empty"></div>`;
         }
 
-        const daysInMonth = getDaysInMonth(year, month);
-
-        const cutDate = new Date(2025, 8, 1); // 1 septembre 2025 (mois 0-indexé)
-        const daysMonth= new Date(year, month + 1, 0).getDate();
-
-        for (let i = 0; i < daysMonth; i++) {
-            const currentDay = new Date(year, month, i + 1);
+        // Générer les jours du mois
+        for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+            const currentDay = new Date(year, month, dayNum);
             const dayOfWeek = currentDay.getDay(); // 0=dim, 1=lun, 2=mar, ..., 6=sam
 
-            // Règles selon la date du mois affiché
-            let showDay = false;
-
-            if (currentDay < cutDate) {
-                // Avant septembre : mardi (2), mercredi (3), jeudi (4), vendredi (5), samedi (6)
-                if ([2,3,4,5,6].includes(dayOfWeek)) showDay = true;
-            } else {
-                // Après septembre : lundi (1), vendredi (5), samedi (6)
-                if ([1,5,6].includes(dayOfWeek)) showDay = true;
-            }
-
-            if (!showDay) continue; // saute ce jour
+            // Vérifier si ce jour doit être affiché
+            if (!allowedDays.includes(dayOfWeek)) continue;
 
             const isToday = currentDay.toDateString() === new Date().toDateString();
             const dayAppointments = getDayAppointments(currentDay);
