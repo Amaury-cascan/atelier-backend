@@ -72,11 +72,6 @@ body {
     font-weight: 700;
 }
 
-.header-date {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
 /* Navigation mobile */
 .mobile-nav {
     display: flex;
@@ -654,7 +649,6 @@ body {
 
 .week-header {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
     gap: 0.5rem;
 }
 
@@ -890,7 +884,6 @@ body {
 
 .month-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
     gap: 1px;
     background: var(--gray-200);
     border-radius: 12px;
@@ -1278,7 +1271,6 @@ body {
     
     .week-header {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
         gap: 1px;
         margin-bottom: 1rem;
         width: 100%;
@@ -2315,15 +2307,28 @@ document.addEventListener('DOMContentLoaded', function() {
         updateWeekDisplay();
         
         const weekDays = [];
-        
-        // Générer les 7 jours de la semaine
-        for (let i = 1; i < 6; i++) {
+        const cutoffDate = new Date(2025, 8, 1); // 8 = septembre (mois indexé à 0)
+
+        for (let i = 0; i < 7; i++) {
             const day = new Date(weekStart);
             day.setDate(weekStart.getDate() + i);
-            weekDays.push(day);
-        }
 
-        let html = '<div class="week-header">';
+            if (weekStart < cutoffDate) {
+                // Ancienne logique : tous les jours sauf dimanche et lundi
+                if (i >= 1 && i <= 5) {
+                    weekDays.push(day);
+                }
+            } else {
+                // Nouvelle logique : lundi (1), vendredi (5) et samedi (6)
+                const dow = day.getDay(); // 0 = dimanche, 1 = lundi, ...
+                if (dow === 1 || dow === 5 || dow === 6) {
+                    weekDays.push(day);
+                }
+            }
+        }
+        const gridColumns = weekDays.length; // nombre de colonnes à afficher
+
+        let html = `<div class="week-header" style="grid-template-columns: repeat(${gridColumns}, 1fr);">`;
         weekDays.forEach(day => {
             const isToday = day.toDateString() === new Date().toDateString();
             const dayAppointments = getDayAppointments(day);
@@ -2388,43 +2393,82 @@ document.addEventListener('DOMContentLoaded', function() {
         const startDate = getWeekStart(firstDay);
         
         let html = '';
-        
-        // Headers des jours
+
+        const cutoffDate = new Date(2025, 8, 1); // 1er septembre 2025
         const dayHeaders = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-        dayHeaders.forEach(day => {
+        const weekStart = getWeekStart(currentDate);
+
+        // Sécuriser weekStart
+        const weekStartDate = new Date(weekStart);
+
+        let headersToDisplay;
+
+        if (weekStartDate.getTime() < cutoffDate.getTime()) {
+            // Avant le 01/09/2025 : Mar (1) à Sam (5)
+            headersToDisplay = dayHeaders.slice(1, 6);
+        } else {
+            // Après : Lun (0), Ven (4), Sam (5)
+            headersToDisplay = [dayHeaders[0], dayHeaders[4], dayHeaders[5]];
+        }
+        const gridColumns = headersToDisplay.length; // nombre de colonnes à afficher
+        document.getElementById('monthGrid').style.gridTemplateColumns = `repeat(${gridColumns}, 1fr)`;
+        headersToDisplay.forEach(day => {
             html += `<div class="month-day-header">${day}</div>`;
         });
-        
-        // Générer 6 semaines (42 jours)
-        for (let i = 0; i < 42; i++) {
-            const currentDay = new Date(startDate);
-            currentDay.setDate(startDate.getDate() + i);
-            
-            const isCurrentMonth = currentDay.getMonth() === month;
+
+
+        // Récupérer le nombre de jours du mois
+        function getDaysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        const daysInMonth = getDaysInMonth(year, month);
+
+        const cutDate = new Date(2025, 8, 1); // 1 septembre 2025 (mois 0-indexé)
+        const daysMonth= new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < daysMonth; i++) {
+            const currentDay = new Date(year, month, i + 1);
+            const dayOfWeek = currentDay.getDay(); // 0=dim, 1=lun, 2=mar, ..., 6=sam
+
+            // Règles selon la date du mois affiché
+            let showDay = false;
+
+            if (currentDay < cutDate) {
+                // Avant septembre : mardi (2), mercredi (3), jeudi (4), vendredi (5), samedi (6)
+                if ([2,3,4,5,6].includes(dayOfWeek)) showDay = true;
+            } else {
+                // Après septembre : lundi (1), vendredi (5), samedi (6)
+                if ([1,5,6].includes(dayOfWeek)) showDay = true;
+            }
+
+            if (!showDay) continue; // saute ce jour
+
             const isToday = currentDay.toDateString() === new Date().toDateString();
             const dayAppointments = getDayAppointments(currentDay);
-            
+
             const classes = [
                 'month-day',
-                !isCurrentMonth ? 'other-month' : '',
                 isToday ? 'today' : ''
             ].filter(c => c).join(' ');
-            
+
             html += `
-                <div class="${classes}" data-date="${currentDay.toISOString()}">
-                    <div class="month-day-number">${currentDay.getDate()}</div>
-                    <div class="month-appointments">
-                        ${dayAppointments.slice(0, 2).map(apt => `
-                            <div class="month-appointment ${serviceColors[apt.extendedProps.serviceId] || ''}" data-id="${apt.id}">
-                                ${new Date(apt.start).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris'})} ${apt.extendedProps.clientFirstName}
-                            </div>
-                        `).join('')}
-                        ${dayAppointments.length > 2 ? `<div class="month-more">+${dayAppointments.length - 2}</div>` : ''}
+        <div class="${classes}" data-date="${currentDay.toISOString()}">
+            <div class="month-day-number">${currentDay.getDate()}</div>
+            <div class="month-appointments">
+                ${dayAppointments.slice(0, 2).map(apt => `
+                    <div class="month-appointment ${serviceColors[apt.extendedProps.serviceId] || ''}" data-id="${apt.id}">
+                        ${new Date(apt.start).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris'})} ${apt.extendedProps.clientFirstName}
                     </div>
-                </div>
-            `;
+                `).join('')}
+                ${dayAppointments.length > 2 ? `<div class="month-more">+${dayAppointments.length - 2}</div>` : ''}
+            </div>
+        </div>
+    `;
         }
-        
+
+
+
         container.innerHTML = html;
         
         // Ajouter les event listeners pour cliquer sur un jour
@@ -3467,9 +3511,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <i class="fas fa-calendar-alt"></i>
                 Calendrier
             </div>
-            <div class="header-date" id="headerDate">
-                {{ "now"|date("d M Y") }}
-            </div>
         </div>
 
         <!-- Navigation -->
@@ -3493,7 +3534,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </button>
             <button class="quick-nav-btn" id="yearViewBtn">
                 <i class="fas fa-calendar-alt"></i>
-                <span id="currentYear">2024</span>
+                <span id="currentYear"></span>
             </button>
         </div>
 
@@ -3524,11 +3565,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Vue Jour -->
     <div class="day-view view-content" id="dayView">
-        <div class="day-header">
-            <div class="day-title" id="dayTitle">Aujourd'hui</div>
-            <div class="day-subtitle">Vos rendez-vous du jour</div>
-        </div>
-        
         <div class="timeline" id="dayAppointments">
             <!-- Les RDV seront chargés ici -->
         </div>
@@ -3586,7 +3622,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <i class="fas fa-chevron-right"></i>
             </button>
         </div>
-        <div class="month-grid" id="monthGrid">
+        <div class="month-grid" id="monthGrid" data-grid-columns="">
             <!-- Le mois sera chargé ici -->
         </div>
     </div>
