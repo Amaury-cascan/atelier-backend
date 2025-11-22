@@ -24,7 +24,7 @@ class AdminController extends AbstractController
         $timezone = new DateTimeZone('Europe/Paris');
         $today = new DateTime('now', $timezone);
         $formatToday = $today->format('Y-m-d');
-        $currentWeek = $today->format('W');
+        $currentWeek = $today->format('Y-W');
         $currentMonth = $today->format('Y-m');
         // le mois d'avant
         $lastMonth = $today->modify('-1 month')->format('Y-m');
@@ -65,7 +65,7 @@ class AdminController extends AbstractController
                 }
 
                 // Total par semaine
-                if ($appointmentDate->format('W') === $currentWeek) {
+                if ($appointmentDate->format('Y-W') === $currentWeek) {
                     $totalByWeek += $price;
                     $countByWeek++;
                 }

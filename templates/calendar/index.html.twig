@@ -2307,23 +2307,26 @@ document.addEventListener('DOMContentLoaded', function() {
         updateWeekDisplay();
         
         const weekDays = [];
-        const cutoffDate = new Date(2025, 8, 1); // 8 = septembre (mois indexé à 0)
+        
+        // Vérifier si la semaine contient le 24/12/2025 ou le 31/12/2025
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        const date2412 = new Date(2025, 11, 24); // 11 = décembre (mois indexé à 0)
+        const date3112 = new Date(2025, 11, 31);
+        
+        const contains2412 = weekStart <= date2412 && date2412 <= weekEnd;
+        const contains3112 = weekStart <= date3112 && date3112 <= weekEnd;
+        const includeWednesday = contains2412 || contains3112;
 
         for (let i = 0; i < 7; i++) {
             const day = new Date(weekStart);
             day.setDate(weekStart.getDate() + i);
 
-            if (weekStart < cutoffDate) {
-                // Ancienne logique : tous les jours sauf dimanche et lundi
-                if (i >= 1 && i <= 5) {
-                    weekDays.push(day);
-                }
-            } else {
-                // Nouvelle logique : lundi (1), vendredi (5) et samedi (6)
-                const dow = day.getDay(); // 0 = dimanche, 1 = lundi, ...
-                if (dow === 1 || dow === 5 || dow === 6) {
-                    weekDays.push(day);
-                }
+            // Nouvelle logique : lundi (1), vendredi (5) et samedi (6)
+            // + mercredi (3) pour les semaines contenant le 24/12 ou 31/12
+            const dow = day.getDay(); // 0 = dimanche, 1 = lundi, ...
+            if (dow === 1 || dow === 5 || dow === 6 || (includeWednesday && dow === 3)) {
+                weekDays.push(day);
             }
         }
         const gridColumns = weekDays.length; // nombre de colonnes à afficher
@@ -2394,22 +2397,25 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let html = '';
 
-        const cutoffDate = new Date(2025, 8, 1); // 1er septembre 2025
         const dayHeaders = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
         const weekStart = getWeekStart(currentDate);
 
         // Sécuriser weekStart
         const weekStartDate = new Date(weekStart);
 
+        // Vérifier si on est en décembre 2025 avec les jours 24 ou 31
+        const isDecember2025 = year === 2025 && month === 11; // 11 = décembre (mois indexé à 0)
+        const includeWednesday = isDecember2025;
+
         let headersToDisplay;
 
-        if (weekStartDate.getTime() < cutoffDate.getTime()) {
-            // Avant le 01/09/2025 : Mar (1) à Sam (5)
-            headersToDisplay = dayHeaders.slice(1, 6);
+        // Après : Lun (0), Ven (4), Sam (5) + Mer (2) si décembre 2025
+        if (includeWednesday) {
+            headersToDisplay = [dayHeaders[0], dayHeaders[2], dayHeaders[4], dayHeaders[5]];
         } else {
-            // Après : Lun (0), Ven (4), Sam (5)
             headersToDisplay = [dayHeaders[0], dayHeaders[4], dayHeaders[5]];
         }
+        
         const gridColumns = headersToDisplay.length; // nombre de colonnes à afficher
         document.getElementById('monthGrid').style.gridTemplateColumns = `repeat(${gridColumns}, 1fr)`;
         headersToDisplay.forEach(day => {
@@ -2431,8 +2437,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Avant septembre : mardi (2), mercredi (3), jeudi (4), vendredi (5), samedi (6)
             allowedDays = [2, 3, 4, 5, 6];
         } else {
-            // Après septembre : lundi (1), vendredi (5), samedi (6)
-            allowedDays = [1, 5, 6];
+            // Après septembre : lundi (1), vendredi (5), samedi (6) + mercredi (3) si décembre 2025
+            if (includeWednesday) {
+                allowedDays = [1, 3, 5, 6];
+            } else {
+                allowedDays = [1, 5, 6];
+            }
         }
         
         // Calculer les espaces vides au début pour aligner le calendrier
