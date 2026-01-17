@@ -1,0 +1,123 @@
+{
+  "version": "1.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "detailLevel": "All",
+  "tablePositions": [
+    {
+      "name": "Exercice",
+      "schemaName": "public",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "name": "DepenseFixe",
+      "schemaName": "public",
+      "x": 283.50829622525225,
+      "y": -253.91207855161548
+    },
+    {
+      "name": "UserMois",
+      "schemaName": "public",
+      "x": 12,
+      "y": 1040.7414941124052
+    },
+    {
+      "name": "UserDepenseFixe",
+      "schemaName": "public",
+      "x": 12,
+      "y": 862.7414941124053
+    },
+    {
+      "name": "Enveloppe",
+      "schemaName": "public",
+      "x": 515.0912246398964,
+      "y": -3.844752103652837
+    },
+    {
+      "name": "User",
+      "schemaName": "public",
+      "x": 636.1300129063712,
+      "y": 620.7414941124053
+    }
+  ],
+  "tableGroupCollapseStates": [],
+  "stickyNoteLayouts": [],
+  "referencePaths": [
+    {
+      "firstFieldNames": [
+        "Id"
+      ],
+      "firstTableName": "Exercice",
+      "firstSchemaName": "public",
+      "firstRelation": "1",
+      "secondFieldNames": [
+        "ExerciceId"
+      ],
+      "secondTableName": "DepenseFixe",
+      "secondSchemaName": "public",
+      "secondRelation": "*",
+      "checkPoints": []
+    },
+    {
+      "firstFieldNames": [
+        "Id"
+      ],
+      "firstTableName": "User",
+      "firstSchemaName": "public",
+      "firstRelation": "1",
+      "secondFieldNames": [
+        "UserId"
+      ],
+      "secondTableName": "UserMois",
+      "secondSchemaName": "public",
+      "secondRelation": "*",
+      "checkPoints": []
+    },
+    {
+      "firstFieldNames": [
+        "Id"
+      ],
+      "firstTableName": "Exercice",
+      "firstSchemaName": "public",
+      "firstRelation": "1",
+      "secondFieldNames": [
+        "ExerciceId"
+      ],
+      "secondTableName": "UserMois",
+      "secondSchemaName": "public",
+      "secondRelation": "*",
+      "checkPoints": []
+    },
+    {
+      "firstFieldNames": [
+        "Id"
+      ],
+      "firstTableName": "UserMois",
+      "firstSchemaName": "public",
+      "firstRelation": "1",
+      "secondFieldNames": [
+        "UserMoisId"
+      ],
+      "secondTableName": "UserDepenseFixe",
+      "secondSchemaName": "public",
+      "secondRelation": "*",
+      "checkPoints": []
+    },
+    {
+      "firstFieldNames": [
+        "Id"
+      ],
+      "firstTableName": "UserMois",
+      "firstSchemaName": "public",
+      "firstRelation": "1",
+      "secondFieldNames": [
+        "UserMoisId"
+      ],
+      "secondTableName": "Enveloppe",
+      "secondSchemaName": "public",
+      "secondRelation": "*",
+      "checkPoints": []
+    }
+  ]
+}

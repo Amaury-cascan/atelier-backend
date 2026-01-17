@@ -1,0 +1,46 @@
+Table Exercice {
+    Id int [primary key]
+    Mois timestamp
+    MontantTotal int
+    MontantAide int
+}
+
+Table DepenseFixe {
+    Id int [primary key]
+    Nom string
+    Montant int
+    ExerciceId int [ref: > Exercice.Id]
+}
+
+Table UserMois {
+    Id int [primary key]
+    Salaire int
+    TauxEnveloppe int
+    Epargne int
+    UserId int [ref: > User.Id]
+    ExerciceId int [ref: > Exercice.Id]
+}
+
+Table UserDepenseFixe {
+    Id int [primary key]
+    Nom string
+    Montant int
+    UserMoisId int [ref: > UserMois.Id]
+}
+
+Table Enveloppe {
+    Id int [primary key]
+    Nom string
+    Montant int
+    Pourcentage int
+    UserMoisId int [ref: > UserMois.Id]
+    
+}
+
+Table User {
+    Id int [primary key]
+    Nom string
+    Email string
+    Password string
+    Role string
+}

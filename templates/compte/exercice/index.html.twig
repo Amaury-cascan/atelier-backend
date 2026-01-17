@@ -1,0 +1,256 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mois{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .exercice-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .exercice-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .exercice-header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        
+        .year-section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .year-header {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid #667eea;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        
+        .year-header:hover {
+            color: #5568d3;
+        }
+        
+        .year-header::after {
+            content: '▼';
+            font-size: 1rem;
+            transition: transform 0.3s;
+        }
+        
+        .year-header.collapsed::after {
+            transform: rotate(-90deg);
+        }
+        
+        .year-content {
+            overflow: hidden;
+            max-height: 1000px;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 1;
+        }
+        
+        .year-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0;
+            padding: 0;
+        }
+        
+        .exercices-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .exercices-table thead {
+            background: #f8f9fa;
+        }
+        
+        .exercices-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .exercices-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .exercices-table tbody tr {
+            transition: background-color 0.2s;
+        }
+        
+        .exercices-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .exercices-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .month-name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .montant-cell {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .montant-aide-cell {
+            font-weight: 500;
+            color: #28a745;
+        }
+        
+        .action-link {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        
+        .action-link:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .no-exercices {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+            font-style: italic;
+        }
+        
+        .create-btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .create-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="exercice-container">
+        <div class="exercice-header">
+            <h1>Depenses du compte commun</h1>
+        </div>
+        
+        {% if exercicesByYear is empty %}
+            <div class="year-section">
+                <div class="no-exercices">
+                    <p>Aucun exercice trouvé</p>
+                    <a href="{{ path('app_compte_exercice_new') }}" class="create-btn">Créer un nouveau mois</a>
+                </div>
+            </div>
+        {% else %}
+            {% set currentYear = "now"|date("Y")|number_format(0, '', '') %}
+            {% for year, months in exercicesByYear %}
+                {% set isCurrentYear = (year == currentYear) %}
+                <div class="year-section">
+                    <div class="year-header{% if not isCurrentYear %} collapsed{% endif %}" onclick="toggleYear('{{ year }}')" id="year-header-{{ year }}">
+                        <span>{{ year }}</span>
+                    </div>
+                    <div class="year-content{% if not isCurrentYear %} collapsed{% endif %}" id="year-content-{{ year }}">
+                        <table class="exercices-table">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th>Montant Total</th>
+                                <th>Montant Aide</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set moisNoms = {
+                                1: 'Janvier',
+                                2: 'Février',
+                                3: 'Mars',
+                                4: 'Avril',
+                                5: 'Mai',
+                                6: 'Juin',
+                                7: 'Juillet',
+                                8: 'Août',
+                                9: 'Septembre',
+                                10: 'Octobre',
+                                11: 'Novembre',
+                                12: 'Décembre'
+                            } %}
+                            {% for month, exercice in months %}
+                                <tr>
+                                    <td class="month-name">{{ moisNoms[month] }}</td>
+                                    <td class="montant-cell">{{ exercice.montantTotal ?? 0 }}€</td>
+                                    <td class="montant-aide-cell">{{ exercice.montantAide ?? 0 }}€</td>
+                                    <td>
+                                        <a href="{{ path('app_compte_exercice_show', {'id': exercice.id}) }}" class="action-link">Voir</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="{{ path('app_compte_exercice_new') }}" class="create-btn">+ Créer un nouveau mois</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <script>
+        function toggleYear(year) {
+            const header = document.getElementById('year-header-' + year);
+            const content = document.getElementById('year-content-' + year);
+            
+            if (content) {
+                content.classList.toggle('collapsed');
+                if (header) {
+                    header.classList.toggle('collapsed');
+                }
+            }
+        }
+    </script>
+{% endblock %}

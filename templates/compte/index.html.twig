@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Compte{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .compte-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .compte-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .compte-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .menu-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .menu-card-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .menu-card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .menu-card-description {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .menu-card.exercice {
+            border-top: 4px solid #667eea;
+        }
+        
+        .menu-card.user-mois {
+            border-top: 4px solid #28a745;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="compte-container">
+        <div class="compte-header">
+            <h1>Gestion du Compte</h1>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 1.1rem;">Choisissez une section à consulter</p>
+        </div>
+        
+        <div class="menu-grid">
+            <a href="{{ path('app_compte_exercice_index') }}" class="menu-card exercice">
+                <div class="menu-card-icon">📊</div>
+                <div class="menu-card-title">Dépenses du compte commun</div>
+                <div class="menu-card-description">Gérer les dépenses communes</div>
+            </a>
+            
+            <a href="{{ path('app_compte_user_mois_index') }}" class="menu-card user-mois">
+                <div class="menu-card-icon">👤</div>
+                <div class="menu-card-title">Mes Mois personnels</div>
+                <div class="menu-card-description">Gérer vos mois personnels, salaire et enveloppes</div>
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
