@@ -26,14 +26,14 @@ class AdminController extends AbstractController
         $formatToday = $today->format('Y-m-d');
         $currentWeek = $today->format('Y-W');
         $currentMonth = $today->format('Y-m');
-        // le mois d'avant
-        $lastMonth = $today->modify('-1 month')->format('Y-m');
-        // le mois encore avant 
-        $lastMonth2 = $today->modify('-1 month')->format('Y-m');
-        // le mois encore avant 
-        $lastMonth3 = $today->modify('-1 month')->format('Y-m');
-        
         $currentYear = $today->format('Y');
+        
+        // le mois d'avant
+        $lastMonth = (clone $today)->modify('-1 month')->format('Y-m');
+        // le mois encore avant 
+        $lastMonth2 = (clone $today)->modify('-2 months')->format('Y-m');
+        // le mois encore avant 
+        $lastMonth3 = (clone $today)->modify('-3 months')->format('Y-m');
 
         // Initialiser les totaux
         $totalByDay = 0;
