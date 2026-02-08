@@ -1,63 +1,47 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Calendrier{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
 <style>
-/* Variables couleurs beige/taupe */
+/* Calendrier : aligné sur design admin (--adm-*) */
 :root {
-    --beige: #f5dfc6;
-    --beige-light: #f8e6d3;
-    --beige-dark: #f0d7bb;
-    --taupe: #a24e32;
-    --taupe-light: #b85c40;
-    --taupe-dark: #8a402a;
-    --white: #ffffff;
-    --gray-100: #f8f9fa;
-    --gray-200: #e9ecef;
-    --gray-300: #dee2e6;
-    --gray-600: #6c757d;
-    --gray-800: #343a40;
-    --success: #22c55e;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --shadow-sm: 0 2px 4px rgba(162, 78, 50, 0.1);
-    --shadow-md: 0 4px 12px rgba(162, 78, 50, 0.15);
-    --shadow-lg: 0 8px 24px rgba(162, 78, 50, 0.2);
+    --beige: var(--adm-bg);
+    --beige-light: var(--adm-surface);
+    --beige-dark: var(--adm-border);
+    --taupe: var(--adm-accent);
+    --taupe-light: var(--adm-accent-hover);
+    --taupe-dark: var(--adm-accent);
+    --white: var(--adm-surface);
+    --gray-100: var(--adm-bg);
+    --gray-200: var(--adm-border);
+    --gray-300: var(--adm-border);
+    --gray-600: var(--adm-text-muted);
+    --gray-700: var(--adm-text-muted);
+    --gray-800: var(--adm-text);
+    --success: var(--adm-success);
+    --danger: var(--adm-error);
+    --warning: var(--adm-warning);
+    --shadow-sm: var(--adm-shadow);
+    --shadow-md: var(--adm-shadow-lg);
+    --shadow-lg: var(--adm-shadow-lg);
 }
 
-/* Reset et base mobile-first */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    background: linear-gradient(135deg, var(--beige-light) 0%, var(--beige) 100%);
-    min-height: 100vh;
-    font-family: 'Inter', sans-serif;
-    color: var(--gray-800);
-    overflow-x: hidden;
-}
-
-/* Container mobile-optimized */
 .mobile-calendar {
     max-width: 100%;
-    min-height: 100vh;
+    min-height: 100%;
     padding: 0;
 }
 
-/* Header mobile sticky */
+/* Header calendrier */
 .mobile-header {
-    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
-    color: white;
-    padding: 1rem;
+    background: var(--adm-surface);
+    border-bottom: 1px solid var(--adm-border);
+    padding: 1rem 1.25rem;
     position: sticky;
     top: 0;
-    z-index: 100;
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 1px 3px rgba(45, 42, 38, 0.06);
 }
 
 .header-top {
@@ -68,104 +52,154 @@ body {
 }
 
 .header-title {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
     font-weight: 700;
+    color: var(--adm-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-/* Navigation mobile */
+.header-title i {
+    color: var(--adm-accent);
+    font-size: 1.1em;
+}
+
 .mobile-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
+    gap: 0.5rem;
 }
 
 .nav-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    padding: 0.75rem;
-    border-radius: 12px;
+    background: var(--adm-bg);
+    border: 1px solid var(--adm-border);
+    color: var(--adm-text);
+    padding: 0.7rem;
+    border-radius: var(--adm-radius-sm);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
     min-width: 44px;
     min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .nav-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
+    background: var(--adm-accent-soft);
+    color: var(--adm-accent);
+    border-color: var(--adm-accent);
 }
 
 .nav-current-date {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
+    color: var(--adm-text);
     text-align: center;
     flex-grow: 1;
-    margin: 0 1rem;
+    margin: 0;
+    min-width: 0;
 }
 
-/* Vue selector mobile */
+.quick-nav {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.quick-nav-btn {
+    flex: 1;
+    background: var(--adm-bg);
+    border: 1px solid var(--adm-border);
+    color: var(--adm-text);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--adm-radius-sm);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.quick-nav-btn:hover {
+    background: var(--adm-accent-soft);
+    color: var(--adm-accent);
+    border-color: var(--adm-accent);
+}
+
 .view-tabs {
     display: flex;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 0.25rem;
+    background: var(--adm-bg);
+    border-radius: var(--adm-radius-sm);
+    padding: 0.3rem;
     gap: 0.25rem;
 }
 
 .view-tab {
     flex: 1;
+    min-width: 0;
     background: transparent;
     border: none;
-    color: white;
-    padding: 0.75rem 0.5rem;
-    border-radius: 8px;
+    color: var(--adm-text-muted);
+    padding: 0.65rem 0.35rem;
+    border-radius: var(--adm-radius-sm);
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     cursor: pointer;
-    transition: all 0.3s ease;
-    opacity: 0.7;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.view-tab i { font-size: 1.05rem; }
+
+.view-tab:hover {
+    color: var(--adm-text);
 }
 
 .view-tab.active {
-    background: rgba(255, 255, 255, 0.25);
-    opacity: 1;
-    backdrop-filter: blur(10px);
+    background: var(--adm-accent);
+    color: white;
 }
 
-/* Vue Jour Mobile */
+/* Vue Jour */
 .day-view {
-    padding: 1rem;
-    background: white;
-    min-height: calc(100vh - 200px);
+    padding: 1.25rem;
+    background: var(--adm-bg);
+    min-height: calc(100vh - 320px);
 }
 
 .day-header {
-    background: linear-gradient(135deg, var(--beige), var(--beige-light));
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
     text-align: center;
-    border: 2px solid var(--taupe-light);
+    box-shadow: var(--adm-shadow);
 }
 
 .day-title {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: var(--taupe-dark);
-    margin-bottom: 0.5rem;
+    color: var(--adm-text);
+    margin-bottom: 0.25rem;
 }
 
 .day-subtitle {
-    color: var(--gray-600);
+    color: var(--adm-text-muted);
     font-size: 0.9rem;
 }
 
-/* Timeline mobile */
 .timeline {
     position: relative;
 }
@@ -177,7 +211,7 @@ body {
     top: 0;
     bottom: 0;
     width: 2px;
-    background: var(--beige-dark);
+    background: var(--adm-border);
 }
 
 .time-slot {
@@ -191,12 +225,12 @@ body {
     width: 60px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--taupe);
+    color: var(--adm-accent);
     text-align: center;
-    background: white;
-    border-radius: 8px;
+    background: var(--adm-surface);
+    border-radius: var(--adm-radius-sm);
     padding: 0.25rem;
-    border: 1px solid var(--beige-dark);
+    border: 1px solid var(--adm-border);
     position: relative;
     z-index: 1;
 }
@@ -206,21 +240,22 @@ body {
     margin-left: 1rem;
 }
 
-/* Carte RDV mobile */
 .appointment-card {
-    background: linear-gradient(135deg, var(--white), var(--beige-light));
-    border-radius: 16px;
-    padding: 1rem;
+    background: var(--adm-surface);
+    border-radius: var(--adm-radius);
+    padding: 1rem 1.25rem;
     margin-bottom: 0.75rem;
-    border-left: 4px solid var(--taupe);
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s ease;
+    border: 1px solid var(--adm-border);
+    border-left: 4px solid var(--adm-accent);
+    box-shadow: var(--adm-shadow);
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
     cursor: pointer;
 }
 
 .appointment-card:hover {
+    box-shadow: var(--adm-shadow-lg);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    border-color: var(--adm-accent-soft);
 }
 
 .appointment-header {
@@ -233,16 +268,16 @@ body {
 .appointment-service {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--taupe-dark);
+    color: var(--adm-text);
 }
 
 .appointment-time {
     font-size: 0.85rem;
-    color: var(--taupe);
+    color: var(--adm-accent);
     font-weight: 600;
-    background: var(--beige);
+    background: var(--adm-accent-soft);
     padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    border-radius: var(--adm-radius-sm);
 }
 
 .appointment-client {
@@ -256,7 +291,7 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    background: var(--adm-accent);
     color: white;
     display: flex;
     align-items: center;
@@ -271,7 +306,7 @@ body {
 
 .client-name {
     font-weight: 600;
-    color: var(--gray-800);
+    color: var(--adm-text);
     font-size: 0.95rem;
 }
 
@@ -280,7 +315,7 @@ body {
     justify-content: space-between;
     align-items: center;
     font-size: 0.85rem;
-    color: var(--gray-600);
+    color: var(--adm-text-muted);
 }
 
 .appointment-duration {
@@ -291,21 +326,22 @@ body {
 
 .appointment-price {
     font-weight: 700;
-    color: var(--taupe);
+    color: var(--adm-accent);
 }
 
-/* Vue Liste Mobile */
 .list-view {
-    padding: 1rem;
-    background: white;
-    min-height: calc(100vh - 200px);
+    padding: 1.25rem;
+    background: var(--adm-bg);
+    min-height: calc(100vh - 320px);
 }
 
 .list-filters {
-    background: var(--gray-100);
-    border-radius: 16px;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
     padding: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--adm-shadow);
 }
 
 .filter-row {
@@ -320,63 +356,62 @@ body {
 
 .filter-input {
     flex: 1;
-    border: 2px solid var(--gray-200);
-    border-radius: 12px;
-    padding: 0.75rem;
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius-sm);
+    padding: 0.65rem 0.85rem;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
+    background: var(--adm-bg);
+    color: var(--adm-text);
+    transition: border-color 0.2s;
 }
 
 .filter-input:focus {
-    border-color: var(--taupe-light);
+    border-color: var(--adm-accent);
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(162, 78, 50, 0.25);
 }
 
-/* Bouton Nouveau RDV flottant */
 .fab {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
+    bottom: calc(var(--adm-nav-h) + 1rem);
+    right: 1rem;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    background: var(--adm-accent);
     color: white;
     border: none;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--adm-shadow-lg);
     cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 200;
+    transition: background 0.2s, transform 0.2s;
+    z-index: 90;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.35rem;
 }
 
 .fab:hover {
-    transform: scale(1.1);
-    box-shadow: 0 8px 32px rgba(162, 78, 50, 0.4);
+    background: var(--adm-accent-hover);
+    transform: scale(1.05);
 }
 
-/* States vides */
 .empty-state {
     text-align: center;
-    padding: 3rem 1rem;
-    color: var(--gray-600);
+    padding: 2.5rem 1rem;
+    color: var(--adm-text-muted);
 }
 
 .empty-icon {
-    font-size: 3rem;
-    color: var(--beige-dark);
-    margin-bottom: 1rem;
+    font-size: 2.5rem;
+    color: var(--adm-border);
+    margin-bottom: 0.75rem;
 }
 
 .empty-title {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--gray-800);
+    margin-bottom: 0.35rem;
+    color: var(--adm-text);
 }
 
 .empty-subtitle {
@@ -390,7 +425,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(45, 42, 38, 0.4);
     z-index: 1000;
     display: flex;
     align-items: flex-end;
@@ -405,13 +440,14 @@ body {
 }
 
 .modal-content-mobile {
-    background: white;
-    border-radius: 20px 20px 0 0;
+    background: var(--adm-surface);
+    border-radius: var(--adm-radius) var(--adm-radius) 0 0;
     width: 100%;
     max-height: 90vh;
     transform: translateY(100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.25s ease;
     overflow-y: auto;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
 }
 
 .mobile-modal.show .modal-content-mobile {
@@ -419,29 +455,29 @@ body {
 }
 
 .modal-header-mobile {
-    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    background: var(--adm-accent);
     color: white;
-    padding: 1.5rem;
-    border-radius: 20px 20px 0 0;
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--adm-radius) var(--adm-radius) 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .modal-title-mobile {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 700;
 }
 
 .modal-close {
-    background: none;
+    background: rgba(255,255,255,0.2);
     border: none;
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 50%;
-    transition: background 0.3s ease;
+    transition: background 0.2s;
     min-width: 44px;
     min-height: 44px;
     display: flex;
@@ -450,29 +486,28 @@ body {
 }
 
 .modal-close:hover {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.3);
 }
 
 .modal-body-mobile {
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
 }
 
 .modal-footer-mobile {
     padding: 1rem 1.5rem;
-    border-top: 1px solid var(--gray-200);
+    border-top: 1px solid var(--adm-border);
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
-/* Boutons mobile */
 .btn-mobile {
     border: none;
-    border-radius: 12px;
-    padding: 0.875rem 1.5rem;
+    border-radius: var(--adm-radius-sm);
+    padding: 0.75rem 1.25rem;
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.2s, transform 0.2s;
     flex: 1;
     min-height: 48px;
     display: flex;
@@ -482,59 +517,59 @@ body {
 }
 
 .btn-primary-mobile {
-    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    background: var(--adm-accent);
     color: white;
 }
 
 .btn-primary-mobile:hover {
-    background: linear-gradient(135deg, var(--taupe-dark), var(--taupe));
+    background: var(--adm-accent-hover);
     transform: translateY(-1px);
 }
 
 .btn-secondary-mobile {
-    background: var(--gray-200);
-    color: var(--gray-800);
+    background: var(--adm-bg);
+    color: var(--adm-text);
+    border: 1px solid var(--adm-border);
 }
 
 .btn-secondary-mobile:hover {
-    background: var(--gray-300);
+    background: var(--adm-accent-soft);
 }
 
 .btn-danger-mobile {
-    background: linear-gradient(135deg, var(--danger), #dc2626);
+    background: var(--adm-error);
     color: white;
 }
 
-/* Formulaires mobile */
 .form-group-mobile {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .form-label-mobile {
     display: block;
     font-weight: 600;
-    color: var(--taupe-dark);
-    margin-bottom: 0.5rem;
+    color: var(--adm-text);
+    margin-bottom: 0.4rem;
     font-size: 0.95rem;
 }
 
 .form-input-mobile {
     width: 100%;
-    border: 2px solid var(--gray-200);
-    border-radius: 12px;
-    padding: 0.875rem;
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius-sm);
+    padding: 0.75rem 1rem;
     font-size: 0.95rem;
-    transition: all 0.3s ease;
+    background: var(--adm-bg);
+    color: var(--adm-text);
+    transition: border-color 0.2s;
     min-height: 48px;
 }
 
 .form-input-mobile:focus {
-    border-color: var(--taupe-light);
+    border-color: var(--adm-accent);
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(162, 78, 50, 0.25);
 }
 
-/* Loading states */
 .loading {
     display: flex;
     justify-content: center;
@@ -545,8 +580,8 @@ body {
 .spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid var(--beige);
-    border-top: 3px solid var(--taupe);
+    border: 3px solid var(--adm-border);
+    border-top-color: var(--adm-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -561,13 +596,13 @@ body {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: var(--taupe);
+    background: var(--adm-accent);
     color: white;
     padding: 0.5rem;
-    border-radius: 8px;
+    border-radius: var(--adm-radius-sm);
     font-size: 0.8rem;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
 }
 
 .swipe-indicator.left {
@@ -578,25 +613,65 @@ body {
     right: 10px;
 }
 
-/* Responsive pour tablettes */
 @media (min-width: 768px) {
     .mobile-calendar {
-        max-width: 600px;
-        margin: 0 auto;
-        box-shadow: var(--shadow-lg);
-        border-radius: 20px;
+        max-width: 100%;
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
         overflow: hidden;
-        margin-top: 2rem;
-        margin-bottom: 2rem;
+        border: none;
     }
+    
+    .mobile-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .header-top {
+        margin-bottom: 0.75rem;
+    }
+    
+    .header-title {
+        font-size: 1.5rem;
+    }
+    
+    .mobile-nav {
+        margin-bottom: 0.5rem;
+    }
+    
+    .nav-current-date {
+        font-size: 1.1rem;
+    }
+    
+    .view-tabs {
+        padding: 0.35rem;
+        gap: 0.35rem;
+    }
+    
+    .view-tab {
+        padding: 0.7rem 0.75rem;
+        font-size: 0.85rem;
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+    
+    .view-tab i { font-size: 1.1rem; }
     
     .day-view, .list-view {
         padding: 1.5rem;
     }
     
+    .week-view {
+        padding: 1rem 1.5rem;
+    }
+    
+    .month-view-content {
+        padding: 1rem 1.5rem;
+    }
+    
     .fab {
-        bottom: 30px;
-        right: 30px;
+        bottom: 1.5rem;
+        right: 1.5rem;
     }
 }
 
@@ -628,8 +703,7 @@ body {
     to { transform: translateX(0); }
 }
 
-/* Couleurs de services harmonieuses */
-.service-color-1 { border-left-color: var(--taupe) !important; }
+.service-color-1 { border-left-color: var(--adm-accent) !important; }
 .service-color-2 { border-left-color: #C8956D !important; }
 .service-color-3 { border-left-color: #B8956D !important; }
 .service-color-4 { border-left-color: #A67C52 !important; }
@@ -640,11 +714,10 @@ body {
 .service-color-9 { border-left-color: #7A6F5D !important; }
 .service-color-10 { border-left-color: #9A8F7D !important; }
 
-/* Vue semaine mobile */
 .week-view {
     padding: 1rem;
-    background: white;
-    min-height: calc(100vh - 200px);
+    background: var(--adm-bg);
+    min-height: calc(100vh - 280px);
 }
 
 .week-header {
@@ -653,22 +726,24 @@ body {
 }
 
 .week-day {
-    background: var(--gray-100);
-    border-radius: 12px;
-    padding: 0.75rem 0;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
+    padding: 0.75rem;
     min-height: 120px;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.2s, transform 0.2s;
     cursor: pointer;
+    box-shadow: var(--adm-shadow);
 }
 
 .week-day:hover {
-    background: var(--beige-light);
-    transform: translateY(-2px);
+    box-shadow: var(--adm-shadow-lg);
+    transform: translateY(-1px);
 }
 
 .week-day.today {
-    background: linear-gradient(135deg, var(--beige), var(--beige-light));
-    border: 2px solid var(--taupe-light);
+    border-color: var(--adm-accent);
+    background: var(--adm-accent-soft);
 }
 
 .week-day-header {
@@ -678,20 +753,20 @@ body {
 
 .week-day-name {
     font-size: 0.75rem;
-    color: var(--gray-600);
+    color: var(--adm-text-muted);
     font-weight: 600;
     text-transform: uppercase;
 }
 
 .week-day-number {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    color: var(--taupe-dark);
+    color: var(--adm-text);
     margin-top: 0.25rem;
 }
 
 .week-day.today .week-day-number {
-    color: var(--taupe);
+    color: var(--adm-accent);
 }
 
 .week-day-appointments {
@@ -701,22 +776,30 @@ body {
 }
 
 .week-appointment {
-    background: var(--white);
-    border-radius: 6px;
-    padding: 0.25rem 0.5rem;
+    background: var(--adm-surface);
+    border-radius: var(--adm-radius-sm);
+    padding: 0.3rem 0.5rem;
     font-size: 0.7rem;
-    border-left: 3px solid var(--taupe);
-    box-shadow: var(--shadow-sm);
+    border-left: 3px solid var(--adm-accent);
+    border: 1px solid var(--adm-border);
+    border-left-width: 3px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.week-appointment:hover {
+    box-shadow: var(--adm-shadow);
+    transform: translateY(-1px);
 }
 
 .week-apt-time {
     font-weight: 600;
-    color: var(--taupe);
+    color: var(--adm-accent);
     line-height: 1.2;
 }
 
 .week-apt-client {
-    color: var(--gray-700);
+    color: var(--adm-text-muted);
     line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -724,21 +807,20 @@ body {
 }
 
 .week-more {
-    background: var(--taupe);
+    background: var(--adm-accent);
     color: white;
     text-align: center;
     padding: 0.25rem;
-    border-radius: 6px;
+    border-radius: var(--adm-radius-sm);
     font-size: 0.7rem;
     font-weight: 600;
     margin-top: 0.25rem;
 }
 
-/* Headers de date pour la liste */
 .list-date-header {
-    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    background: var(--adm-accent);
     color: white;
-    padding: 0.75rem 1rem;
+    padding: 0.65rem 1rem;
     margin: 1rem -1rem 1rem -1rem;
     font-weight: 700;
     font-size: 0.9rem;
@@ -772,76 +854,48 @@ body {
     font-size: 0.9em;
 }
 
-/* Navigation rapide */
-.quick-nav {
-    display: flex;
-    gap: 0.5rem;
-    margin: 1rem 0;
-}
 
-.quick-nav-btn {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 1;
-    justify-content: center;
-}
-
-.quick-nav-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-1px);
-}
-
-/* Navigation semaine */
 .week-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: var(--beige-light);
-    border-radius: 12px;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
     margin-bottom: 1rem;
+    box-shadow: var(--adm-shadow);
 }
 
 .week-nav-btn {
-    background: var(--taupe);
+    background: var(--adm-accent);
     color: white;
     border: none;
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--adm-radius-sm);
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.2s, transform 0.2s;
 }
 
 .week-nav-btn:hover {
-    background: var(--taupe-dark);
+    background: var(--adm-accent-hover);
     transform: translateY(-1px);
 }
 
 .week-range {
     font-weight: 700;
-    color: var(--taupe-dark);
+    color: var(--adm-text);
     text-align: center;
     flex: 1;
     margin: 0 1rem;
 }
 
-/* Vue Mois */
 .month-view {
     padding: 1rem;
-    background: white;
-    min-height: calc(100vh - 200px);
+    background: var(--adm-bg);
+    min-height: calc(100vh - 280px);
 }
 
 .month-nav {
@@ -849,19 +903,21 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: linear-gradient(135deg, var(--beige), var(--beige-light));
-    border-radius: 12px;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
     margin-bottom: 1rem;
+    box-shadow: var(--adm-shadow);
 }
 
 .month-nav-btn {
-    background: var(--taupe);
+    background: var(--adm-accent);
     color: white;
     border: none;
     padding: 0.75rem;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.2s, transform 0.2s;
     width: 44px;
     height: 44px;
     display: flex;
@@ -870,14 +926,14 @@ body {
 }
 
 .month-nav-btn:hover {
-    background: var(--taupe-dark);
-    transform: scale(1.1);
+    background: var(--adm-accent-hover);
+    transform: scale(1.05);
 }
 
 .month-title {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: var(--taupe-dark);
+    color: var(--adm-text);
     text-align: center;
     flex: 1;
 }
@@ -885,52 +941,52 @@ body {
 .month-grid {
     display: grid;
     gap: 1px;
-    background: var(--gray-200);
-    border-radius: 12px;
+    background: var(--adm-border);
+    border-radius: var(--adm-radius);
     overflow: hidden;
 }
 
 .month-day-header {
-    background: var(--taupe);
+    background: var(--adm-accent);
     color: white;
-    padding: 0.75rem 0.5rem;
+    padding: 0.65rem 0.5rem;
     text-align: center;
     font-weight: 700;
     font-size: 0.8rem;
 }
 
 .month-day {
-    background: white;
+    background: var(--adm-surface);
     min-height: 80px;
     padding: 0.5rem;
     position: relative;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.2s;
 }
 
 .month-day:hover {
-    background: var(--beige-light);
+    background: var(--adm-accent-soft);
 }
 
 .month-day.other-month {
-    background: var(--gray-100);
-    color: var(--gray-400);
+    background: var(--adm-bg);
+    color: var(--adm-text-muted);
 }
 
 .month-day.today {
-    background: var(--beige);
-    border: 2px solid var(--taupe);
+    background: var(--adm-accent-soft);
+    border: 2px solid var(--adm-accent);
 }
 
 .month-day-number {
     font-weight: 700;
-    color: var(--taupe-dark);
+    color: var(--adm-text);
     font-size: 0.9rem;
     margin-bottom: 0.25rem;
 }
 
 .month-day.today .month-day-number {
-    color: var(--taupe);
+    color: var(--adm-accent);
 }
 
 .month-appointments {
@@ -940,45 +996,54 @@ body {
 }
 
 .month-appointment {
-    background: var(--taupe);
+    background: var(--adm-accent);
     color: white;
-    padding: 0.15rem 0.3rem;
-    border-radius: 4px;
+    padding: 0.2rem 0.35rem;
+    border-radius: var(--adm-radius-sm);
     font-size: 0.65rem;
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s, opacity 0.2s;
+}
+
+.month-appointment:hover {
+    box-shadow: var(--adm-shadow);
+    transform: translateY(-1px);
+    opacity: 0.95;
 }
 
 .month-more {
-    color: var(--gray-600);
+    color: var(--adm-text-muted);
     font-size: 0.65rem;
     font-weight: 600;
     text-align: center;
     margin-top: 0.25rem;
 }
 
-/* Vue Statistiques - Mobile first */
 .stats-view {
-    padding: 0.75rem;
-    background: white;
-    min-height: calc(100vh - 200px);
+    padding: 1rem;
+    background: var(--adm-bg);
+    min-height: calc(100vh - 280px);
 }
 
 .stats-header {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: linear-gradient(135deg, var(--beige), var(--beige-light));
-    border-radius: 12px;
+    margin-bottom: 1.25rem;
+    padding: 1.25rem;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
+    box-shadow: var(--adm-shadow);
 }
 
 .stats-header h2 {
-    color: var(--taupe-dark);
-    font-size: 1.2rem;
+    color: var(--adm-text);
+    font-size: 1.15rem;
     font-weight: 700;
     margin: 0;
     text-align: center;
@@ -991,44 +1056,45 @@ body {
 
 .stats-period select {
     min-width: 140px;
-    padding: 0.5rem;
-    border: 2px solid var(--taupe-light);
-    border-radius: 8px;
-    background: white;
-    color: var(--taupe-dark);
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius-sm);
+    background: var(--adm-bg);
+    color: var(--adm-text);
     font-weight: 600;
 }
 
-/* KPIs Grid - Mobile first */
 .kpi-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .kpi-card {
-    background: linear-gradient(135deg, var(--white), var(--beige-light));
-    border-radius: 16px;
+    background: var(--adm-surface);
+    border-radius: var(--adm-radius);
     padding: 1rem;
-    box-shadow: var(--shadow-sm);
-    border-left: 4px solid var(--taupe);
-    transition: all 0.3s ease;
+    box-shadow: var(--adm-shadow);
+    border: 1px solid var(--adm-border);
+    border-left-width: 4px;
+    border-left-color: var(--adm-accent);
+    transition: box-shadow 0.2s, transform 0.2s;
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
 .kpi-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    box-shadow: var(--adm-shadow-lg);
 }
 
 .kpi-icon {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--taupe), var(--taupe-light));
+    border-radius: var(--adm-radius-sm);
+    background: var(--adm-accent);
     color: white;
     display: flex;
     align-items: center;
@@ -1042,39 +1108,38 @@ body {
 }
 
 .kpi-number {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 700;
-    color: var(--taupe-dark);
-    margin-bottom: 0.25rem;
+    color: var(--adm-text);
+    margin-bottom: 0.2rem;
 }
 
 .kpi-label {
-    color: var(--gray-600);
+    color: var(--adm-text-muted);
     font-size: 0.85rem;
     font-weight: 600;
 }
 
-/* Charts Container - Mobile first */
 .charts-container {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
 .chart-card {
-    background: white;
-    border-radius: 16px;
-    padding: 1rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--gray-200);
+    background: var(--adm-surface);
+    border-radius: var(--adm-radius);
+    padding: 1.25rem;
+    box-shadow: var(--adm-shadow);
+    border: 1px solid var(--adm-border);
     overflow: hidden;
 }
 
 .chart-card h3 {
-    color: var(--taupe-dark);
+    color: var(--adm-text);
     font-size: 1rem;
     font-weight: 700;
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.75rem 0;
     text-align: center;
 }
 
@@ -1504,13 +1569,14 @@ body {
 }
 
 .appointment-modal-content {
-    background: white;
-    border-radius: 20px;
-    max-width: 400px;
+    background: var(--adm-surface);
+    border-radius: var(--adm-radius);
+    border: 1px solid var(--adm-border);
+    max-width: 420px;
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    box-shadow: var(--adm-shadow-lg);
     animation: modalSlideUp 0.3s ease-out;
 }
 
@@ -1526,10 +1592,10 @@ body {
 }
 
 .appointment-modal-header {
-    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    background: var(--adm-accent);
     color: white;
-    padding: 1.5rem;
-    border-radius: 20px 20px 0 0;
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--adm-radius) var(--adm-radius) 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1542,14 +1608,14 @@ body {
 }
 
 .close-btn {
-    background: none;
+    background: rgba(255,255,255,0.2);
     border: none;
     color: white;
     font-size: 1.2rem;
     cursor: pointer;
     padding: 0.5rem;
-    border-radius: 50%;
-    transition: all 0.3s ease;
+    border-radius: var(--adm-radius-sm);
+    transition: background 0.2s, transform 0.2s;
     width: 40px;
     height: 40px;
     display: flex;
@@ -1558,12 +1624,13 @@ body {
 }
 
 .close-btn:hover {
-    background: rgba(255,255,255,0.2);
-    transform: rotate(90deg);
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.05);
 }
 
 .appointment-modal-body {
     padding: 1.5rem;
+    background: var(--adm-surface);
 }
 
 .appointment-info {
@@ -1577,34 +1644,35 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem;
-    background: var(--gray-100);
-    border-radius: 12px;
-    border-left: 4px solid var(--taupe);
+    padding: 0.75rem 1rem;
+    background: var(--adm-bg);
+    border-radius: var(--adm-radius);
+    border-left: 4px solid var(--adm-accent);
 }
 
 .appointment-detail i {
-    color: var(--taupe);
+    color: var(--adm-accent);
     font-size: 1.1rem;
     width: 20px;
     text-align: center;
 }
 
 .appointment-detail span {
-    color: var(--gray-800);
+    color: var(--adm-text);
     font-weight: 600;
     font-size: 0.95rem;
 }
 
 .duration-editor {
-    background: var(--beige-light);
-    border-radius: 12px;
+    background: var(--adm-bg);
+    border-radius: var(--adm-radius);
     padding: 1rem;
     margin-top: 1rem;
+    border: 1px solid var(--adm-border);
 }
 
 .duration-editor h4 {
-    color: var(--taupe-dark);
+    color: var(--adm-text);
     margin: 0 0 1rem 0;
     font-size: 1rem;
     font-weight: 700;
@@ -1618,22 +1686,21 @@ body {
 }
 
 .duration-btn {
-    background: white;
-    border: 2px solid var(--taupe-light);
-    color: var(--taupe-dark);
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    color: var(--adm-text);
     padding: 0.75rem;
-    border-radius: 8px;
+    border-radius: var(--adm-radius-sm);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
     font-size: 0.9rem;
 }
 
 .duration-btn:hover, .duration-btn.active {
-    background: var(--taupe);
+    background: var(--adm-accent);
     color: white;
-    border-color: var(--taupe);
-    transform: translateY(-1px);
+    border-color: var(--adm-accent);
 }
 
 .custom-duration {
@@ -1643,7 +1710,7 @@ body {
 }
 
 .custom-duration label {
-    color: var(--taupe-dark);
+    color: var(--adm-text);
     font-weight: 600;
     font-size: 0.9rem;
 }
@@ -1656,14 +1723,14 @@ body {
 }
 
 .action-btn {
-    background: var(--gray-200);
-    border: none;
-    color: var(--gray-700);
+    background: var(--adm-bg);
+    border: 1px solid var(--adm-border);
+    color: var(--adm-text);
     padding: 1rem;
-    border-radius: 12px;
+    border-radius: var(--adm-radius);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1672,152 +1739,90 @@ body {
 }
 
 .action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: var(--adm-accent-soft);
+    border-color: var(--adm-accent);
+    box-shadow: var(--adm-shadow);
 }
 
 .edit-btn {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    background: var(--adm-accent);
     color: white;
+    border-color: var(--adm-accent);
 }
 
 .edit-btn:hover {
-    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    background: var(--adm-accent-hover);
 }
 
 .duration-btn-toggle {
-    background: linear-gradient(135deg, var(--taupe-light), var(--taupe));
+    background: var(--adm-accent);
     color: white;
+    border-color: var(--adm-accent);
 }
 
 .duration-btn-toggle:hover {
-    background: linear-gradient(135deg, var(--taupe), var(--taupe-dark));
+    background: var(--adm-accent-hover);
+    border-color: var(--adm-accent-hover);
 }
 
 .delete-btn {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: var(--adm-error);
     color: white;
+    border-color: var(--adm-error);
 }
 
 .delete-btn:hover {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    background: #b03a3a;
+    border-color: #b03a3a;
 }
 
 .save-btn {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: var(--adm-success);
     color: white;
+    border-color: var(--adm-success);
 }
 
 .save-btn:hover {
-    background: linear-gradient(135deg, #059669, #047857);
+    background: #248a5e;
+    border-color: #248a5e;
 }
 
 .cancel-btn {
-    background: #6B7280 !important;
-    color: white !important;
+    background: var(--adm-text-muted);
+    border-color: var(--adm-text-muted);
+    color: white;
 }
 
 .cancel-btn:hover {
-    background: #4B5563 !important;
-}
-
-/* Amélioration visibilité RDV dans toutes les vues */
-.appointment-card {
-    box-shadow: 0 4px 16px rgba(162, 78, 50, 0.3) !important;
-    border: 2px solid rgba(255,255,255,0.25) !important;
-    font-weight: 600 !important;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.appointment-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.2));
-}
-
-.appointment-card:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 0 8px 25px rgba(162, 78, 50, 0.4) !important;
-    border-color: rgba(255,255,255,0.4) !important;
-}
-
-.appointment-card:active {
-    transform: translateY(-1px) !important;
-    transition: all 0.1s !important;
-}
-
-/* Couleur unique harmonieuse pour tous les services */
-.service-color-1, 
-.service-color-2, 
-.service-color-3, 
-.service-color-4, 
-.service-color-5, 
-.service-color-6 { 
-    background: linear-gradient(135deg, var(--beige), var(--taupe)) !important; 
-}
-
-
-/* Effet de pulsation pour indiquer que les RDV sont cliquables */
-@keyframes pulseClick {
-    0% { box-shadow: 0 0 0 0 rgba(162, 78, 50, 0.4); }
-    70% { box-shadow: 0 0 0 8px rgba(162, 78, 50, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(162, 78, 50, 0); }
+    background: #5a534d;
+    border-color: #5a534d;
 }
 
 .appointment-card, .week-appointment, .month-appointment {
     position: relative;
 }
 
-.appointment-card::after, .week-appointment::after, .month-appointment::after {
-    content: '👆';
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: 0.7rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-
-.appointment-card:hover::after, .week-appointment:hover::after, .month-appointment:hover::after {
-    opacity: 0.8;
-    animation: pulseClick 1.5s infinite;
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    /* Variables peuvent être ajustées pour le mode sombre si nécessaire */
-}
-
-/* Effets hover pour les blocs timeline */
 .appointment-timeline-block:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.3);
-    background: rgba(139, 115, 85, 0.15) !important;
-    border-color: rgba(139, 115, 85, 0.5) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--adm-shadow-lg);
+    background: var(--adm-accent-soft) !important;
+    border-color: var(--adm-accent) !important;
 }
 
 .appointment-timeline-block:active {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(139, 115, 85, 0.2);
 }
 
-/* Timeline container styles */
 .timeline-container {
-    background: #fafafa;
-    border-radius: 12px;
+    background: var(--adm-surface);
+    border-radius: var(--adm-radius);
     overflow: hidden;
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--adm-border);
+    box-shadow: var(--adm-shadow);
 }
 
 .timeline-hour {
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid var(--adm-border);
 }
 
 .timeline-hour:last-child {
@@ -1825,9 +1830,9 @@ body {
 }
 
 .timeline-hour-label {
-    font-weight: 500;
-    color: #8B7355;
-    border-right: 1px solid #e5e5e5;
+    font-weight: 600;
+    color: var(--adm-accent);
+    border-right: 1px solid var(--adm-border);
 }
 
 /* Responsive pour les blocs timeline */
@@ -2519,8 +2524,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('totalAppointments').textContent = filteredAppointments.length;
         
         const totalRevenue = filteredAppointments.reduce((sum, apt) => {
-            const service = services.find(s => s.id == apt.extendedProps.serviceId);
-            return sum + (service ? service.price : 0);
+            const price = apt.extendedProps.price ?? services.find(s => s.id == apt.extendedProps.serviceId)?.price ?? 0;
+            return sum + (Number(price) || 0);
         }, 0);
         document.getElementById('totalRevenue').textContent = totalRevenue + '€';
         
@@ -2579,8 +2584,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         filteredAppointments.forEach(apt => {
             const clientId = apt.extendedProps.clientId;
-            const service = services.find(s => s.id == apt.extendedProps.serviceId);
-            const price = service ? service.price : 0;
+            const price = apt.extendedProps.price ?? services.find(s => s.id == apt.extendedProps.serviceId)?.price ?? 0;
             
             if (!clientStats[clientId]) {
                 clientStats[clientId] = {
@@ -2591,7 +2595,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             clientStats[clientId].count++;
-            clientStats[clientId].total += price;
+            clientStats[clientId].total += (Number(price) || 0);
         });
         
         const topClients = Object.values(clientStats)
@@ -2698,8 +2702,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             monthlyStats[monthKey].count++;
-            const service = services.find(s => s.id == apt.extendedProps.serviceId);
-            monthlyStats[monthKey].revenue += service ? service.price : 0;
+            const price = apt.extendedProps.price ?? services.find(s => s.id == apt.extendedProps.serviceId)?.price ?? 0;
+            monthlyStats[monthKey].revenue += (Number(price) || 0);
         });
         
         const sortedMonths = Object.keys(monthlyStats).sort();

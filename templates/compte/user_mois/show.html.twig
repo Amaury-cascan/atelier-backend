@@ -1,236 +1,59 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Compte Personnel{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .exercice-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        
-        .exercice-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .exercice-header h1 {
-            margin: 0 0 0.5rem 0;
-            font-size: 2rem;
-        }
-        
-        .exercice-header .subtitle {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 1rem;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .info-card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-            min-height: 120px;
-        }
-        
-        .info-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .info-label {
-            font-size: 0.875rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-        
-        .info-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 0;
-        }
-        
-        .info-card > .info-label:not(:first-child) {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        .section {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .section h2 {
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-            color: #333;
-            font-size: 1.5rem;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 0.5rem;
-        }
-        
-        .depense-list, .enveloppe-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .depense-item, .enveloppe-item {
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .depense-item:hover, .enveloppe-item:hover {
-            background: #e9ecef;
-        }
-        
-        .depense-nom, .enveloppe-nom {
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .depense-montant, .enveloppe-montant {
-            font-weight: 700;
-            color: #667eea;
-        }
-        
-        .badge-commune {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            background: #28a745;
-            color: white;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            margin-left: 0.5rem;
-        }
-        
-        .exercice-link {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: all 0.2s;
-            margin-top: 1rem;
-        }
-        
-        .exercice-link:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-        }
-        
-        .actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-        
-        .empty-message {
-            color: #999;
-            font-style: italic;
-            text-align: center;
-            padding: 2rem;
-        }
-    </style>
+{{ parent() }}
+<style>
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.info-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius); padding: 1.25rem; box-shadow: var(--adm-shadow); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; min-height: 120px; }
+.info-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.info-label { font-size: 0.875rem; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+.info-value { font-size: 1.35rem; font-weight: 700; color: var(--adm-text); margin-bottom: 0; }
+.info-card > .info-label:not(:first-child) { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--adm-border); }
+.section { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--adm-shadow); }
+.section h2 { margin-top: 0; margin-bottom: 1.25rem; color: var(--adm-text); font-size: 1.25rem; border-bottom: 2px solid var(--adm-accent); padding-bottom: 0.5rem; }
+.depense-list, .enveloppe-list { list-style: none; padding: 0; margin: 0; }
+.depense-item, .enveloppe-item { padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: var(--adm-bg); border-left: 4px solid var(--adm-accent); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+.depense-item:hover, .enveloppe-item:hover { background: var(--adm-accent-soft); }
+.depense-nom, .enveloppe-nom { font-weight: 500; color: var(--adm-text); }
+.depense-montant, .enveloppe-montant { font-weight: 700; color: var(--adm-accent); }
+.badge-commune { display: inline-block; padding: 0.25rem 0.5rem; background: var(--adm-success); color: white; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem; }
+.actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+.empty-message { color: var(--adm-text-muted); font-style: italic; text-align: center; padding: 2rem; }
+@media (max-width: 768px) { .info-grid { grid-template-columns: 1fr; } .actions .adm-btn { width: 100%; text-align: center; } }
+</style>
 {% endblock %}
 
 {% block body %}
-    <div class="exercice-container">
-        <div class="exercice-header">
-            <h1>
-                {% if user_moi.exercice and user_moi.exercice.mois %}
-                    {% set mois = user_moi.exercice.mois|date('n') %}
-                    {% set annee = user_moi.exercice.mois|date('Y') %}
-                    {% set moisNoms = {
-                        1: 'Janvier',
-                        2: 'Février',
-                        3: 'Mars',
-                        4: 'Avril',
-                        5: 'Mai',
-                        6: 'Juin',
-                        7: 'Juillet',
-                        8: 'Août',
-                        9: 'Septembre',
-                        10: 'Octobre',
-                        11: 'Novembre',
-                        12: 'Décembre'
-                    } %}
-                    Compte Personnel - {{ moisNoms[mois] }} {{ annee }}
-                {% else %}
-                    Compte Personnel
-                {% endif %}
-            </h1>
-            {% if user_moi.currentUser %}
-                <p class="subtitle">{{ user_moi.currentUser.firstName }} {{ user_moi.currentUser.name }}</p>
-            {% endif %}
-        </div>
+<div class="adm-page-header">
+    <h1 class="adm-page-title">
+        {% if user_moi.exercice and user_moi.exercice.mois %}
+            {% set mois = user_moi.exercice.mois|date('n') %}
+            {% set annee = user_moi.exercice.mois|date('Y') %}
+            {% set moisNoms = {
+                1: 'Janvier',
+                2: 'Février',
+                3: 'Mars',
+                4: 'Avril',
+                5: 'Mai',
+                6: 'Juin',
+                7: 'Juillet',
+                8: 'Août',
+                9: 'Septembre',
+                10: 'Octobre',
+                11: 'Novembre',
+                12: 'Décembre'
+            } %}
+            {{ moisNoms[mois] }} {{ annee }}
+        {% else %}
+            Compte personnel
+        {% endif %}
+    </h1>
+    {% if user_moi.currentUser %}
+        <p class="adm-page-subtitle">{{ user_moi.currentUser.firstName }} {{ user_moi.currentUser.name }}</p>
+    {% endif %}
+</div>
 
          <!-- Mode affichage -->
         {# Calculer le reste pour l'utiliser dans les cartes #}
@@ -309,13 +132,13 @@
             <button type="button" 
                     onclick="toggleEdit()"
                     id="edit-toggle-btn"
-                    class="btn btn-primary"
+                    class="adm-btn adm-btn--primary"
                     style="padding: 0.75rem 2rem;">
                 ✎ Modifier
             </button>
             {% if user_moi.exercice %}
                 <a href="{{ path('app_compte_exercice_show', {'id': user_moi.exercice.id}) }}" 
-                   class="btn btn-secondary"
+                   class="adm-btn adm-btn--secondary"
                    style="padding: 0.75rem 2rem; text-decoration: none; display: inline-block;">
                     Voir le mois
                 </a>
@@ -435,13 +258,13 @@
                         </div>
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                         <button type="submit" 
-                                class="btn btn-primary"
+                                class="adm-btn adm-btn--primary"
                                 style="flex: 1; padding: 0.75rem;">
                             ✓ Valider
                         </button>
                         <button type="button" 
                                 onclick="toggleEdit()"
-                                class="btn btn-secondary"
+                                class="adm-btn adm-btn--secondary"
                                 style="flex: 1; padding: 0.75rem;">
                             ✕ Annuler
                         </button>
@@ -476,13 +299,13 @@
                         </div>
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                         <button type="submit" 
-                                class="btn btn-primary"
+                                class="adm-btn adm-btn--primary"
                                 style="flex: 1; padding: 0.75rem;">
                             ✓ Valider
                         </button>
                         <button type="button" 
                                 onclick="toggleEdit()"
-                                class="btn btn-secondary"
+                                class="adm-btn adm-btn--secondary"
                                 style="flex: 1; padding: 0.75rem;">
                             ✕ Annuler
                         </button>
@@ -889,9 +712,8 @@
         {% endif %}
         
         <div class="actions">
-            <a href="{{ path('app_compte_user_mois_index') }}" class="btn btn-secondary">← Retour à la liste</a>
+            <a href="{{ path('app_compte_user_mois_index') }}" class="adm-btn adm-btn--secondary">← Retour à la liste</a>
         </div>
-    </div>
     
     <script>
         // Reste disponible pour les calculs

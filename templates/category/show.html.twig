@@ -1,33 +1,31 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}{{ category.name }} - Détails{% endblock %}
 
 {% block body %}
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h1 class="display-4 mb-2"><i class="fas fa-tag me-3"></i>{{ category.name }}</h1>
-            <p class="text-muted lead">Détails de la catégorie</p>
+    <div class="category-container">
+        <div class="category-header">
+            <h1 class="category-title"><i class="fas fa-tag"></i> {{ category.name }}</h1>
+            <p class="category-subtitle">Détails de la catégorie</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ path('app_category_index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        <div class="actions-container actions-top">
+            <a href="{{ path('app_category_index') }}" class="action-btn back-btn">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
             </a>
-            <a href="{{ path('app_category_edit', {'id': category.id}) }}" class="btn btn-primary">
-                <i class="fas fa-edit me-2"></i>Modifier
+            <a href="{{ path('app_category_edit', {'id': category.id}) }}" class="action-btn edit-btn">
+                <i class="fas fa-edit"></i> Modifier
             </a>
         </div>
     </div>
 
-    <div class="row g-4">
-        <!-- Informations principales -->
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations de la catégorie</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row g-4">
-                        <div class="col-md-6">
+    <div class="category-details-grid">
+        <div class="category-card main-card">
+            <div class="card-header">
+                <h4><i class="fas fa-info-circle"></i> Informations de la catégorie</h4>
+            </div>
+            <div class="card-body">
+                    <div class="detail-grid">
+                        <div class="detail-block">
                             <div class="detail-item">
                                 <div class="detail-label">
                                     <i class="fas fa-tag text-primary"></i>
@@ -36,7 +34,7 @@
                                 <div class="detail-value">{{ category.name }}</div>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="detail-block">
                             <div class="detail-item">
                                 <div class="detail-label">
                                     <i class="fas fa-hashtag text-primary"></i>
@@ -46,7 +44,7 @@
                             </div>
                         </div>
                         {% if category.description is defined and category.description %}
-                        <div class="col-12">
+                        <div class="detail-block full-width">
                             <div class="detail-item">
                                 <div class="detail-label">
                                     <i class="fas fa-align-left text-primary"></i>
@@ -57,16 +55,16 @@
                         </div>
                         {% endif %}
                         {% if category.services is defined and category.services|length > 0 %}
-                        <div class="col-12">
+                        <div class="detail-block full-width">
                             <div class="detail-item">
                                 <div class="detail-label">
                                     <i class="fas fa-briefcase text-primary"></i>
                                     <span>Services associés ({{ category.services|length }})</span>
                                 </div>
-                                <div class="services-list mt-2">
+                                <div class="services-list">
                                     {% for service in category.services %}
-                                        <span class="badge bg-secondary me-2 mb-1">
-                                            <i class="fas fa-briefcase me-1"></i>{{ service.name }}
+                                        <span class="service-badge">
+                                            <i class="fas fa-briefcase"></i> {{ service.name }}
                                         </span>
                                     {% endfor %}
                                 </div>
@@ -76,58 +74,187 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Image de la catégorie -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-image me-2"></i>Image de la catégorie</h5>
-                </div>
-                <div class="card-body text-center">
+        <div class="category-card">
+            <div class="card-header">
+                <h5><i class="fas fa-image"></i> Image de la catégorie</h5>
+            </div>
+            <div class="card-body text-center">
                     {% if category.picture %}
                         <div class="category-image-container">
                             <img src="{{ asset('uploads/category/' ~ category.picture) }}" 
                                  alt="{{ category.name }}" 
                                  class="category-image">
                             <div class="image-info">
-                                <small class="text-muted">
-                                    <i class="fas fa-file-image me-1"></i>{{ category.picture }}
-                                </small>
+                                <small><i class="fas fa-file-image"></i> {{ category.picture }}</small>
                             </div>
                         </div>
                     {% else %}
                         <div class="no-image-placeholder">
-                            <i class="fas fa-image fa-3x text-muted mb-3"></i>
-                            <p class="text-muted mb-0">Aucune image</p>
-                            <small class="text-muted">Vous pouvez ajouter une image en modifiant la catégorie</small>
+                            <i class="fas fa-image fa-3x"></i>
+                            <p>Aucune image</p>
+                            <small>Vous pouvez ajouter une image en modifiant la catégorie</small>
                         </div>
                     {% endif %}
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- Actions -->
-    <div class="mt-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Actions</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ path('app_category_edit', {'id': category.id}) }}" class="btn btn-primary">
-                        <i class="fas fa-edit me-2"></i>Modifier la catégorie
-                    </a>
-                    {{ include('category/_delete_form.html.twig') }}
-                </div>
-            </div>
-        </div>
+    <div class="actions-container actions-bottom">
+        <a href="{{ path('app_category_edit', {'id': category.id}) }}" class="action-btn edit-btn">
+            <i class="fas fa-edit"></i> Modifier la catégorie
+        </a>
+        {{ include('category/_delete_form.html.twig') }}
     </div>
 {% endblock %}
 
 {% block stylesheets %}
 <style>
+.category-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.category-header { flex: 1; min-width: 0; }
+
+.category-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--adm-text, #2d2a26);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-title i { color: var(--adm-accent, #c17f59); }
+
+.category-subtitle {
+    margin: 0.25rem 0 0;
+    color: var(--adm-text-muted, #6b6560);
+    font-size: 1rem;
+}
+
+.actions-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.actions-container .action-btn {
+    padding: 10px 20px;
+    border-radius: var(--adm-radius-sm, 8px);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.back-btn {
+    background: var(--adm-bg, #f8f6f3);
+    color: var(--adm-text, #2d2a26);
+    border: 1px solid var(--adm-border, #e8e4de);
+}
+
+.back-btn:hover {
+    background: var(--adm-accent-soft, rgba(193, 127, 89, 0.12));
+    color: var(--adm-accent, #c17f59);
+}
+
+.edit-btn {
+    background: var(--adm-accent, #c17f59);
+    color: white;
+    border: 1px solid transparent;
+}
+
+.edit-btn:hover {
+    background: var(--adm-accent-hover, #a96b48);
+    color: white;
+}
+
+.delete-btn {
+    background: var(--adm-error, #c94a4a);
+    color: white;
+    border: 1px solid transparent;
+}
+
+.delete-btn:hover {
+    background: #b03a3a;
+    color: white;
+}
+
+.category-delete-form { display: inline-block; }
+
+.actions-bottom { margin-top: 1.5rem; }
+
+.category-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .category-details-grid { grid-template-columns: 1fr; }
+}
+
+.category-card {
+    background: var(--adm-surface, #fff);
+    border-radius: var(--adm-radius, 12px);
+    border: 1px solid var(--adm-border, #e8e4de);
+    overflow: hidden;
+}
+
+.category-card .card-header {
+    padding: 1rem 1.25rem;
+    background: var(--adm-bg, #f8f6f3);
+    border-bottom: 1px solid var(--adm-border, #e8e4de);
+    font-weight: 600;
+    color: var(--adm-text, #2d2a26);
+}
+
+.category-card .card-header h4,
+.category-card .card-header h5 {
+    margin: 0;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-card .card-header i { color: var(--adm-accent, #c17f59); }
+
+.category-card .card-body {
+    padding: 1.25rem;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.detail-block { min-width: 0; }
+.detail-block.full-width { grid-column: 1 / -1; }
+
+.service-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--adm-bg, #f8f6f3);
+    border-radius: var(--adm-radius-sm, 8px);
+    font-size: 0.9rem;
+    border: 1px solid var(--adm-border, #e8e4de);
+}
+
 .detail-item {
     background: rgba(255, 255, 255, 0.7);
     border-radius: 12px;

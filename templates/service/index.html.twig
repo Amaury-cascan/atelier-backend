@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Gestion des Prestations{% endblock %}
 
@@ -732,13 +732,21 @@
         </a>
     </div>
 
+    {# Stats : on ne compte que les services actifs avec un prix > 0 #}
+    {% set servicesWithPrice = services|filter(s => (s.active is null or s.active == true) and (s.price is not null and s.price > 0)) %}
+    {% set countWithPrice = servicesWithPrice|length %}
+    {% set totalPriceWithPrice = servicesWithPrice|reduce((carry, s) => carry + s.price, 0) %}
+    {% set totalDurationWithPrice = servicesWithPrice|reduce((carry, s) => carry + (s.duration ?? 0), 0) %}
+    {% set durationAvgWithPrice = countWithPrice > 0 ? (totalDurationWithPrice / countWithPrice)|round : 0 %}
+    {% set priceAvgWithPrice = countWithPrice > 0 ? (totalPriceWithPrice / countWithPrice)|round : 0 %}
+
     <!-- Stats rapides -->
     <div class="stats-grid">
         <div class="stats-card" data-animate="true">
             <div class="stats-icon services">
                 <i class="fas fa-cut"></i>
             </div>
-            <div class="stats-number" data-target="{{ services|length }}">0</div>
+            <div class="stats-number" data-target="{{ countWithPrice }}">0</div>
             <div class="stats-label">Services actifs</div>
         </div>
         
@@ -746,7 +754,7 @@
             <div class="stats-icon value">
                 <i class="fas fa-euro-sign"></i>
             </div>
-            <div class="stats-number" data-target="{% set totalPrice = 0 %}{% for service in services %}{% if service.active is null or service.active == true %}{% set totalPrice = totalPrice + service.price %}{% endif %}{% endfor %}{{ totalPrice }}">0</div>
+            <div class="stats-number" data-target="{{ totalPriceWithPrice }}">0</div>
             <div class="stats-label">Valeur totale (€)</div>
         </div>
         
@@ -754,7 +762,7 @@
             <div class="stats-icon duration">
                 <i class="fas fa-clock"></i>
             </div>
-            <div class="stats-number" data-target="{% set totalDuration = 0 %}{% set activeCount = 0 %}{% for service in services %}{% if service.active is null or service.active == true %}{% set totalDuration = totalDuration + service.duration %}{% set activeCount = activeCount + 1 %}{% endif %}{% endfor %}{{ activeCount > 0 ? (totalDuration / activeCount)|round : 0 }}">0</div>
+            <div class="stats-number" data-target="{{ durationAvgWithPrice }}">0</div>
             <div class="stats-label">Durée moy. (min)</div>
         </div>
         
@@ -762,7 +770,7 @@
             <div class="stats-icon average">
                 <i class="fas fa-calculator"></i>
             </div>
-            <div class="stats-number" data-target="{{ (activeCount is defined and activeCount > 0 ? (totalPrice / activeCount)|round : 0) }}">0</div>
+            <div class="stats-number" data-target="{{ priceAvgWithPrice }}">0</div>
             <div class="stats-label">Prix moyen (€)</div>
         </div>
     </div>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}Administration · L'Atelier de Marie{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {% block stylesheets %}{% endblock %}
+    <style>
+        :root {
+            --adm-bg: #f8f6f3;
+            --adm-surface: #ffffff;
+            --adm-border: #e8e4de;
+            --adm-text: #2d2a26;
+            --adm-text-muted: #6b6560;
+            --adm-accent: #c17f59;
+            --adm-accent-hover: #a96b48;
+            --adm-accent-soft: rgba(193, 127, 89, 0.12);
+            --adm-success: #2d8a5e;
+            --adm-error: #c94a4a;
+            --adm-warning: #b8860b;
+            --adm-shadow: 0 2px 8px rgba(45, 42, 38, 0.06);
+            --adm-shadow-lg: 0 8px 24px rgba(45, 42, 38, 0.08);
+            --adm-radius: 12px;
+            --adm-radius-sm: 8px;
+            --adm-nav-h: 64px;
+            --adm-sidebar-w: 260px;
+            /* Compat anciennes pages admin */
+            --taupe: #c17f59;
+            --taupe-light: #d4926e;
+            --taupe-dark: #a96b48;
+            --beige: #f8f6f3;
+            --beige-light: #faf8f5;
+            --primary-color: var(--adm-accent);
+            --primary-light: var(--taupe-light);
+            --primary-dark: var(--taupe-dark);
+            --text-primary: var(--adm-text);
+            --text-secondary: var(--adm-text-muted);
+            --border: var(--adm-border);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--adm-bg);
+            color: var(--adm-text);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding-bottom: calc(var(--adm-nav-h) + env(safe-area-inset-bottom));
+        }
+
+        /* Top bar (mobile + desktop) */
+        .adm-topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--adm-nav-h);
+            background: var(--adm-surface);
+            border-bottom: 1px solid var(--adm-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            z-index: 100;
+        }
+        .adm-topbar__brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--adm-text);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .adm-topbar__brand i { color: var(--adm-accent); }
+        .adm-topbar__menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: none;
+            color: var(--adm-text);
+            cursor: pointer;
+            border-radius: var(--adm-radius-sm);
+        }
+        .adm-topbar__menu-btn:hover { background: var(--adm-accent-soft); }
+        .adm-topbar__desktop-links { display: none; }
+
+        /* Sidebar (desktop) */
+        .adm-sidebar {
+            display: none;
+            position: fixed;
+            top: var(--adm-nav-h);
+            left: 0;
+            width: var(--adm-sidebar-w);
+            height: calc(100vh - var(--adm-nav-h));
+            background: var(--adm-surface);
+            border-right: 1px solid var(--adm-border);
+            overflow-y: auto;
+            z-index: 99;
+        }
+        .adm-sidebar__nav {
+            padding: 1rem 0;
+        }
+        .adm-sidebar__link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            color: var(--adm-text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+        .adm-sidebar__link:hover { background: var(--adm-accent-soft); color: var(--adm-accent); }
+        .adm-sidebar__link.active { background: var(--adm-accent-soft); color: var(--adm-accent); }
+        .adm-sidebar__link i { width: 1.25rem; text-align: center; }
+        .adm-sidebar__sep { height: 1px; background: var(--adm-border); margin: 0.5rem 1rem; }
+        .adm-sidebar__logout {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            color: var(--adm-text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            background: none;
+            width: 100%;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            text-align: left;
+            transition: background 0.2s, color 0.2s;
+        }
+        .adm-sidebar__logout:hover { background: rgba(201, 74, 74, 0.1); color: var(--adm-error); }
+        .adm-sidebar__logout i { width: 1.25rem; text-align: center; }
+
+        /* Main content */
+        .adm-main {
+            padding: 1rem;
+            margin-top: var(--adm-nav-h);
+            min-height: calc(100vh - var(--adm-nav-h));
+        }
+
+        /* Bottom nav (mobile) */
+        .adm-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(var(--adm-nav-h) + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            background: var(--adm-surface);
+            border-top: 1px solid var(--adm-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 100;
+        }
+        .adm-bottom-nav__item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 0.5rem;
+            color: var(--adm-text-muted);
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .adm-bottom-nav__item i { font-size: 1.25rem; margin-bottom: 0.2rem; }
+        .adm-bottom-nav__item:hover,
+        .adm-bottom-nav__item.active { color: var(--adm-accent); }
+
+        /* Overlay / drawer (mobile menu) */
+        .adm-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(45, 42, 38, 0.4);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s, visibility 0.25s;
+        }
+        .adm-drawer.open { opacity: 1; visibility: visible; }
+        .adm-drawer__panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(250px, 100%);
+            height: 100%;
+            background: var(--adm-surface);
+            box-shadow: -4px 0 24px rgba(0,0,0,0.1);
+            padding: 1rem;
+            padding-top: calc(var(--adm-nav-h) + 1rem);
+            transform: translateX(100%);
+            transition: transform 0.25s;
+            overflow-y: auto;
+        }
+        .adm-drawer.open .adm-drawer__panel { transform: translateX(0); }
+        .adm-drawer__nav { padding-top: 0; }
+        .adm-drawer__link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: var(--adm-text);
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: var(--adm-radius-sm);
+            transition: background 0.2s;
+        }
+        .adm-drawer__link:hover { background: var(--adm-accent-soft); }
+        .adm-drawer__link i { width: 1.25rem; text-align: center; color: var(--adm-text-muted); }
+        .adm-drawer__sep { height: 1px; background: var(--adm-border); margin: 0.75rem 0; }
+        .adm-drawer__logout {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: var(--adm-error);
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: var(--adm-radius-sm);
+            margin-top: 0.5rem;
+        }
+        .adm-drawer__logout i { width: 1.25rem; text-align: center; }
+
+        /* Admin UI components (for pages) */
+        .adm-page-header {
+            margin-bottom: 1.25rem;
+        }
+        .adm-page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--adm-text);
+        }
+        .adm-page-subtitle {
+            font-size: 0.9rem;
+            color: var(--adm-text-muted);
+            margin-top: 0.25rem;
+        }
+        .adm-card {
+            background: var(--adm-surface);
+            border-radius: var(--adm-radius);
+            border: 1px solid var(--adm-border);
+            box-shadow: var(--adm-shadow);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .adm-card__body { padding: 1.25rem; }
+        .adm-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border-radius: var(--adm-radius-sm);
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.15s;
+        }
+        .adm-btn--primary {
+            background: var(--adm-accent);
+            color: #fff;
+        }
+        .adm-btn--primary:hover { background: var(--adm-accent-hover); color: #fff; }
+        .adm-btn--secondary {
+            background: var(--adm-accent-soft);
+            color: var(--adm-accent);
+        }
+        .adm-btn--secondary:hover { background: rgba(193, 127, 89, 0.2); color: var(--adm-accent); }
+        .adm-btn--outline {
+            background: transparent;
+            color: var(--adm-text);
+            border: 1px solid var(--adm-border);
+        }
+        .adm-btn--outline:hover { background: var(--adm-accent-soft); border-color: var(--adm-accent); color: var(--adm-accent); }
+        .adm-alert {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            border-radius: var(--adm-radius-sm);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .adm-alert--success { background: rgba(45, 138, 94, 0.12); color: var(--adm-success); }
+        .adm-alert--error { background: rgba(201, 74, 74, 0.12); color: var(--adm-error); }
+
+        @media (min-width: 1024px) {
+            body { padding-bottom: 0; }
+            .adm-topbar__menu-btn { display: none; }
+            .adm-topbar__desktop-links { display: flex; align-items: center; gap: 0.5rem; }
+            .adm-topbar__desktop-links a {
+                padding: 0.5rem 0.75rem;
+                color: var(--adm-text-muted);
+                text-decoration: none;
+                font-weight: 500;
+                border-radius: var(--adm-radius-sm);
+            }
+            .adm-topbar__desktop-links a:hover { background: var(--adm-accent-soft); color: var(--adm-accent); }
+            .adm-sidebar { display: block; }
+            .adm-bottom-nav { display: none; }
+            .adm-main {
+                margin-left: var(--adm-sidebar-w);
+                margin-top: var(--adm-nav-h);
+                padding: 1.5rem 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="adm-topbar">
+        <a class="adm-topbar__brand" href="{{ path('app_dashboard_index') }}">
+            <i class="fas fa-palette"></i>
+            <span>L'Atelier de Marie</span>
+        </a>
+        {% if is_granted('ROLE_ADMIN') %}
+            <button type="button" class="adm-topbar__menu-btn" id="admMenuBtn" aria-label="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        {% endif %}
+    </header>
+
+    {% if is_granted('ROLE_ADMIN') %}
+        <aside class="adm-sidebar">
+            <nav class="adm-sidebar__nav">
+                <a class="adm-sidebar__link" href="{{ path('app_dashboard_index') }}"><i class="fas fa-home"></i> Tableau de bord</a>
+                <a class="adm-sidebar__link" href="{{ path('app_calendar') }}"><i class="fas fa-calendar-check"></i> Calendrier</a>
+                <a class="adm-sidebar__link" href="{{ path('app_service_index') }}"><i class="fas fa-cut"></i> Prestations</a>
+                <a class="adm-sidebar__link" href="{{ path('app_category_index') }}"><i class="fas fa-tags"></i> Catégories</a>
+                <a class="adm-sidebar__link" href="{{ path('app_picture_presentation_index') }}"><i class="fas fa-images"></i> Images</a>
+                <a class="adm-sidebar__link" href="{{ path('app_client_index') }}"><i class="fas fa-users"></i> Clients</a>
+                <a class="adm-sidebar__link" href="{{ path('app_statistics_index') }}"><i class="fas fa-chart-line"></i> Statistiques</a>
+                <div class="adm-sidebar__sep"></div>
+                <a class="adm-sidebar__link" href="{{ path('app_compte_index') }}"><i class="fas fa-calculator"></i> Compte</a>
+                <a class="adm-sidebar__logout" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+            </nav>
+        </aside>
+
+        <div class="adm-drawer" id="admDrawer">
+            <div class="adm-drawer__panel">
+                <div class="adm-drawer__nav">
+                    <a class="adm-drawer__link" href="{{ path('app_dashboard_index') }}"><i class="fas fa-home"></i> Tableau de bord</a>
+                    <a class="adm-drawer__link" href="{{ path('app_calendar') }}"><i class="fas fa-calendar-check"></i> Calendrier</a>
+                    <a class="adm-drawer__link" href="{{ path('app_service_index') }}"><i class="fas fa-cut"></i> Prestations</a>
+                    <a class="adm-drawer__link" href="{{ path('app_category_index') }}"><i class="fas fa-tags"></i> Catégories</a>
+                    <a class="adm-drawer__link" href="{{ path('app_picture_presentation_index') }}"><i class="fas fa-images"></i> Images</a>
+                    <a class="adm-drawer__link" href="{{ path('app_client_index') }}"><i class="fas fa-users"></i> Clients</a>
+                    <a class="adm-drawer__link" href="{{ path('app_statistics_index') }}"><i class="fas fa-chart-line"></i> Statistiques</a>
+                    <div class="adm-drawer__sep"></div>
+                    <a class="adm-drawer__link" href="{{ path('app_compte_index') }}"><i class="fas fa-calculator"></i> Compte</a>
+                    <a class="adm-drawer__logout" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="adm-bottom-nav">
+            <a class="adm-bottom-nav__item" href="{{ path('app_dashboard_index') }}"><i class="fas fa-home"></i> Accueil</a>
+            <a class="adm-bottom-nav__item" href="{{ path('app_calendar') }}"><i class="fas fa-calendar-check"></i> Calendrier</a>
+            <a class="adm-bottom-nav__item" href="{{ path('app_client_index') }}"><i class="fas fa-users"></i> Clients</a>
+            <a class="adm-bottom-nav__item" href="{{ path('app_service_index') }}"><i class="fas fa-cut"></i> Prestations</a>
+            <a class="adm-bottom-nav__item" href="{{ path('app_statistics_index') }}"><i class="fas fa-chart-line"></i> Stats</a>
+        </nav>
+    {% endif %}
+
+    <main class="adm-main">
+        {% for msg in app.flashes('success') %}
+            <div class="adm-alert adm-alert--success"><i class="fas fa-check-circle"></i> {{ msg }}</div>
+        {% endfor %}
+        {% for msg in app.flashes('error') %}
+            <div class="adm-alert adm-alert--error"><i class="fas fa-exclamation-triangle"></i> {{ msg }}</div>
+        {% endfor %}
+        {% for msg in app.flashes('verify_email_error') %}
+            <div class="adm-alert adm-alert--error"><i class="fas fa-exclamation-triangle"></i> {{ msg }}</div>
+        {% endfor %}
+
+        {% block body %}{% endblock %}
+    </main>
+
+    <script>
+        (function() {
+            var menuBtn = document.getElementById('admMenuBtn');
+            var drawer = document.getElementById('admDrawer');
+            if (menuBtn && drawer) {
+                menuBtn.addEventListener('click', function() { drawer.classList.toggle('open'); });
+                drawer.addEventListener('click', function(e) {
+                    if (e.target === drawer) drawer.classList.remove('open');
+                });
+            }
+            var path = window.location.pathname;
+            document.querySelectorAll('.adm-sidebar__link, .adm-bottom-nav__item').forEach(function(el) {
+                var href = el.getAttribute('href');
+                if (!href) return;
+                var linkPath = href.replace(/^https?:\/\/[^/]+/, '') || '/';
+                if (path === linkPath || (linkPath !== '/' && path.indexOf(linkPath + '/') === 0)) el.classList.add('active');
+            });
+        })();
+    </script>
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

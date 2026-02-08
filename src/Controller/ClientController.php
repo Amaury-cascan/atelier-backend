@@ -10,6 +10,7 @@ use App\Form\ClientType;
 use App\Form\ClientInformationType;
 use App\Repository\ClientInformationRepository;
 use App\Repository\ClientRepository;
+use App\Repository\ServiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -68,10 +69,17 @@ class ClientController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_client_show', methods: ['GET', 'POST'])]
-    public function show(Client $client, ClientInformationRepository $clientInformationRepository, Request $request, EntityManagerInterface $entityManager): Response
+    public function show(Client $client, ClientInformationRepository $clientInformationRepository, ServiceRepository $serviceRepository, Request $request, EntityManagerInterface $entityManager): Response
     {
         // Récupérer toutes les informations du client
-        $clientInformation = $clientInformationRepository->findBy(['client' => $client]);
+        $clientInformation = $clientInformationRepository->findBy(['client' => $client], ['date' => 'DESC']);
+
+        // Liste des prestations (services actifs) pour l'édition des RDV
+        $services = $serviceRepository->findBy([], ['name' => 'ASC']);
+
+        // Récupérer les rendez-vous du client (triés par date décroissante)
+        $appointments = $client->getAppointments()->toArray();
+        usort($appointments, fn ($a, $b) => ($b->getDate() <=> $a->getDate()));
 
         // Créer une nouvelle instance de ClientInformation
         $newClientInformation = new ClientInformation();
@@ -116,12 +124,56 @@ class ClientController extends AbstractController
             return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
         }
 
-        // Renvoyer la vue avec le client, ses informations et le formulaire
+        // Renvoyer la vue avec le client, ses RDV, ses informations et le formulaire
         return $this->render('client/show.html.twig', [
             'client' => $client,
+            'appointments' => $appointments,
             'clientInformation' => $clientInformation,
-            'form' => $form->createView(), // Ajoutez le formulaire à la vue
+            'services' => $services,
+            'form' => $form->createView(),
         ]);
+    }
+
+    #[Route('/{id}/rdv/{appointmentId}/prestation', name: 'app_client_appointment_update_prestation', methods: ['POST'])]
+    public function updateAppointmentPrestation(Request $request, Client $client, int $appointmentId, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('client_rdv_prestation', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
+        }
+
+        $appointment = $entityManager->getRepository(Appointment::class)->find($appointmentId);
+        if (!$appointment || $appointment->getClient()->getId() !== $client->getId()) {
+            $this->addFlash('error', 'Rendez-vous introuvable.');
+            return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
+        }
+
+        $serviceId = $request->request->get('serviceId');
+        $price = $request->request->get('price');
+
+        if ($serviceId !== null && $serviceId !== '') {
+            $service = $entityManager->getRepository(\App\Entity\Service::class)->find((int) $serviceId);
+            if ($service) {
+                $appointment->setService($service);
+                if ($price !== null && $price !== '') {
+                    $appointment->setPrice((int) $price);
+                } else {
+                    $appointment->setPrice($service->getPrice());
+                }
+                $date = $appointment->getDate();
+                $endDate = clone $date;
+                $endDate->add(new \DateInterval('PT' . $service->getDuration() . 'M'));
+                $appointment->setEndDate($endDate);
+            }
+        } else {
+            if ($price !== null && $price !== '') {
+                $appointment->setPrice((int) $price);
+            }
+        }
+
+        $entityManager->flush();
+        $this->addFlash('success', 'Prestation et prix du rendez-vous ont été mis à jour.');
+        return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{id}/rendez-vous', name: 'app_client_appointment', methods: ['GET'])]

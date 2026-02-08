@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Détails de {{ client.firstName }} {{ client.name }}{% endblock %}
 
@@ -79,6 +79,23 @@
     color: white;
 }
 
+.delete-btn {
+    background: var(--adm-error, #c94a4a);
+    color: white;
+    border: 1px solid transparent;
+}
+
+.delete-btn:hover {
+    background: #b03a3a;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201, 74, 74, 0.3);
+}
+
+.client-delete-form {
+    display: inline-block;
+}
+
 /* Client details card */
 .client-details-card {
     background: rgba(255, 255, 255, 0.95);
@@ -138,11 +155,31 @@
     margin-top: 3rem;
 }
 
+.section-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+.history-subtitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 1.5rem 0 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.history-subtitle:first-of-type {
+    margin-top: 0;
+}
+
 .section-title {
     color: var(--primary-color);
     font-size: 1.8rem;
     font-weight: 700;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.25rem;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -317,6 +354,15 @@
     color: var(--text-secondary);
 }
 
+.empty-state.small {
+    padding: 1.5rem 1rem;
+}
+
+.empty-state.small p {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
 .empty-icon {
     font-size: 3rem;
     color: var(--text-light);
@@ -339,6 +385,95 @@
 .modal-title {
     color: var(--primary-color);
     font-weight: 600;
+}
+
+/* Modal RDV prestation (sans Bootstrap) */
+.rdv-prestation-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.rdv-prestation-modal-overlay.open {
+    display: flex;
+}
+.rdv-prestation-modal-panel {
+    background: var(--adm-surface, #fff);
+    border-radius: var(--adm-radius, 12px);
+    border: 1px solid var(--adm-border, #e8e4de);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    max-width: 420px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: auto;
+}
+.rdv-prestation-modal-panel .modal-header {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.rdv-prestation-modal-panel .modal-header .btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--adm-text-muted);
+    line-height: 1;
+}
+.rdv-prestation-modal-panel .modal-header .btn-close-modal:hover {
+    color: var(--adm-text);
+}
+.rdv-prestation-modal-panel .modal-body {
+    padding: 1.25rem;
+}
+.rdv-prestation-modal-panel .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: var(--adm-text);
+}
+.rdv-prestation-modal-panel .form-select,
+.rdv-prestation-modal-panel .form-control {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius-sm);
+    font-size: 1rem;
+}
+.rdv-prestation-modal-panel .mb-3 { margin-bottom: 1rem; }
+.rdv-prestation-modal-panel .modal-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--adm-border);
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+.rdv-prestation-modal-panel .btn-modal-secondary {
+    padding: 0.5rem 1rem;
+    border-radius: var(--adm-radius-sm);
+    border: 1px solid var(--adm-border);
+    background: var(--adm-bg);
+    color: var(--adm-text);
+    cursor: pointer;
+    font-weight: 500;
+}
+.rdv-prestation-modal-panel .btn-modal-primary {
+    padding: 0.5rem 1rem;
+    border-radius: var(--adm-radius-sm);
+    border: none;
+    background: var(--adm-accent, #c17f59);
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+}
+.rdv-prestation-modal-panel .btn-modal-primary:hover {
+    background: var(--adm-accent-hover, #a96b48);
 }
 
 .carousel-item img {
@@ -387,6 +522,73 @@
     
     .modern-table {
         min-width: 800px;
+    }
+    
+    /* Liste RDV en mode télé : cartes au lieu du tableau */
+    .rdv-list-card {
+        padding: 1rem;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+    }
+    
+    .rdv-list-card .rdv-table-responsive {
+        overflow: visible;
+        padding: 0;
+    }
+    
+    .rdv-list-card .rdv-table {
+        min-width: 0;
+        width: 100%;
+    }
+    
+    .rdv-list-card .rdv-table thead {
+        display: none;
+    }
+    
+    .rdv-list-card .rdv-table tbody tr.rdv-row {
+        display: block;
+        border: 1px solid var(--adm-border, rgba(139, 115, 85, 0.15));
+        border-radius: var(--adm-radius, 12px);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        background: var(--adm-surface, #fff);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .rdv-list-card .rdv-table tbody tr.rdv-row:last-child {
+        margin-bottom: 0;
+    }
+    
+    .rdv-list-card .rdv-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0;
+        border-bottom: none;
+        gap: 0.75rem;
+    }
+    
+    .rdv-list-card .rdv-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--adm-text-muted, #6b6560);
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+    
+    .rdv-list-card .rdv-table tbody td.rdv-row-actions {
+        justify-content: flex-end;
+        padding-top: 0.75rem;
+        margin-top: 0.25rem;
+        border-top: 1px solid var(--adm-border, rgba(139, 115, 85, 0.1));
+    }
+    
+    .rdv-list-card .rdv-table tbody td.rdv-row-actions::before {
+        display: none;
+    }
+    
+    .rdv-list-card .rdv-table .table-btn {
+        width: auto;
     }
     
     .table-actions {
@@ -489,164 +691,101 @@
         </div>
     </div>
 
-    <!-- History Section -->
+    <!-- Historique client = RDV + Informations -->
     <div class="history-section" data-animate="true">
         <h3 class="section-title">
             <i class="fas fa-history"></i>
             Historique client
         </h3>
+        <p class="section-subtitle">Rendez-vous et informations de prestations</p>
 
-        <div class="history-table-card">
-            <div class="table-responsive">
-                {% if clientInformation is not empty %}
-                    <table class="modern-table">
+        <!-- Rendez-vous -->
+        <h4 class="history-subtitle"><i class="fas fa-calendar-check"></i> Rendez-vous</h4>
+        <div class="history-table-card rdv-list-card">
+            <div class="table-responsive rdv-table-responsive">
+                {% if appointments is defined and appointments is not empty %}
+                    <table class="modern-table rdv-table">
                         <thead>
                             <tr>
                                 <th><i class="fas fa-calendar"></i> Date</th>
-                                <th><i class="fas fa-palette"></i> Technique</th>
-                                <th><i class="fas fa-shapes"></i> Forme</th>
-                                <th><i class="fas fa-box"></i> Produits</th>
+                                <th><i class="fas fa-clock"></i> Horaire</th>
+                                <th><i class="fas fa-cut"></i> Prestation</th>
                                 <th><i class="fas fa-euro-sign"></i> Prix</th>
-                                <th><i class="fas fa-comment"></i> Note</th>
-                                <th><i class="fas fa-images"></i> Photos</th>
+                                <th><i class="fas fa-hourglass-half"></i> Durée</th>
                                 <th><i class="fas fa-cog"></i> Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for info in clientInformation %}
-                                <tr class="history-row">
-                                    <td>{{ info.date ? info.date|date('d/m/Y') : '-' }}</td>
-                                    <td>{{ info.technique ?: '-' }}</td>
-                                    <td>{{ info.forme ?: '-' }}</td>
-                                    <td>{{ info.produit ?: '-' }}</td>
-                                    <td class="price-cell">{{ info.prix ? info.prix ~ '€' : '-' }}</td>
-                                    <td>
-                                        {% if info.note %}
-                                            <span class="note-preview" data-full-note="{{ info.note }}">
-                                                {{ info.note|split(' ')|slice(0, 3)|join(' ') }}...
-                                            </span>
+                            {% for apt in appointments %}
+                                <tr class="history-row rdv-row">
+                                    <td data-label="Date">{{ apt.date ? apt.date|date('d/m/Y') : '-' }}</td>
+                                    <td data-label="Horaire">{{ apt.date ? apt.date|date('H:i') : '-' }}</td>
+                                    <td data-label="Prestation">{{ apt.service ? apt.service.name : '-' }}</td>
+                                    <td class="price-cell" data-label="Prix">{{ apt.price is not null ? apt.price ~ '€' : (apt.service and apt.service.price is not null ? apt.service.price ~ '€' : '-') }}</td>
+                                    <td data-label="Durée">
+                                        {% if apt.endDate and apt.date %}
+                                            {% set diff = apt.endDate.diff(apt.date) %}
+                                            {{ (diff.h * 60 + diff.i) }} min
+                                        {% elseif apt.service and apt.service.duration is not null %}
+                                            {{ apt.service.duration }} min
                                         {% else %}
                                             -
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        <button class="table-btn view-btn open-carousel"
-                                                data-id="{{ info.id }}"
-                                                data-firstName="{{ client.firstName }}"
-                                                data-name="{{ client.name }}"
-                                                data-images="{{ info.pictures|map(p => p.name)|join(',') }}"
-                                                data-technique="{{ info.technique }}"
-                                                data-forme="{{ info.forme }}"
-                                                data-produit="{{ info.produit }}"
-                                                data-date="{{ info.date ? info.date|date('d/m/Y') : '' }}">
-                                            <i class="fas fa-eye"></i>
-                                            Voir
+                                    <td data-label="" class="rdv-row-actions">
+                                        <button type="button" class="table-btn edit-small-btn btn-edit-rdv-prestation"
+                                                data-appointment-id="{{ apt.id }}"
+                                                data-form-action="{{ path('app_client_appointment_update_prestation', { id: client.id, appointmentId: apt.id }) }}"
+                                                data-service-id="{{ apt.service ? apt.service.id : '' }}"
+                                                data-price="{{ apt.price ?? (apt.service ? apt.service.price : '') }}"
+                                                title="Modifier prestation et prix">
+                                            <i class="fas fa-edit"></i> Modifier
                                         </button>
-                                    </td>
-                                    <td>
-                                        <div class="table-actions">
-                                            <a href="{{ path('app_client_information_edit', {'id': info.id}) }}" 
-                                               class="table-btn edit-small-btn">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ path('app_client_information_delete', {'id': info.id}) }}" 
-                                                  method="post" style="display:inline;">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ info.id) }}">
-                                                <button type="submit" 
-                                                        class="table-btn delete-small-btn" 
-                                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette information ?');">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
                                     </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 {% else %}
-                    <div class="empty-state">
-                        <div class="empty-icon">
-                            <i class="fas fa-calendar-times"></i>
-                        </div>
-                        <h5>Aucun historique disponible</h5>
-                        <p>Aucune prestation n'a encore été enregistrée pour ce client.</p>
+                    <div class="empty-state small">
+                        <p>Aucun rendez-vous enregistré pour ce client.</p>
                     </div>
                 {% endif %}
             </div>
         </div>
-
-        <!-- Add Information -->
-        <div class="add-info-section">
-            <button id="toggleForm" class="toggle-form-btn">
-                <i class="fas fa-plus"></i>
-                Ajouter une nouvelle information
-            </button>
-
-            <div id="newInformationForm" class="form-container" style="display: none;">
-                {{ form_start(form) }}
-                {{ form_widget(form) }}
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-save"></i>
-                    Ajouter
-                </button>
-                {{ form_end(form) }}
-            </div>
-        </div>
     </div>
 </div>
 
-<!-- Note Modal -->
-<div class="modal fade" id="noteModal" tabindex="-1" aria-labelledby="noteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="noteModalLabel">
-                    <i class="fas fa-sticky-note"></i>
-                    Note complète
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="modal-note-content">
-                <!-- La note complète sera affichée ici -->
-            </div>
+<!-- Modal Modifier prestation & prix du RDV (sans Bootstrap) -->
+<div class="rdv-prestation-modal-overlay" id="editRdvPrestationModal" aria-hidden="true">
+    <div class="rdv-prestation-modal-panel" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h5 class="modal-title"><i class="fas fa-edit"></i> Modifier prestation et prix</h5>
+            <button type="button" class="btn-close-modal" id="editRdvPrestationModalClose" aria-label="Fermer">&times;</button>
         </div>
-    </div>
-</div>
-
-<!-- Carousel Modal -->
-<div class="modal fade" id="carouselModal" tabindex="-1" aria-labelledby="carouselModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="carouselModalLabel">
-                    <i class="fas fa-images"></i>
-                    Détails de la séance
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
+        <form id="editRdvPrestationForm" method="post" action="">
             <div class="modal-body">
-                <!-- Détails dynamiques -->
-                <div id="carouselDetails" class="mb-3">
-                    <!-- Les informations seront insérées ici -->
+                <input type="hidden" name="_token" value="{{ csrf_token('client_rdv_prestation') }}">
+                <div class="mb-3">
+                    <label for="editRdvServiceId" class="form-label">Prestation</label>
+                    <select name="serviceId" id="editRdvServiceId" class="form-select">
+                        {% if services is defined %}
+                            {% for s in services %}
+                                <option value="{{ s.id }}">{{ s.name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
                 </div>
-
-                <!-- Carrousel -->
-                <div id="carouselImages" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner" id="carouselContent">
-                        <!-- Les images dynamiques seront insérées ici -->
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Précédent</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Suivant</span>
-                    </button>
+                <div class="mb-3">
+                    <label for="editRdvPrice" class="form-label">Prix (€)</label>
+                    <input type="number" name="price" id="editRdvPrice" class="form-control" min="0" step="1" placeholder="Prix personnalisé">
                 </div>
             </div>
-        </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal-secondary" id="editRdvPrestationModalCancel">Annuler</button>
+                <button type="submit" class="btn-modal-primary"><i class="fas fa-save"></i> Enregistrer</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
@@ -654,27 +793,65 @@
 {% block javascripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Toggle form visibility
-    document.getElementById('toggleForm').addEventListener('click', function () {
-        var formDiv = document.getElementById('newInformationForm');
-        if (formDiv.style.display === 'none') {
-            formDiv.style.display = 'block';
-            this.innerHTML = '<i class="fas fa-minus"></i> Cacher le formulaire';
-        } else {
-            formDiv.style.display = 'none';
-            this.innerHTML = '<i class="fas fa-plus"></i> Ajouter une nouvelle information';
-        }
-    });
+    // Toggle form visibility (optionnel)
+    var toggleForm = document.getElementById('toggleForm');
+    if (toggleForm) {
+        toggleForm.addEventListener('click', function () {
+            var formDiv = document.getElementById('newInformationForm');
+            if (formDiv) {
+                if (formDiv.style.display === 'none') {
+                    formDiv.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-minus"></i> Cacher le formulaire';
+                } else {
+                    formDiv.style.display = 'none';
+                    this.innerHTML = '<i class="fas fa-plus"></i> Ajouter une nouvelle information';
+                }
+            }
+        });
+    }
 
-    // Note modal functionality
+    // Note modal (optionnel, si Bootstrap présent)
     document.querySelectorAll('.note-preview').forEach(function(note) {
         note.addEventListener('click', function() {
-            const fullNote = this.getAttribute('data-full-note');
-            document.getElementById('modal-note-content').innerText = fullNote;
-            const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
-            noteModal.show();
+            var fullNote = this.getAttribute('data-full-note');
+            var modalContent = document.getElementById('modal-note-content');
+            if (modalContent) modalContent.innerText = fullNote || '';
+            if (typeof bootstrap !== 'undefined') {
+                var noteModalEl = document.getElementById('noteModal');
+                if (noteModalEl) new bootstrap.Modal(noteModalEl).show();
+            }
         });
     });
+
+    // Modal Modifier prestation & prix RDV — colonne Actions (délégation d’événements)
+    var editRdvModal = document.getElementById('editRdvPrestationModal');
+    function openEditRdvModal() {
+        if (editRdvModal) editRdvModal.classList.add('open');
+    }
+    function closeEditRdvModal() {
+        if (editRdvModal) editRdvModal.classList.remove('open');
+    }
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-edit-rdv-prestation');
+        if (!btn) return;
+        e.preventDefault();
+        var form = document.getElementById('editRdvPrestationForm');
+        if (form) form.action = btn.getAttribute('data-form-action') || '';
+        var sel = document.getElementById('editRdvServiceId');
+        if (sel) sel.value = btn.getAttribute('data-service-id') || '';
+        var priceInput = document.getElementById('editRdvPrice');
+        if (priceInput) priceInput.value = btn.getAttribute('data-price') || '';
+        openEditRdvModal();
+    });
+    var closeBtn = document.getElementById('editRdvPrestationModalClose');
+    if (closeBtn) closeBtn.addEventListener('click', closeEditRdvModal);
+    var cancelBtn = document.getElementById('editRdvPrestationModalCancel');
+    if (cancelBtn) cancelBtn.addEventListener('click', closeEditRdvModal);
+    if (editRdvModal) {
+        editRdvModal.addEventListener('click', function(e) {
+            if (e.target === editRdvModal) closeEditRdvModal();
+        });
+    }
 
     // Carousel modal functionality
     document.querySelectorAll('.open-carousel').forEach(function(button) {

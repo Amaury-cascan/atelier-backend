@@ -1,140 +1,43 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Créer un nouveau mois{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .exercice-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        
-        .exercice-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .exercice-header h1 {
-            margin: 0;
-            font-size: 2rem;
-        }
-        
-        .form-section {
-            background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-bottom: 2rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #333;
-            font-size: 0.95rem;
-        }
-        
-        .form-group input[type="month"],
-        .form-group input[type="text"],
-        .form-group input[type="number"] {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-            box-sizing: border-box;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .form-errors {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-    </style>
+{{ parent() }}
+<style>
+.form-section { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius); padding: 1.5rem; margin-top: 1rem; box-shadow: var(--adm-shadow); max-width: 32rem; }
+.form-group { margin-bottom: 1.25rem; }
+.form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; color: var(--adm-text); font-size: 0.95rem; }
+.form-group input[type="month"], .form-group input[type="text"], .form-group input[type="number"] { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--adm-border); border-radius: var(--adm-radius); font-size: 1rem; background: var(--adm-bg); color: var(--adm-text); box-sizing: border-box; }
+.form-group input:focus { outline: none; border-color: var(--adm-accent); }
+.form-errors { color: var(--adm-danger); font-size: 0.875rem; margin-top: 0.25rem; }
+.form-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+</style>
 {% endblock %}
 
 {% block body %}
-    <div class="exercice-container">
-        <div class="exercice-header">
-            <h1>Créer un nouveau mois</h1>
-        </div>
-        
-        <div class="form-section">
-            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
-                <div class="form-group">
-                    {{ form_label(form.mois) }}
-                    {{ form_widget(form.mois, {'attr': {'class': 'form-control'}}) }}
-                    {% if form.mois.vars.errors|length > 0 %}
-                        <div class="form-errors">
-                            {% for error in form.mois.vars.errors %}
-                                {{ error.message }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+<div class="adm-page-header">
+    <h1 class="adm-page-title">Créer un nouveau mois</h1>
+    <p class="adm-page-subtitle">Compte commun</p>
+</div>
+
+<div class="form-section">
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        <div class="form-group">
+            {{ form_label(form.mois) }}
+            {{ form_widget(form.mois, {'attr': {'class': ''}}) }}
+            {% if form.mois.vars.errors|length > 0 %}
+                <div class="form-errors">
+                    {% for error in form.mois.vars.errors %}
+                        {{ error.message }}
+                    {% endfor %}
                 </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Créer le mois</button>
-                    <a href="{{ path('app_compte_exercice_index') }}" class="btn btn-secondary">Annuler</a>
-                </div>
-            {{ form_end(form) }}
+            {% endif %}
         </div>
-    </div>
+        <div class="form-actions">
+            <button type="submit" class="adm-btn adm-btn--primary">Créer le mois</button>
+            <a href="{{ path('app_compte_exercice_index') }}" class="adm-btn adm-btn--secondary">Annuler</a>
+        </div>
+    {{ form_end(form) }}
+</div>
 {% endblock %}

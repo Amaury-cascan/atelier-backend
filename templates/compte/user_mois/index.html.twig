@@ -1,260 +1,90 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Mes Mois personnels{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .exercice-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        
-        .exercice-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .exercice-header h1 {
-            margin: 0;
-            font-size: 2rem;
-        }
-        
-        .year-section {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .year-header {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 3px solid #667eea;
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: color 0.2s;
-        }
-        
-        .year-header:hover {
-            color: #5568d3;
-        }
-        
-        .year-header::after {
-            content: '▼';
-            font-size: 1rem;
-            transition: transform 0.3s;
-        }
-        
-        .year-header.collapsed::after {
-            transform: rotate(-90deg);
-        }
-        
-        .year-content {
-            overflow: hidden;
-            max-height: 1000px;
-            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-            opacity: 1;
-        }
-        
-        .year-content.collapsed {
-            max-height: 0;
-            opacity: 0;
-            margin-bottom: 0;
-            padding: 0;
-        }
-        
-        .exercices-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        
-        .exercices-table thead {
-            background: #f8f9fa;
-        }
-        
-        .exercices-table th {
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: #333;
-            text-transform: uppercase;
-            font-size: 0.875rem;
-            letter-spacing: 0.5px;
-        }
-        
-        .exercices-table td {
-            padding: 1rem;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .exercices-table tbody tr {
-            transition: background-color 0.2s;
-        }
-        
-        .exercices-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .exercices-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .month-name {
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .montant-cell {
-            font-weight: 600;
-            color: #667eea;
-        }
-        
-        .action-link {
-            padding: 0.5rem 1rem;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: all 0.2s;
-            display: inline-block;
-            margin-right: 0.5rem;
-        }
-        
-        .action-link:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-        }
-        
-        .action-link.edit {
-            background: #28a745;
-        }
-        
-        .action-link.edit:hover {
-            background: #218838;
-        }
-        
-        .no-exercices {
-            text-align: center;
-            padding: 3rem;
-            color: #999;
-            font-style: italic;
-        }
-        
-        .create-btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-top: 1rem;
-            transition: all 0.2s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .create-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-    </style>
+{{ parent() }}
+<style>
+.compte-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius); margin-bottom: 1rem; overflow: hidden; box-shadow: var(--adm-shadow); }
+.compte-card__header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--adm-border); font-weight: 700; color: var(--adm-accent); cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+.compte-card__header:hover { background: var(--adm-accent-soft); }
+.compte-card__header::after { content: '▼'; font-size: 0.9rem; color: var(--adm-text-muted); transition: transform 0.25s; }
+.compte-card__header.collapsed::after { transform: rotate(-90deg); }
+.compte-card__body { overflow: hidden; transition: max-height 0.3s ease; padding: 0 1.25rem 1rem; }
+.compte-card__body.collapsed { max-height: 0 !important; }
+.compte-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 0 -0.25rem; }
+.compte-table th { text-align: left; padding: 0.75rem 1rem; font-weight: 600; color: var(--adm-text-muted); background: var(--adm-bg); }
+.compte-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--adm-border); }
+.compte-table tr:last-child td { border-bottom: none; }
+.compte-table .montant-cell { font-weight: 600; color: var(--adm-accent); }
+.compte-empty { text-align: center; padding: 2rem; color: var(--adm-text-muted); }
+@media (max-width: 640px) {
+    .compte-card__body { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .compte-table { margin: 0; }
+    .compte-table thead { display: none; }
+    .compte-table tbody { display: block; }
+    .compte-table tr { display: block; border-bottom: 1px solid var(--adm-border); padding: 0.75rem 0; }
+    .compte-table tr:last-child { border-bottom: none; }
+    .compte-table td { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.35rem 0; border: none; }
+    .compte-table td::before { content: attr(data-label); font-weight: 600; color: var(--adm-text-muted); font-size: 0.8rem; flex-shrink: 0; }
+    .compte-table td[data-label=""] { justify-content: flex-end; padding-top: 0.5rem; }
+    .compte-table td[data-label=""]::before { display: none; }
+}
+</style>
 {% endblock %}
 
 {% block body %}
-    <div class="exercice-container">
-        <div class="exercice-header">
-            <h1>Mes exercices personnels</h1>
-        </div>
-        
-        {% if exercicesByYear is empty %}
-            <div class="year-section">
-                <div class="no-exercices">
-                    <p>Aucun exercice personnel trouvé</p>
-                    <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">Les UserMois sont créés automatiquement lors de la création d'un Exercice.</p>
-                </div>
+<div class="adm-page-header">
+    <a href="{{ path('app_compte_index') }}" class="adm-page-back" style="display: inline-flex; align-items: center; gap: 0.35rem; color: var(--adm-text-muted); font-size: 0.9rem; text-decoration: none; margin-bottom: 0.5rem;"><i class="fas fa-arrow-left"></i> Retour à Compte</a>
+    <h1 class="adm-page-title">Mes mois personnels</h1>
+    <p class="adm-page-subtitle">Salaire, taux enveloppe, épargne par mois</p>
+</div>
+
+{% if exercicesByYear is empty %}
+    <div class="compte-card">
+        <div class="compte-card__body">
+            <div class="compte-empty">
+                <p>Aucun exercice personnel trouvé.</p>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem;">Les mois personnels sont créés automatiquement lors de la création d’un mois dans le compte commun.</p>
             </div>
-        {% else %}
-            {% set currentYear = "now"|date("Y")|number_format(0, '', '') %}
-            {% for year, months in exercicesByYear %}
-                {% set isCurrentYear = (year == currentYear) %}
-                <div class="year-section">
-                    <div class="year-header{% if not isCurrentYear %} collapsed{% endif %}" onclick="toggleYear('{{ year }}')" id="year-header-{{ year }}">
-                        <span>{{ year }}</span>
-                    </div>
-                    <div class="year-content{% if not isCurrentYear %} collapsed{% endif %}" id="year-content-{{ year }}">
-                        <table class="exercices-table">
-                        <thead>
-                            <tr>
-                                <th>Mois</th>
-                                <th>Salaire</th>
-                                <th>Taux Enveloppe</th>
-                                <th>Épargne</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% set moisNoms = {
-                                1: 'Janvier',
-                                2: 'Février',
-                                3: 'Mars',
-                                4: 'Avril',
-                                5: 'Mai',
-                                6: 'Juin',
-                                7: 'Juillet',
-                                8: 'Août',
-                                9: 'Septembre',
-                                10: 'Octobre',
-                                11: 'Novembre',
-                                12: 'Décembre'
-                            } %}
-                            {% for month, data in months %}
-                                {% set exercice = data.exercice %}
-                                {% set userMoi = data.userMois %}
-                                <tr>
-                                    <td class="month-name">{{ moisNoms[month] }}</td>
-                                    <td class="montant-cell">{{ userMoi.salaire ?? 0 }}€</td>
-                                    <td class="montant-cell">{{ userMoi.tauxEnveloppe ?? 0 }}%</td>
-                                    <td class="montant-cell">{{ userMoi.epargne ?? 0 }}€</td>
-                                    <td>
-                                        <a href="{{ path('app_compte_user_mois_show', {'id': userMoi.id}) }}" class="action-link">Voir</a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
-            {% endfor %}
-        {% endif %}
+        </div>
     </div>
-    
-    <script>
-        function toggleYear(year) {
-            const header = document.getElementById('year-header-' + year);
-            const content = document.getElementById('year-content-' + year);
-            
-            if (content) {
-                content.classList.toggle('collapsed');
-                if (header) {
-                    header.classList.toggle('collapsed');
-                }
-            }
-        }
-    </script>
+{% else %}
+    {% set currentYear = "now"|date("Y")|number_format(0, '', '') %}
+    {% set moisNoms = { 1: 'Janvier', 2: 'Février', 3: 'Mars', 4: 'Avril', 5: 'Mai', 6: 'Juin', 7: 'Juillet', 8: 'Août', 9: 'Septembre', 10: 'Octobre', 11: 'Novembre', 12: 'Décembre' } %}
+    {% for year, months in exercicesByYear %}
+        {% set isCurrentYear = (year == currentYear) %}
+        <div class="compte-card">
+            <div class="compte-card__header{% if not isCurrentYear %} collapsed{% endif %}" onclick="toggleYear('{{ year }}')" id="year-header-{{ year }}">{{ year }}</div>
+            <div class="compte-card__body{% if not isCurrentYear %} collapsed{% endif %}" id="year-content-{{ year }}" style="max-height: 2000px;">
+                <table class="compte-table">
+                    <thead>
+                        <tr><th>Mois</th><th>Salaire</th><th>Taux enveloppe</th><th>Épargne</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for month, data in months %}
+                            {% set userMoi = data.userMois %}
+                            <tr>
+                                <td data-label="Mois">{{ moisNoms[month] }}</td>
+                                <td data-label="Salaire" class="montant-cell">{{ userMoi.salaire ?? 0 }} €</td>
+                                <td data-label="Taux enveloppe" class="montant-cell">{{ userMoi.tauxEnveloppe ?? 0 }} %</td>
+                                <td data-label="Épargne" class="montant-cell">{{ userMoi.epargne ?? 0 }} €</td>
+                                <td data-label=""><a href="{{ path('app_compte_user_mois_show', {'id': userMoi.id}) }}" class="adm-btn adm-btn--secondary" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;">Voir</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<script>
+function toggleYear(year) {
+    var header = document.getElementById('year-header-' + year);
+    var content = document.getElementById('year-content-' + year);
+    if (content) content.classList.toggle('collapsed');
+    if (header) header.classList.toggle('collapsed');
+}
+</script>
 {% endblock %}

@@ -1,243 +1,66 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Mois{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .exercice-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        
-        .exercice-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .exercice-header h1 {
-            margin: 0 0 1rem 0;
-            font-size: 2rem;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .info-card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .info-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .info-label {
-            font-size: 0.875rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .info-value {
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #333;
-        }
-        
-        .section {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .section h2 {
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-            color: #333;
-            font-size: 1.5rem;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 0.5rem;
-        }
-        
-        .depense-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .depense-item {
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .depense-item:hover {
-            background: #e9ecef;
-        }
-        
-        .depense-nom {
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .depense-montant {
-            font-weight: 700;
-            color: #667eea;
-        }
-        
-        .user-section {
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .user-header {
-            font-weight: 700;
-            color: #764ba2;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-        
-        .total-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .total-label {
-            font-size: 0.875rem;
-            opacity: 0.9;
-            margin-bottom: 0.5rem;
-        }
-        
-        .total-value {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-        
-        .actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s;
-            display: inline-block;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-        
-        @media (max-width: 768px) {
-            .exercice-container {
-                padding: 0 0.5rem;
-            }
-            
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .actions {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-                text-align: center;
-            }
-        }
-    </style>
+{{ parent() }}
+<style>
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.info-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius); padding: 1.25rem; box-shadow: var(--adm-shadow); transition: transform 0.2s, box-shadow 0.2s; }
+.info-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.info-label { font-size: 0.875rem; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.info-value { margin-bottom: 0; font-size: 1.35rem; font-weight: 700; color: var(--adm-text); }
+.section { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--adm-shadow); }
+.section h2 { margin-top: 0; margin-bottom: 1.25rem; color: var(--adm-text); font-size: 1.25rem; border-bottom: 2px solid var(--adm-accent); padding-bottom: 0.5rem; }
+.depense-list { list-style: none; padding: 0; margin: 0; }
+.depense-item { padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: var(--adm-bg); border-left: 4px solid var(--adm-accent); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+.depense-item:hover { background: var(--adm-accent-soft); }
+.depense-nom { font-weight: 500; color: var(--adm-text); }
+.depense-montant { font-weight: 700; color: var(--adm-accent); }
+.user-section { margin-bottom: 1.5rem; padding: 1rem; background: var(--adm-bg); border-radius: var(--adm-radius); }
+.user-header { font-weight: 700; color: var(--adm-accent); margin-bottom: 1rem; font-size: 1.05rem; }
+.total-card { background: var(--adm-accent); color: white; padding: 1.25rem; border-radius: var(--adm-radius); text-align: center; margin-bottom: 1.5rem; }
+.total-label { font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem; }
+.total-value { font-size: 1.75rem; font-weight: 700; }
+.actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+@media (max-width: 768px) { .info-grid { grid-template-columns: 1fr; } .actions { flex-direction: column; } .actions .adm-btn { width: 100%; text-align: center; } }
+</style>
 {% endblock %}
 
 {% block body %}
-    <div class="exercice-container">
-        <div class="exercice-header">
-            <h1>
-                {% if exercice.mois %}
-                    {% set mois = exercice.mois|date('n') %}
-                    {% set annee = exercice.mois|date('Y') %}
-                    {% set moisNoms = {
-                        1: 'Janvier',
-                        2: 'Février',
-                        3: 'Mars',
-                        4: 'Avril',
-                        5: 'Mai',
-                        6: 'Juin',
-                        7: 'Juillet',
-                        8: 'Août',
-                        9: 'Septembre',
-                        10: 'Octobre',
-                        11: 'Novembre',
-                        12: 'Décembre'
-                    } %}
-                    {{ moisNoms[mois] }} {{ annee }}
-                {% else %}
-                    N/A
-                {% endif %}
-            </h1>
-        </div>
+<div class="adm-page-header">
+    <h1 class="adm-page-title">
+        {% if exercice.mois %}
+            {% set mois = exercice.mois|date('n') %}
+            {% set annee = exercice.mois|date('Y') %}
+            {% set moisNoms = {
+                1: 'Janvier',
+                2: 'Février',
+                3: 'Mars',
+                4: 'Avril',
+                5: 'Mai',
+                6: 'Juin',
+                7: 'Juillet',
+                8: 'Août',
+                9: 'Septembre',
+                10: 'Octobre',
+                11: 'Novembre',
+                12: 'Décembre'
+            } %}
+            {{ moisNoms[mois] }} {{ annee }}
+        {% else %}
+            N/A
+        {% endif %}
+    </h1>
+    <p class="adm-page-subtitle">Dépenses compte commun</p>
+</div>
         <!-- Dépenses compte commun -->
         <div class="section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h2 style="margin: 0;">Dépenses compte commun</h2>
                 <button type="button" 
                         onclick="document.getElementById('formAddDepenseFixe').style.display = document.getElementById('formAddDepenseFixe').style.display === 'none' ? 'flex' : 'none';"
-                        style="padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem;"
-                        onmouseover="this.style.background='#5568d3'"
-                        onmouseout="this.style.background='#667eea'">
+                        class="adm-btn adm-btn--primary" style="font-size: 0.9rem;">
                     + Ajouter
                 </button>
             </div>
@@ -517,7 +340,6 @@
         </div>
 
         <div class="actions">
-            <a href="{{ path('app_compte_exercice_index') }}" class="btn btn-secondary">← Retour à la liste</a>
+            <a href="{{ path('app_compte_exercice_index') }}" class="adm-btn adm-btn--secondary">← Retour à la liste</a>
         </div>
-    </div>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Gestion des Catégories{% endblock %}
 
@@ -222,13 +222,13 @@
     <div class="categories-header">
         <div>
             <h1 class="categories-title">
-                <i class="bi bi-tags-fill"></i>
+                <i class="fas fa-tags"></i>
                 Catégories
             </h1>
             <p class="categories-subtitle">Organisez vos prestations par catégories</p>
         </div>
         <a href="{{ path('app_category_new') }}" class="new-category-btn">
-            <i class="bi bi-plus-circle"></i>
+            <i class="fas fa-plus-circle"></i>
             Nouvelle Catégorie
         </a>
     </div>
@@ -237,7 +237,7 @@
     <div class="stats-grid">
         <div class="stats-card" data-animate="true">
             <div class="stats-icon categories">
-                <i class="bi bi-tags"></i>
+                <i class="fas fa-tags"></i>
             </div>
             <div class="stats-number" data-target="{{ categories|length }}">0</div>
             <div class="stats-label">Catégories total</div>
@@ -245,7 +245,7 @@
         
         <div class="stats-card" data-animate="true">
             <div class="stats-icon services">
-                <i class="bi bi-briefcase"></i>
+                <i class="fas fa-briefcase"></i>
             </div>
             <div class="stats-number" data-target="{% set totalServices = 0 %}{% for category in categories %}{% if category.services is defined %}{% set totalServices = totalServices + category.services|length %}{% endif %}{% endfor %}{{ totalServices }}">0</div>
             <div class="stats-label">Services liés</div>
@@ -253,7 +253,7 @@
         
         <div class="stats-card" data-animate="true">
             <div class="stats-icon average">
-                <i class="bi bi-graph-up"></i>
+                <i class="fas fa-chart-line"></i>
             </div>
             <div class="stats-number" data-target="{{ categories|length > 0 ? (totalServices / categories|length)|round : 0 }}">0</div>
             <div class="stats-label">Services / catégorie</div>
@@ -266,19 +266,19 @@
         <div class="categories-cards-container">
             <div class="categories-cards-header">
                 <h4 class="cards-title">
-                    <i class="bi bi-list-ul"></i>
+                    <i class="fas fa-list"></i>
                     Liste des Catégories ({{ categories|length }})
                 </h4>
                 <div class="mobile-search-container">
                     <input type="text" class="mobile-search-input" placeholder="Rechercher..." id="searchCategories">
-                    <i class="bi bi-search search-icon"></i>
+                    <i class="fas fa-search search-icon"></i>
                 </div>
             </div>
             {% for category in categories %}
                 <div class="category-card-mobile category-row" data-category-name="{{ category.name|lower }}">
                     <div class="category-card-header">
                         <div class="category-card-icon">
-                            <i class="bi bi-tag-fill"></i>
+                            <i class="fas fa-tag"></i>
                         </div>
                         <div class="category-card-title">
                             <h5 class="category-name">{{ category.name }}</h5>
@@ -287,11 +287,11 @@
                         <div class="category-card-actions">
                             <a href="{{ path('app_category_show', {'id': category.id}) }}" 
                                class="action-btn view-btn">
-                                <i class="bi bi-eye"></i>
+                                <i class="fas fa-eye"></i>
                             </a>
                             <a href="{{ path('app_category_edit', {'id': category.id}) }}" 
-                               class="action-btn edit-btn">
-                                <i class="bi bi-pencil"></i>
+                               class="action-btn edit-btn" >
+                                <i class="fas fa-edit"></i>
                             </a>
                         </div>
                     </div>
@@ -299,7 +299,7 @@
                     <div class="category-card-body">
                         <div class="category-services">
                             <label class="category-label">
-                                <i class="bi bi-briefcase me-1"></i>Services associés
+                                <i class="fas fa-briefcase"></i> Services associés
                             </label>
                             {% if category.services is defined and category.services|length > 0 %}
                                 <div class="services-count">
@@ -317,7 +317,7 @@
                                 </div>
                             {% else %}
                                 <span class="badge bg-secondary">
-                                    <i class="bi bi-x-circle me-1"></i>Aucun service
+                                    <i class="fas fa-times-circle"></i> Aucun service
                                 </span>
                             {% endif %}
                         </div>
@@ -325,7 +325,7 @@
                         {% if category.description is defined and category.description %}
                             <div class="category-description">
                                 <label class="category-label">
-                                    <i class="bi bi-info-circle me-1"></i>Description
+                                    <i class="fas fa-info-circle"></i> Description
                                 </label>
                                 <p class="description-text">{{ category.description }}</p>
                             </div>
@@ -337,11 +337,11 @@
     {% else %}
         <div class="categories-cards-header">
             <div class="text-center py-5">
-                <i class="bi bi-tags display-1 text-muted mb-3"></i>
+                <i class="fas fa-tags fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">Aucune catégorie trouvée</h5>
                 <p class="text-muted">Créez votre première catégorie pour organiser vos services</p>
                 <a href="{{ path('app_category_new') }}" class="new-category-btn">
-                    <i class="bi bi-plus-circle"></i>
+                    <i class="fas fa-plus-circle"></i>
                     Créer une Catégorie
                 </a>
             </div>
@@ -611,9 +611,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     .action-btn {
-        width: 36px;
+        min-width: 36px;
         height: 36px;
+        padding: 0 0.5rem;
         font-size: 0.9rem;
+    }
+    
+    .action-btn .action-btn-text {
+        font-size: 0.85rem;
     }
     
     .category-card-body {

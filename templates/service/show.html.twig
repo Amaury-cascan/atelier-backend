@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Détails de la prestation{% endblock %}
 
@@ -206,6 +206,23 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(162, 78, 50, 0.3);
     color: white;
+}
+
+.delete-btn {
+    background: var(--adm-error, #c94a4a);
+    color: white;
+    border: 1px solid transparent;
+}
+
+.delete-btn:hover {
+    background: #b03a3a;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201, 74, 74, 0.3);
+}
+
+.service-delete-form {
+    display: inline-block;
 }
 
 /* Responsive */

@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Statistiques - L'Atelier de Marie{% endblock %}
 
@@ -341,14 +341,6 @@
 .data-table th:nth-child(3), .data-table td:nth-child(3) { width: 15%; text-align: right; }
 .data-table th:nth-child(4) { width: 25%; }
 
-.data-table thead th:first-child {
-    border-radius: 20px 0 0 0;
-}
-
-.data-table thead th:last-child {
-    border-radius: 0 20px 0 0;
-}
-
 .data-table thead th::after {
     content: '';
     position: absolute;
@@ -628,7 +620,7 @@
     }
 }
 
-/* Responsive pour très petits écrans */
+/* Responsive pour très petits écrans : uniquement Service + Nombre + CA */
 @media (max-width: 576px) {
     .data-table {
         margin: 0 -1rem;
@@ -638,16 +630,29 @@
     }
     
     .data-table table {
-        min-width: 500px;
+        width: 100%;
+        min-width: 0;
     }
+    
+    .data-table thead th:nth-child(4),
+    .data-table tbody td:nth-child(4),
+    .data-table tfoot td:nth-child(4) {
+        display: none;
+    }
+    
+    .data-table thead th:nth-child(1) { width: 50%; }
+    .data-table thead th:nth-child(2),
+    .data-table td:nth-child(2) { width: 25%; text-align: center; }
+    .data-table thead th:nth-child(3),
+    .data-table td:nth-child(3) { width: 25%; text-align: right; }
     
     .data-table thead th,
     .data-table tbody td {
-        padding: 0.875rem 0.5rem;
+        padding: 0.65rem 0.5rem;
     }
 
     .data-table thead th {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
 
     .data-table tbody td {
@@ -655,48 +660,37 @@
     }
 
     .service-indicator {
-        width: 12px;
-        height: 12px;
-        margin-right: 8px;
+        width: 10px;
+        height: 10px;
+        margin-right: 6px;
     }
     
     .service-name {
-        font-size: 0.9rem;
-        min-width: 120px;
+        font-size: 0.85rem;
+        min-width: 0;
     }
     
     .count-badge {
-        padding: 4px 10px;
-        font-size: 0.8rem;
-        min-width: 30px;
+        padding: 3px 8px;
+        font-size: 0.75rem;
     }
     
     .revenue-amount {
-        font-size: 0.95rem;
-    }
-    
-    .progress-container {
-        min-width: 100px;
-        height: 24px;
-    }
-    
-    .progress-bar {
-        font-size: 0.75rem;
-        min-width: 30px;
+        font-size: 0.85rem;
     }
     
     .total-row td {
-        padding: 1rem 0.5rem !important;
-        font-size: 0.95rem !important;
+        padding: 0.75rem 0.5rem !important;
+        font-size: 0.9rem !important;
     }
     
     .total-row .count-badge {
-        font-size: 0.85rem;
-        padding: 6px 12px;
+        font-size: 0.8rem;
+        padding: 4px 8px;
     }
     
     .total-row .revenue-amount {
-        font-size: 1.05rem;
+        font-size: 0.95rem;
     }
 }
 
@@ -1158,7 +1152,7 @@
                     <div class="kpi-icon average">
                         <i class="fas fa-chart-bar"></i>
                     </div>
-                    <div class="kpi-number">{{ (totalAmount / totalCount)|number_format(0, '.', '') }}</div>
+                    <div class="kpi-number">{{ totalCount > 0 ? (totalAmount / totalCount)|number_format(0, '.', '') : 0 }}</div>
                     <div class="kpi-label">Panier moyen</div>
                     <div class="kpi-description">Par rendez-vous</div>
                 </div>        
