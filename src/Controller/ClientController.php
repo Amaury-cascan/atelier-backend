@@ -179,16 +179,17 @@ class ClientController extends AbstractController
     #[Route('/{id}/rendez-vous', name: 'app_client_appointment', methods: ['GET'])]
     public function appointment(Client $client, EntityManagerInterface $entityManager): Response
     {
-        $appointments = $client->getAppointments();
-        $appointmentsArray = $appointments->toArray();
-        $appointment = $appointmentsArray === [] ? null : array_values($appointmentsArray)[0];
+        $appointmentsCollection = $client->getAppointments();
+        $appointmentsArray = $appointmentsCollection->toArray();
+        usort($appointmentsArray, fn ($a, $b) => ($b->getDate() <=> $a->getDate()));
+        $appointment = $appointmentsArray === [] ? null : $appointmentsArray[0];
         $currentDate = new \DateTime();
         $serviceDuration = $appointment ? ($appointment->getService()?->getDuration() ?? 60) : 60;
         $availableSlots = $this->getAvailableSlots($client, $entityManager, $serviceDuration, $currentDate);
 
         return $this->render('client/appointment.html.twig', [
             'client' => $client,
-            'appointments' => $appointments,
+            'appointments' => $appointmentsArray,
             'availableSlots' => $availableSlots,
             'appointment' => $appointment,
             'currentDate' => $currentDate,
