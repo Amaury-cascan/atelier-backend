@@ -754,7 +754,7 @@
             <div class="stats-icon duration">
                 <i class="fas fa-clock"></i>
             </div>
-            <div class="stats-number" data-target="{% set totalDuration = 0 %}{% for service in services %}{% if service.active is null or service.active == true %}{% set totalDuration = totalDuration + service.duration %}{% endif %}{% endfor %}{{ (totalDuration / services|length)|round }}">0</div>
+            <div class="stats-number" data-target="{% set totalDuration = 0 %}{% set activeCount = 0 %}{% for service in services %}{% if service.active is null or service.active == true %}{% set totalDuration = totalDuration + service.duration %}{% set activeCount = activeCount + 1 %}{% endif %}{% endfor %}{{ activeCount > 0 ? (totalDuration / activeCount)|round : 0 }}">0</div>
             <div class="stats-label">Durée moy. (min)</div>
         </div>
         
@@ -762,7 +762,7 @@
             <div class="stats-icon average">
                 <i class="fas fa-calculator"></i>
             </div>
-            <div class="stats-number" data-target="{{ ((totalPrice / services|length)|round) }}">0</div>
+            <div class="stats-number" data-target="{{ (activeCount is defined and activeCount > 0 ? (totalPrice / activeCount)|round : 0) }}">0</div>
             <div class="stats-label">Prix moyen (€)</div>
         </div>
     </div>

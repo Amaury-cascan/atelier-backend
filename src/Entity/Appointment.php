@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\AppointmentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: AppointmentRepository::class)]
 class Appointment
@@ -20,8 +21,13 @@ class Appointment
     private ?\DateTimeInterface $date = null;
 
     #[ORM\ManyToOne(inversedBy: 'appointments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Service $service = null;
+
+    /** Prix du RDV en euros (modifiable, conservé si le service est supprimé). */
+    #[ORM\Column(nullable: true)]
+    #[Groups(['appointmentLinked'])]
+    private ?int $price = null;
 
     #[ORM\ManyToOne(inversedBy: 'appointments')]
     #[ORM\JoinColumn(nullable: false)]
@@ -56,6 +62,18 @@ class Appointment
     public function setService(?Service $service): static
     {
         $this->service = $service;
+
+        return $this;
+    }
+
+    public function getPrice(): ?int
+    {
+        return $this->price ?? $this->service?->getPrice();
+    }
+
+    public function setPrice(?int $price): static
+    {
+        $this->price = $price;
 
         return $this;
     }

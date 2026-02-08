@@ -27,9 +27,10 @@ class AppointmentApiController extends AbstractController
         // Transformer les rendez-vous pour ne retourner que les dates et les heures
         $appointmentsArray = array_map(function($appointment) {
             return [
-                'date' => $appointment->getDate()->format('Y-m-d H:i:s'),  // Date et heure de début
-                'endDate' => $appointment->getEndDate()->format('Y-m-d H:i:s'),  // Date et heure de fin
-                'service' => $appointment->getService()->getName(),
+                'date' => $appointment->getDate()->format('Y-m-d H:i:s'),
+                'endDate' => $appointment->getEndDate()->format('Y-m-d H:i:s'),
+                'service' => $appointment->getService()?->getName(),
+                'price' => $appointment->getPrice(),
                 'user' => $appointment->getClient()->getId(),
             ];
         }, $appointments);
@@ -62,6 +63,7 @@ class AppointmentApiController extends AbstractController
         $appointment->setDate($startDate);
         $appointment->setService($service);
         $appointment->setClient($user);
+        $appointment->setPrice($service->getPrice());
 
         $endDate = clone $startDate;
         $endDate->add(new DateInterval('PT' . $service->getDuration() . 'M'));
@@ -87,6 +89,7 @@ class AppointmentApiController extends AbstractController
             'endDate' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
             'serviceName' => $service->getName(),
             'serviceId' => $service->getId(),
+            'price' => $appointment->getPrice(),
             'clientFirstName' => $user->getFirstName(),
             'clientName' => $user->getName(),
             'clientId' => $user->getId()
@@ -108,8 +111,9 @@ class AppointmentApiController extends AbstractController
                 'id' => $appointment->getId(),
                 'date' => $appointment->getDate()->format('Y-m-d\TH:i:s'),
                 'endDate' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
-                'serviceName' => $appointment->getService()->getName(),
-                'serviceId' => $appointment->getService()->getId(),
+                'serviceName' => $appointment->getService()?->getName(),
+                'serviceId' => $appointment->getService()?->getId(),
+                'price' => $appointment->getPrice(),
             ];
         }, $appointments);
 

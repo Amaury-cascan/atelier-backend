@@ -11,7 +11,8 @@
                 <thead>
                     <tr>
                         <th>Date et heures</th>
-                        <th>Prestations</th>
+                        <th>Prestation</th>
+                        <th>Prix (€)</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -32,16 +33,24 @@
                         {{ jours[appointment.date|date('w')] }} {{ appointment.date|date('d-m-Y H:i') }}
                     </td>
                     <td {% if appointment.date|date('U') < today %}style="background-color: lightgreen;"{% endif %}>
-                        {{ appointment.service.name }}
+                        {{ appointment.service ? appointment.service.name : '—' }}
+                    </td>
+                    <td {% if appointment.date|date('U') < today %}style="background-color: lightgreen;"{% endif %}>
+                        {{ appointment.price ?? '—' }}
                     </td>
                     <td class="d-flex" {% if appointment.date|date('U') < today %}style="background-color: lightgreen;"{% endif %}>
-                        <a href="#" class="btn btn-sm btn-primary mx-2" data-bs-toggle="modal" data-bs-target="#availableSlotsModal{{ client.id }}" data-appointment-id="{{ appointment.id }}">Modifier</a>
+                        <a href="#" class="btn btn-sm btn-primary mx-2 btn-edit-appointment" data-bs-toggle="modal" data-bs-target="#availableSlotsModal{{ client.id }}"
+                           data-appointment-id="{{ appointment.id }}"
+                           data-service-name="{{ appointment.service ? appointment.service.name : '' }}"
+                           data-price="{{ appointment.price ?? '' }}"
+                           data-service-id="{{ appointment.service ? appointment.service.id : '' }}"
+                           data-appointment-date="{{ appointment.date|date('Y-m-d H:i') }}">Modifier</a>
                         {{ include('client/_delete_app.html.twig') }}
                     </td>
                 </tr>
                 {% else %}
                     <tr>
-                        <td colspan="3" class="text-center">Aucun rendez-vous trouvé</td>
+                        <td colspan="4" class="text-center">Aucun rendez-vous trouvé</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -58,27 +67,46 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="availableSlotsModalLabel">Choisissez un créneau : </h5>
+                <h5 class="modal-title" id="availableSlotsModalLabel">Modifier le rendez-vous</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="d-flex justify-content-between mb-3">
-                    <button class="btn btn-secondary" id="prevDay">Précédent</button>
-                    <h6 id="currentDate">{{ currentDate|date('d-m-Y') }}</h6>
-                    <button class="btn btn-secondary" id="nextDay">Suivant</button>
-                </div>
-                <form id="slotSelectionForm" method="POST" action="{{ path('app_appointment_edit', {'id': 'appointmentId'}) }}">
-                    <input type="hidden" name="id" id="appointmentId" value="{{ appointment.id }}"> <!-- ID du rendez-vous à mettre à jour -->
-                    <input type="hidden" name="serviceId" value="{{ appointment.service.id }}"> <!-- ID du service du rendez-vous -->
-                    <input type="hidden" name="clientId" value="{{ appointment.client.id }}">
+                <form id="slotSelectionForm" method="POST" action="">
+                    <input type="hidden" name="appointmentId" id="appointmentId" value="">
+                    <input type="hidden" name="clientId" id="formClientId" value="{{ client.id }}">
+                    <input type="hidden" name="serviceId" id="formServiceId" value="">
+                    <input type="hidden" name="date" id="formDate" value="">
+
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Prestation :</strong> <span id="formServiceNameDisplay">—</span></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Prix (€)</label>
+                        <input type="number" class="form-control" name="price" id="formPrice" min="0" step="1" placeholder="Prix">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="removeService" id="formRemoveService" value="1">
+                        <label class="form-check-label" for="formRemoveService">Retirer le lien avec le service (garder nom et prix)</label>
+                    </div>
+
+                    <hr>
+                    <p class="mb-2">Changer le créneau :</p>
+                    <div class="d-flex justify-content-between mb-3">
+                        <button type="button" class="btn btn-secondary" id="prevDay">Précédent</button>
+                        <h6 id="currentDate">{{ currentDate|date('d-m-Y') }}</h6>
+                        <button type="button" class="btn btn-secondary" id="nextDay">Suivant</button>
+                    </div>
                     <div class="list-group" id="availableSlots">
                         {% for slot in availableSlots %}
-                            <button type="submit" name="date" value="{{ slot|date('Y-m-d H:i') }}" class="list-group-item list-group-item-action">
+                            <button type="button" class="list-group-item list-group-item-action slot-btn" data-slot="{{ slot|date('Y-m-d H:i') }}">
                                 {{ slot|date('H:i') }}
                             </button>
                         {% else %}
                             <div class="list-group-item">Aucun créneau disponible</div>
                         {% endfor %}
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary" id="btnSaveServicePrice">Enregistrer (prestation / prix uniquement)</button>
                     </div>
                 </form>
             </div>
@@ -90,19 +118,36 @@
 </div>
 
 <script>
-    let currentDate = new Date("{{ currentDate|date('Y-m-d H:i') }}"); // Date actuelle
-    let appointmentId; // Déclaration de la variable pour l'ID de l'appointment
+    let currentDate = new Date("{{ currentDate|date('Y-m-d H:i') }}");
+    let appointmentId;
+    const slotsUrlTemplate = "{{ path('app_available_slots', { id: 'PLACEHOLDER' }) }}";
 
-    // Écoutez les clics sur les boutons "Modifier"
-    document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+    document.querySelectorAll('.btn-edit-appointment').forEach(button => {
         button.addEventListener('click', function() {
-            appointmentId = this.getAttribute('data-appointment-id'); // Récupérer l'ID de l'appointment
-            updateSlots(); // Mettre à jour les créneaux disponibles
-            console.log(appointmentId);
+            appointmentId = this.getAttribute('data-appointment-id');
+            const serviceId = this.getAttribute('data-service-id') || '';
             const editUrl = "{{ path('app_appointment_edit', {'id': 'placeholder'}) }}".replace('placeholder', appointmentId);
-            document.getElementById('slotSelectionForm').action = editUrl; // Mettre à jour l'action du formulaire
-            document.getElementById('appointmentId').value = appointmentId; // Mettre à jour le champ caché
+            document.getElementById('slotSelectionForm').action = editUrl;
+            document.getElementById('appointmentId').value = appointmentId;
+            document.getElementById('formServiceNameDisplay').textContent = this.getAttribute('data-service-name') || '—';
+            document.getElementById('formPrice').value = this.getAttribute('data-price') || '';
+            document.getElementById('formServiceId').value = serviceId;
+            document.getElementById('formServiceId').dataset.original = serviceId;
+            document.getElementById('formDate').value = this.getAttribute('data-appointment-date') || '';
+            document.getElementById('formRemoveService').checked = false;
+            updateSlots();
         });
+    });
+
+    document.getElementById('formRemoveService').addEventListener('change', function() {
+        const formServiceId = document.getElementById('formServiceId');
+        formServiceId.value = this.checked ? '' : (formServiceId.dataset.original || '');
+    });
+
+    document.getElementById('slotSelectionForm').addEventListener('submit', function() {
+        if (document.getElementById('formRemoveService').checked) {
+            document.getElementById('formServiceId').value = '';
+        }
     });
 
     document.getElementById('prevDay').addEventListener('click', function() {
@@ -115,32 +160,40 @@
         updateSlots();
     });
 
-    function updateSlots() {
-    document.getElementById('currentDate').innerText = currentDate.toLocaleDateString('fr-FR');
+    document.getElementById('availableSlots').addEventListener('click', function(e) {
+        const slotBtn = e.target.closest('.slot-btn');
+        if (slotBtn && slotBtn.dataset.slot) {
+            document.getElementById('formDate').value = slotBtn.dataset.slot;
+            document.getElementById('slotSelectionForm').submit();
+        }
+    });
 
-    // Appel AJAX pour récupérer les créneaux disponibles pour la date actuelle et l'appointment sélectionné
-    fetch(`/client/available-slots/${appointmentId}?date=${currentDate.toISOString()}`)
-        .then(response => response.json())
-        .then(data => {
-            const slotsContainer = document.getElementById('availableSlots');
-            slotsContainer.innerHTML = ''; // Vider les anciens créneaux
-            if (data.slots.length > 0) {
-                data.slots.forEach(slot => {
-                    const button = document.createElement('button');
-                    button.type = 'submit';
-                    button.name = 'date';
-                    button.value = slot.date; // Ne garder que l'heure
-                    button.className = 'list-group-item list-group-item-action';
-                    button.innerText = new Date(slot.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); // Afficher uniquement l'heure
-                    slotsContainer.appendChild(button);
-                });
-            } else {
-                slotsContainer.innerHTML = '<div class="list-group-item">Aucun créneau disponible</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Erreur lors de la récupération des créneaux disponibles:', error);
-        });
-}
+    function updateSlots() {
+        if (!appointmentId) return;
+        document.getElementById('currentDate').innerText = currentDate.toLocaleDateString('fr-FR');
+        const url = slotsUrlTemplate.replace('PLACEHOLDER', appointmentId) + '?date=' + currentDate.toISOString();
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const slotsContainer = document.getElementById('availableSlots');
+                slotsContainer.innerHTML = '';
+                if (data.slots && data.slots.length > 0) {
+                    data.slots.forEach(slot => {
+                        const slotDate = typeof slot === 'object' && slot.date ? slot.date : slot;
+                        const d = new Date(slotDate);
+                        const slotStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'list-group-item list-group-item-action slot-btn';
+                        btn.dataset.slot = slotStr;
+                        btn.innerText = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                        slotsContainer.appendChild(btn);
+                    });
+                } else {
+                    slotsContainer.innerHTML = '<div class="list-group-item">Aucun créneau disponible</div>';
+                }
+            })
+            .catch(error => console.error('Erreur créneaux:', error));
+    }
 </script>
 {% endblock %}

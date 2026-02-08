@@ -56,17 +56,17 @@ class CalendarController extends AbstractController
         foreach ($appointments as $appointment) {
             $events[] = [
                 'id' => $appointment->getId(),
-                'title' => $appointment->getService()->getName(),
+                'title' => $appointment->getService()?->getName(),
                 'start' => $appointment->getDate()->format('Y-m-d\TH:i:s'),
                 'end' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
                 'extendedProps' => [
                     'clientName' => $appointment->getClient()->getName(),
                     'clientFirstName' => $appointment->getClient()->getFirstName(),
-                    'serviceId' => $appointment->getService()->getId(),
+                    'serviceId' => $appointment->getService()?->getId(),
                     'clientId' => $appointment->getClient()->getId(),
-                    'serviceName' => $appointment->getService()->getName(),
-                    'price' => $appointment->getService()->getPrice(),
-                    'duration' => $appointment->getService()->getDuration(),
+                    'serviceName' => $appointment->getService()?->getName(),
+                    'price' => $appointment->getPrice(),
+                    'duration' => $appointment->getService()?->getDuration(),
                 ]
             ];
         }
@@ -179,6 +179,9 @@ class CalendarController extends AbstractController
         $appointment->setEndDate(new \DateTime($data['endDate']));
         $appointment->setService($service);
         $appointment->setClient($client);
+        if (isset($data['price']) && (int) $data['price'] >= 0) {
+            $appointment->setPrice((int) $data['price']);
+        }
         
         $em->flush();
         
@@ -192,6 +195,7 @@ class CalendarController extends AbstractController
             'clientId' => $client->getId(),
             'date' => $appointment->getDate()->format('Y-m-d\TH:i:s'),
             'endDate' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
+            'price' => $appointment->getPrice(),
         ]);
     }
 

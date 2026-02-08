@@ -23,14 +23,16 @@ class AppointmentController extends AbstractController
         foreach ($appointments as $appointment) {
             $events[] = [
                 'id' => $appointment->getId(),
-                'title' => $appointment->getService()->getName(), // Utilisez le nom du service comme titre
+                'title' => $appointment->getService()?->getName(),
                 'start' => $appointment->getDate()->format('Y-m-d\TH:i:s'),
                 'end' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
-                'serviceId' => $appointment->getService()->getId(),
+                'serviceId' => $appointment->getService()?->getId(),
                 'clientId' => $appointment->getClient()->getId(),
                 'extendedProps' => [
                     'clientName' => $appointment->getClient()->getName(),
-                    'clientFirstName' => $appointment->getClient()->getFirstName()
+                    'clientFirstName' => $appointment->getClient()->getFirstName(),
+                    'serviceName' => $appointment->getService()?->getName(),
+                    'price' => $appointment->getPrice(),
                 ]
             ];
         }
@@ -60,8 +62,8 @@ class AppointmentController extends AbstractController
         $appointment->setDate($startDate);
         $appointment->setService($service);
         $appointment->setClient($client);
+        $appointment->setPrice($service->getPrice());
 
-        // Calculer la date de fin en ajoutant la durée du service
         $endDate = clone $startDate;
         $endDate->add(new DateInterval('PT' . $service->getDuration() . 'M'));
         $appointment->setEndDate($endDate);
@@ -74,9 +76,10 @@ class AppointmentController extends AbstractController
             'id' => $appointment->getId(),
             'date' => $appointment->getDate()->format('Y-m-d\TH:i:s'),
             'endDate' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
-            'serviceName' => $service->getName(),
+            'serviceName' => $appointment->getService()?->getName(),
             'serviceId' => $service->getId(),
-            'clientFirstName' =>$client->getFirstName(),
+            'price' => $appointment->getPrice(),
+            'clientFirstName' => $client->getFirstName(),
             'clientName' => $client->getName(),
             'clientId' => $client->getId()
         ]);
@@ -85,33 +88,40 @@ class AppointmentController extends AbstractController
     #[Route('/{id}/editer', name: 'app_appointment_edit', methods: ['POST'])]
     public function edit(Request $request, Appointment $appointment, EntityManagerInterface $entityManager): Response
     {
-        // Récupérer les données du formulaire
         $data = $request->request->all();
-        // Validation des données
-        if (empty($data['date']) || empty($data['serviceId'])) {
-            return new JsonResponse(['success' => false, 'message' => 'Données manquantes'], 400);
+        if (empty($data['date'])) {
+            return new JsonResponse(['success' => false, 'message' => 'Date manquante'], 400);
         }
-    
-        // Convertir la date reçue en temps local (GMT+2)
+
         $date = new \DateTime($data['date']);
-        
-        // Récupérer le service
-        $service = $entityManager->getRepository(Service::class)->find($data['serviceId']);
-        if (!$service) {
-            return new JsonResponse(['success' => false, 'message' => 'Service introuvable'], 404);
-        }
-    
-        // Mettre à jour les informations du rendez-vous
         $appointment->setDate($date);
-    
-        // Calculer la date de fin en ajoutant la durée du service
-        $endDate = clone $date; // Cloner la date de début
-        $endDate->add(new DateInterval('PT' . $service->getDuration() . 'M')); // Ajouter la durée du service
-        $appointment->setEndDate($endDate);
-    
-        // Enregistrer les modifications
+
+        if (!empty($data['serviceId'])) {
+            $service = $entityManager->getRepository(Service::class)->find($data['serviceId']);
+            if ($service) {
+                $appointment->setService($service);
+                $appointment->setPrice($service->getPrice());
+                $endDate = clone $date;
+                $endDate->add(new DateInterval('PT' . $service->getDuration() . 'M'));
+                $appointment->setEndDate($endDate);
+            }
+        } else {
+            $appointment->setService(null);
+            if (isset($data['price'])) {
+                $appointment->setPrice((int) $data['price']);
+            }
+            $duration = $appointment->getService()?->getDuration() ?? 60;
+            $endDate = clone $date;
+            $endDate->add(new DateInterval('PT' . $duration . 'M'));
+            $appointment->setEndDate($endDate);
+        }
+
+        if (isset($data['price']) && (int) $data['price'] >= 0) {
+            $appointment->setPrice((int) $data['price']);
+        }
+
         $entityManager->flush();
-    
+
         return $this->redirectToRoute('app_client_appointment', ['id' => $appointment->getClient()->getId()], Response::HTTP_SEE_OTHER);
     }
 
@@ -119,41 +129,48 @@ class AppointmentController extends AbstractController
     public function update(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        // Validation des données
-        if (empty($data['id']) || empty($data['date']) || empty($data['serviceId']) || empty($data['clientId'])) {
+        if (empty($data['id']) || empty($data['date']) || empty($data['clientId'])) {
             return new JsonResponse(['success' => false, 'message' => 'Données manquantes'], 400);
         }
 
-        // Convertir la date reçue en temps local (GMT+2)
         $date = new \DateTime($data['date']);
-        $date->setTimezone(new \DateTimeZone('Europe/Paris')); // Définir le fuseau horaire GMT+2
+        $date->setTimezone(new \DateTimeZone('Europe/Paris'));
 
         $appointment = $entityManager->getRepository(Appointment::class)->find($data['id']);
         if (!$appointment) {
             return new JsonResponse(['success' => false, 'message' => 'Rendez-vous non trouvé'], 404);
         }
 
-        $service = $entityManager->getRepository(Service::class)->find($data['serviceId']);
         $client = $entityManager->getRepository(Client::class)->find($data['clientId']);
-
-        if (!$service || !$client) {
-            return new JsonResponse(['success' => false, 'message' => 'Service ou Client introuvable'], 404);
+        if (!$client) {
+            return new JsonResponse(['success' => false, 'message' => 'Client introuvable'], 404);
         }
 
         $appointment->setDate($date);
-        $appointment->setService($service);
         $appointment->setClient($client);
 
-        // Calculer la date de fin en ajoutant la durée du service
-        if ($data['endDate']) {
-            $endDate = new \DateTime($data['endDate']);
-            $endDate->setTimezone(new \DateTimeZone('Europe/Paris'));
+        if (!empty($data['serviceId'])) {
+            $service = $entityManager->getRepository(Service::class)->find($data['serviceId']);
+            if ($service) {
+                $appointment->setService($service);
+                $appointment->setPrice($data['price'] ?? $service->getPrice());
+                $endDate = isset($data['endDate']) ? new \DateTime($data['endDate']) : (clone $date)->add(new DateInterval('PT' . $service->getDuration() . 'M'));
+                $appointment->setEndDate($endDate);
+            }
         } else {
-            $endDate = clone $date;
-            $endDate->add(new DateInterval('PT' . $service->getDuration() . 'M'));
+            $appointment->setService(null);
+            if (isset($data['price'])) {
+                $appointment->setPrice((int) $data['price']);
+            }
+            $duration = $appointment->getService()?->getDuration() ?? 60;
+            $endDate = isset($data['endDate']) ? new \DateTime($data['endDate']) : (clone $date)->add(new DateInterval('PT' . $duration . 'M'));
+            $appointment->setEndDate($endDate);
         }
-        
-        $appointment->setEndDate($endDate);
+
+        if (isset($data['price']) && (int) $data['price'] >= 0) {
+            $appointment->setPrice((int) $data['price']);
+        }
+
         $entityManager->flush();
 
         return new JsonResponse([
@@ -161,10 +178,11 @@ class AppointmentController extends AbstractController
             'id' => $appointment->getId(),
             'date' => $appointment->getDate()->format('Y-m-d\TH:i:s'),
             'endDate' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
-            'serviceName' => $service->getName(),
-            'clientFirstName' =>$client->getFirstName(),
+            'serviceName' => $appointment->getService()?->getName(),
+            'serviceId' => $appointment->getService()?->getId(),
+            'price' => $appointment->getPrice(),
+            'clientFirstName' => $client->getFirstName(),
             'clientName' => $client->getName(),
-            'serviceId' => $service->getId(),
             'clientId' => $client->getId()
         ]);
     }
@@ -211,7 +229,8 @@ class AppointmentController extends AbstractController
             return [
                 'id' => $service->getId(),
                 'name' => $service->getName(),
-                'duration' => $service->getDuration() // Assurez-vous que cette méthode existe dans votre entité Service
+                'duration' => $service->getDuration(),
+                'price' => $service->getPrice(),
             ];
         }, $services);
         return new JsonResponse($servicesArray);

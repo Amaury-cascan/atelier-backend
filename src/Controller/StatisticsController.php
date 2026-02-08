@@ -41,9 +41,9 @@ class StatisticsController extends AbstractController
 
         // Calculer les statistiques
         foreach ($appointments as $appointment) {
-            $price = $appointment->getService()->getPrice(); 
+            $price = $appointment->getPrice() ?? 0; 
             $appointmentDate = $appointment->getDate(); 
-            $serviceName = $appointment->getService()->getName();
+            $serviceName = $appointment->getService()?->getName() ?? 'Sans service';
 
             // Statistiques par jour
             $dayKey = $appointmentDate->format('Y-m-d');

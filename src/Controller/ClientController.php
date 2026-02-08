@@ -128,21 +128,18 @@ class ClientController extends AbstractController
     public function appointment(Client $client, EntityManagerInterface $entityManager): Response
     {
         $appointments = $client->getAppointments();
-        
-        // Récupérer le premier rendez-vous ou un rendez-vous spécifique si nécessaire
-        $appointment = $appointments ? $appointments[0] : null; // Par exemple, prendre le premier rendez-vous
-        // Définir la date actuelle
-        $currentDate = new \DateTime(); // Ou une date spécifique si nécessaire
-        // Récupérer les créneaux disponibles pour le client
-        $serviceDuration = $appointment->getService()->getDuration(); // Durée du service en minutes
-        $availableSlots = $this->getAvailableSlots($client, $entityManager, $serviceDuration, $currentDate); // Passer les créneaux disponibles à la vue
+        $appointmentsArray = $appointments->toArray();
+        $appointment = $appointmentsArray === [] ? null : array_values($appointmentsArray)[0];
+        $currentDate = new \DateTime();
+        $serviceDuration = $appointment ? ($appointment->getService()?->getDuration() ?? 60) : 60;
+        $availableSlots = $this->getAvailableSlots($client, $entityManager, $serviceDuration, $currentDate);
 
         return $this->render('client/appointment.html.twig', [
             'client' => $client,
             'appointments' => $appointments,
-            'availableSlots' => $availableSlots, // Passer les créneaux disponibles à la vue
-            'appointment' => $appointment, // Passer l'objet appointment au template
-            'currentDate' => $currentDate, // Passer la date actuelle au template
+            'availableSlots' => $availableSlots,
+            'appointment' => $appointment,
+            'currentDate' => $currentDate,
         ]);
     }
     #[Route('/slots-valides/{id}', name: 'app_available_slots', methods: ['GET'])]
@@ -161,11 +158,11 @@ class ClientController extends AbstractController
            return new JsonResponse(['success' => false, 'message' => 'Date invalide'], 400);
        }
 
-       // Récupérer les créneaux disponibles pour l'appointment sélectionné
-       $serviceDuration = $appointment->getService()->getDuration(); // Durée du service en minutes
-       $availableSlots = $this->getAvailableSlots($appointment->getClient(), $entityManager, $serviceDuration, $date);
+       $serviceDuration = $appointment->getService()?->getDuration() ?? 60;
+       $slots = $this->getAvailableSlots($appointment->getClient(), $entityManager, $serviceDuration, $date);
+       $slotsAsStrings = array_map(fn (\DateTime $d) => $d->format('c'), $slots);
 
-       return new JsonResponse(['success' => true, 'slots' => $availableSlots]);
+       return new JsonResponse(['success' => true, 'slots' => $slotsAsStrings]);
     }
 
     private function getAvailableSlots(Client $client, EntityManagerInterface $entityManager, int $serviceDuration, ?\DateTime $date = null): array

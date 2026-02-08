@@ -2902,7 +2902,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const durationMinutes = Math.round((endDate - startDate) / (1000 * 60));
         document.getElementById('appointmentDuration').textContent = formatDuration(durationMinutes);
-        document.getElementById('appointmentPrice').textContent = service ? service.price + '€' : 'N/A';
+        const price = appointment.extendedProps.price ?? service?.price ?? null;
+        document.getElementById('appointmentPrice').textContent = price != null ? price + '€' : 'N/A';
 
         // Réinitialiser l'éditeur de durée
         document.getElementById('durationEditor').style.display = 'none';
@@ -2957,6 +2958,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         serviceEl.innerHTML = `<select id="editService" style="padding: 8px; border: 2px solid #A68B5B; border-radius: 8px; width: 100%; font-size: 0.9rem;">${options}</select>`;
 
+        // 2b. Transformer prix en input
+        const priceRow = document.getElementById('appointmentPriceRow');
+        const currentPrice = currentAppointment.extendedProps.price ?? services.find(s => s.id == currentAppointment.extendedProps.serviceId)?.price ?? 0;
+        priceRow.innerHTML = `<i class="fas fa-euro-sign"></i><input type="number" id="editPrice" value="${currentPrice}" min="0" step="1" style="padding: 8px; border: 2px solid #A68B5B; border-radius: 8px; width: 100px; font-size: 0.9rem;">`;
+
         // 3. Masquer les autres boutons temporairement (comme toggleDuration)
         document.getElementById('changeDurationBtn').style.display = 'none';
         document.getElementById('deleteAppointmentBtn').style.display = 'none';
@@ -2984,6 +2990,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function saveEditChanges() {
         const newDate = document.getElementById('editDateTime').value;
         const newServiceId = document.getElementById('editService').value;
+        const editPriceEl = document.getElementById('editPrice');
+        const newPrice = editPriceEl ? parseInt(editPriceEl.value, 10) : null;
 
         if (!newDate || !newServiceId) return;
 
@@ -2994,19 +3002,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const endDate = new Date(new Date(newDate).getTime() + (currentDuration * 60000));
 
+        const body = {
+            id: currentAppointment.id,
+            date: newDate,
+            endDate: endDate.toISOString(),
+            serviceId: newServiceId,
+            clientId: currentAppointment.extendedProps.clientId
+        };
+        if (newPrice != null && !isNaN(newPrice) && newPrice >= 0) {
+            body.price = newPrice;
+        }
+
         fetch('{{ path('app_appointment_update') }}', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify({
-                id: currentAppointment.id,
-                date: newDate,
-                endDate: endDate.toISOString(),
-                serviceId: newServiceId,
-                clientId: currentAppointment.extendedProps.clientId
-            })
+            body: JSON.stringify(body)
         })
         .then(response => response.json())
         .then(result => {
@@ -3019,6 +3032,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     appointments[index].start = newDate;
                     appointments[index].end = endDate.toISOString();
                     appointments[index].extendedProps.serviceId = newServiceId;
+                    if (result.price != null) appointments[index].extendedProps.price = result.price;
                     currentAppointment = appointments[index];
                 }
                 toggleEditMode();
@@ -3044,6 +3058,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Restaurer service
         const service = services.find(s => s.id == currentAppointment.extendedProps.serviceId);
         serviceEl.textContent = service ? service.name : 'Service inconnu';
+
+        // Restaurer prix
+        const priceRow = document.getElementById('appointmentPriceRow');
+        const price = currentAppointment.extendedProps.price ?? service?.price ?? null;
+        priceRow.innerHTML = `<i class="fas fa-euro-sign"></i><span id="appointmentPrice">${price != null ? price + '€' : 'N/A'}</span>`;
 
         // Restaurer les boutons originaux (comme toggleDuration)
         document.getElementById('changeDurationBtn').style.display = 'block';
@@ -3762,7 +3781,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-hourglass-half"></i>
                         <span id="appointmentDuration">Durée</span>
                     </div>
-                    <div class="appointment-detail">
+                    <div class="appointment-detail" id="appointmentPriceRow">
                         <i class="fas fa-euro-sign"></i>
                         <span id="appointmentPrice">Prix</span>
                     </div>

@@ -23,4 +23,12 @@ services:
 
 # Declare volumes to mount
 volumes:
-  pgadmin_data: { }
+  pgadmin_data: {}
+
+# Declare networks to attach
+networks:
+  default:
+    name: ${PROJECT_NAME}_default
+  database_network:
+    name: ${PROJECT_NAME}-database-network
+    driver: bridge

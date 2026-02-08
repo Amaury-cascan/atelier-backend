@@ -55,7 +55,7 @@ class AdminController extends AbstractController
 
         // Calculer les totaux et les quantités
         foreach ($appointments as $appointment) {
-            $price = $appointment->getService()->getPrice(); 
+            $price = $appointment->getPrice() ?? 0; 
             $appointmentDate = $appointment->getDate();
             if ($price > 0) {
                 // Total par jour
