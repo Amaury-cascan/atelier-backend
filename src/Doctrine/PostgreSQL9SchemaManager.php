@@ -11,20 +11,11 @@ use Doctrine\DBAL\Schema\PostgreSQLSchemaManager as BasePostgreSQLSchemaManager;
  */
 class PostgreSQL9SchemaManager extends BasePostgreSQLSchemaManager
 {
-    protected function _getPortableTableColumnDefinition($tableColumn): array
-    {
-        // Remplacer attgenerated par NULL pour PostgreSQL 9
-        if (isset($tableColumn['attgenerated'])) {
-            unset($tableColumn['attgenerated']);
-        }
-        
-        return parent::_getPortableTableColumnDefinition($tableColumn);
-    }
 
     protected function fetchTableColumnsByTableName(string $databaseName, string $tableName): array
     {
         // Requête adaptée pour PostgreSQL 9 (sans attgenerated)
-        // Version simplifiée qui évite attgenerated
+        // Version complète basée sur la requête originale mais sans attgenerated
         $sql = <<<'SQL'
 SELECT
     a.attnum,
@@ -32,10 +23,12 @@ SELECT
     t.typname AS type,
     format_type(a.atttypid, a.atttypmod) AS complete_type,
     a.attnotnull AS isnotnull,
+    a.attnum,
     (SELECT t1.typname FROM pg_catalog.pg_type t1 WHERE t1.oid = a.atttypid) AS typname,
     CASE WHEN a.atttypmod != -1 THEN a.atttypmod - 4 ELSE NULL END AS length,
     (SELECT t1.typname FROM pg_catalog.pg_type t1 WHERE t1.oid = a.atttypid) AS type_name,
-    pg_get_expr(adbin, adrelid) AS default,
+    CASE WHEN pg_get_expr(adbin, adrelid) = '' THEN NULL ELSE pg_get_expr(adbin, adrelid) END AS default,
+    a.attnum,
     a.attndims,
     a.atttypmod,
     CASE WHEN a.atthasdef THEN pg_get_expr(adbin, adrelid) ELSE NULL END AS default_value,
@@ -54,5 +47,15 @@ ORDER BY a.attnum
 SQL;
 
         return $this->_conn->fetchAllAssociative($sql, [$databaseName, $tableName]);
+    }
+    
+    protected function _getPortableTableColumnDefinition($tableColumn): array
+    {
+        // S'assurer que attgenerated n'est jamais utilisé pour PostgreSQL 9
+        if (isset($tableColumn['attgenerated'])) {
+            $tableColumn['attgenerated'] = null;
+        }
+        
+        return parent::_getPortableTableColumnDefinition($tableColumn);
     }
 }
