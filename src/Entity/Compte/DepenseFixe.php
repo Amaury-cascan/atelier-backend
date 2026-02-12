@@ -23,6 +23,9 @@ class DepenseFixe
     #[ORM\JoinColumn(nullable: false)]
     private ?Exercice $exercice = null;
 
+    #[ORM\Column]
+    private ?bool $prelevementPasse = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -60,6 +63,18 @@ class DepenseFixe
     public function setExercice(?Exercice $exercice): static
     {
         $this->exercice = $exercice;
+
+        return $this;
+    }
+
+    public function isPrelevementPasse(): ?bool
+    {
+        return $this->prelevementPasse;
+    }
+
+    public function setPrelevementPasse(bool $prelevementPasse): static
+    {
+        $this->prelevementPasse = $prelevementPasse;
 
         return $this;
     }

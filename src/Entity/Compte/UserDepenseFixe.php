@@ -26,6 +26,9 @@ class UserDepenseFixe
     #[ORM\Column]
     private ?bool $isDepenseCommune = null;
 
+    #[ORM\Column]
+    private ?bool $prelevementPasse = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -75,6 +78,18 @@ class UserDepenseFixe
     public function setIsDepenseCommune(bool $isDepenseCommune): static
     {
         $this->isDepenseCommune = $isDepenseCommune;
+
+        return $this;
+    }
+
+    public function isPrelevementPasse(): ?bool
+    {
+        return $this->prelevementPasse;
+    }
+
+    public function setPrelevementPasse(bool $prelevementPasse): static
+    {
+        $this->prelevementPasse = $prelevementPasse;
 
         return $this;
     }

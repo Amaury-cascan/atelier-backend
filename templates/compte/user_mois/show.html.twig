@@ -14,8 +14,10 @@
 .section { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--adm-shadow); }
 .section h2 { margin-top: 0; margin-bottom: 1.25rem; color: var(--adm-text); font-size: 1.25rem; border-bottom: 2px solid var(--adm-accent); padding-bottom: 0.5rem; }
 .depense-list, .enveloppe-list { list-style: none; padding: 0; margin: 0; }
-.depense-item, .enveloppe-item { padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: var(--adm-bg); border-left: 4px solid var(--adm-accent); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+.depense-item, .enveloppe-item { padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: var(--adm-bg); border-left: 4px solid var(--adm-accent); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.2s; }
 .depense-item:hover, .enveloppe-item:hover { background: var(--adm-accent-soft); }
+.depense-item.prelevement-passe { background: rgba(40, 167, 69, 0.15); }
+.depense-item.prelevement-passe:hover { background: rgba(40, 167, 69, 0.2); }
 .depense-nom, .enveloppe-nom { font-weight: 500; color: var(--adm-text); }
 .depense-montant, .enveloppe-montant { font-weight: 700; color: var(--adm-accent); }
 .badge-commune { display: inline-block; padding: 0.25rem 0.5rem; background: var(--adm-success); color: white; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem; }
@@ -383,14 +385,21 @@
                     <h3 style="margin-top: 0; margin-bottom: 1rem; color: #333; font-size: 1.1rem; font-weight: 600;">Dépenses normales</h3>
                     <ul class="depense-list" style="margin-bottom: 2rem;">
                         {% for depense in depensesNormales %}
-                            <li class="depense-item" id="depense-item-{{ depense.id }}">
+                            <li class="depense-item {% if depense.prelevementPasse %}prelevement-passe{% endif %}" id="depense-item-{{ depense.id }}">
                                 <!-- Mode affichage -->
                                 <div id="depense-display-{{ depense.id }}" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; width: 80%;">
                                         <span class="depense-nom">{{ depense.nom }}</span>
                                         <span class="depense-montant">{{ depense.montant }}€</span>
                                     </div>
-                                    <div style="display: flex; gap: 0.5rem;">
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <input type="checkbox" 
+                                               class="prelevement-checkbox" 
+                                               data-depense-id="{{ depense.id }}"
+                                               data-type="user-depense-fixe"
+                                               data-token="{{ csrf_token('toggle_prelevement_' ~ depense.id) }}"
+                                               {% if depense.prelevementPasse %}checked{% endif %}
+                                               style="width: 18px; height: 18px; cursor: pointer;">
                                         <button type="button" 
                                                 onclick="toggleEditUserDepenseFixe({{ depense.id }})"
                                                 style="padding: 0.25rem 0.75rem; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
@@ -452,14 +461,21 @@
                     <h3 style="margin-top: 0; margin-bottom: 1rem; color: #28a745; font-size: 1.1rem; font-weight: 600;">Dépenses communes</h3>
                     <ul class="depense-list">
                         {% for depense in depensesCommunes %}
-                            <li class="depense-item" style="border-left-color: #28a745;" id="depense-item-{{ depense.id }}">
+                            <li class="depense-item {% if depense.prelevementPasse %}prelevement-passe{% endif %}" style="border-left-color: #28a745;" id="depense-item-{{ depense.id }}">
                                 <!-- Mode affichage -->
                                 <div id="depense-display-{{ depense.id }}" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; width: 80%;">
                                         <span class="depense-nom">{{ depense.nom }}</span>
                                         <span class="depense-montant" style="color: #28a745;">{{ depense.montant }}€</span>
                                     </div>
-                                    <div style="display: flex; gap: 0.5rem;">
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <input type="checkbox" 
+                                               class="prelevement-checkbox" 
+                                               data-depense-id="{{ depense.id }}"
+                                               data-type="user-depense-fixe"
+                                               data-token="{{ csrf_token('toggle_prelevement_' ~ depense.id) }}"
+                                               {% if depense.prelevementPasse %}checked{% endif %}
+                                               style="width: 18px; height: 18px; cursor: pointer;">
                                         <button type="button" 
                                                 onclick="toggleEditUserDepenseFixe({{ depense.id }})"
                                                 style="padding: 0.25rem 0.75rem; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
@@ -912,6 +928,41 @@
                 }
             }
         }
-        
+
+        // Gestion du toggle prélèvement pour UserDepenseFixe
+        document.querySelectorAll('.prelevement-checkbox[data-type="user-depense-fixe"]').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                const depenseId = this.getAttribute('data-depense-id');
+                const token = this.getAttribute('data-token');
+                const checked = this.checked;
+                const depenseItem = document.getElementById('depense-item-' + depenseId);
+                
+                fetch('{{ path('app_compte_user_depense_fixe_toggle_prelevement', {'id': 'PLACEHOLDER'}) }}'.replace('PLACEHOLDER', depenseId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        '_token': token
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (checked) {
+                            depenseItem.classList.add('prelevement-passe');
+                        } else {
+                            depenseItem.classList.remove('prelevement-passe');
+                        }
+                    } else {
+                        this.checked = !checked; // Revert si erreur
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    this.checked = !checked; // Revert si erreur
+                });
+            });
+        });
     </script>
 {% endblock %}
