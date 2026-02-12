@@ -19,13 +19,13 @@ final class Version20260117152502 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // Pour PostgreSQL 9, on ajoute d'abord la colonne nullable avec valeur par défaut
-        $this->addSql('ALTER TABLE user_depense_fixe ADD COLUMN is_depense_commune BOOLEAN DEFAULT false');
+        // Pour PostgreSQL 9 : ajouter d'abord nullable avec DEFAULT
+        $this->addSql("ALTER TABLE user_depense_fixe ADD COLUMN is_depense_commune BOOLEAN DEFAULT 'f'");
         
-        // Mettre à jour tous les enregistrements existants à false (au cas où)
-        $this->addSql('UPDATE user_depense_fixe SET is_depense_commune = false WHERE is_depense_commune IS NULL');
+        // Mettre à jour les valeurs NULL (au cas où)
+        $this->addSql("UPDATE user_depense_fixe SET is_depense_commune = 'f' WHERE is_depense_commune IS NULL");
         
-        // Ensuite rendre la colonne NOT NULL
+        // Puis rendre NOT NULL
         $this->addSql('ALTER TABLE user_depense_fixe ALTER COLUMN is_depense_commune SET NOT NULL');
     }
 
