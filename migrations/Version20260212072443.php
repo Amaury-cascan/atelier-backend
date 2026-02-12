@@ -19,20 +19,22 @@ final class Version20260212072443 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // Ajouter la colonne avec valeur par défaut false
-        $this->addSql('ALTER TABLE depense_fixe ADD prelevement_passe BOOLEAN DEFAULT false NOT NULL');
-        $this->addSql('ALTER TABLE user_depense_fixe ADD prelevement_passe BOOLEAN DEFAULT false NOT NULL');
+        // Pour PostgreSQL 9, on ajoute d'abord la colonne nullable avec valeur par défaut
+        $this->addSql('ALTER TABLE depense_fixe ADD COLUMN prelevement_passe BOOLEAN DEFAULT false');
+        $this->addSql('ALTER TABLE user_depense_fixe ADD COLUMN prelevement_passe BOOLEAN DEFAULT false');
         
         // Mettre à jour tous les enregistrements existants à false (au cas où)
         $this->addSql('UPDATE depense_fixe SET prelevement_passe = false WHERE prelevement_passe IS NULL');
         $this->addSql('UPDATE user_depense_fixe SET prelevement_passe = false WHERE prelevement_passe IS NULL');
+        
+        // Ensuite rendre la colonne NOT NULL
+        $this->addSql('ALTER TABLE depense_fixe ALTER COLUMN prelevement_passe SET NOT NULL');
+        $this->addSql('ALTER TABLE user_depense_fixe ALTER COLUMN prelevement_passe SET NOT NULL');
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE SCHEMA public');
-        $this->addSql('ALTER TABLE user_depense_fixe DROP prelevement_passe');
-        $this->addSql('ALTER TABLE depense_fixe DROP prelevement_passe');
+        $this->addSql('ALTER TABLE user_depense_fixe DROP COLUMN prelevement_passe');
+        $this->addSql('ALTER TABLE depense_fixe DROP COLUMN prelevement_passe');
     }
 }
