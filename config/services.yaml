@@ -30,3 +30,4 @@ services:
     # Platform PostgreSQL 9 pour éviter attgenerated
     App\Doctrine\PostgreSQL9Platform:
         class: App\Doctrine\PostgreSQL9Platform
+        public: true

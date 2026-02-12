@@ -39,6 +39,7 @@ when@prod:
         dbal:
             # Forcer PostgreSQL 9 pour O2Switch
             server_version: '9.6'
+            platform_service: 'App\Doctrine\PostgreSQL9Platform'
         orm:
             auto_generate_proxy_classes: false
             proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
