@@ -19,7 +19,8 @@ final class Version20260208140000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE appointment ADD price INT DEFAULT NULL');
+        // Compatible PostgreSQL 9
+        $this->addSql('ALTER TABLE appointment ADD COLUMN price INT DEFAULT NULL');
 
         $this->addSql(<<<'SQL'
             UPDATE appointment a
@@ -35,6 +36,6 @@ SQL
     public function down(Schema $schema): void
     {
         $this->addSql('ALTER TABLE appointment ALTER COLUMN service_id SET NOT NULL');
-        $this->addSql('ALTER TABLE appointment DROP price');
+        $this->addSql('ALTER TABLE appointment DROP COLUMN price');
     }
 }

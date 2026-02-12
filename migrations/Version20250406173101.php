@@ -19,14 +19,12 @@ final class Version20250406173101 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE service ADD active BOOLEAN DEFAULT NULL');
+        // Compatible PostgreSQL 9
+        $this->addSql('ALTER TABLE service ADD COLUMN active BOOLEAN DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE SCHEMA public');
-        $this->addSql('ALTER TABLE service DROP active');
+        $this->addSql('ALTER TABLE service DROP COLUMN active');
     }
 }
