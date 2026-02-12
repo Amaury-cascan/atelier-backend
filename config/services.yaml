@@ -26,3 +26,7 @@ services:
             $mailer: '@mailer.mailer'
             $fromEmail: '%env(MAILER_FROM_EMAIL)%'
             $fromName: '%env(MAILER_FROM_NAME)%'
+
+    # Platform PostgreSQL 9 pour éviter attgenerated
+    App\Doctrine\PostgreSQL9Platform:
+        class: App\Doctrine\PostgreSQL9Platform

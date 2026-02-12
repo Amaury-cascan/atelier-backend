@@ -7,6 +7,7 @@ doctrine:
         # Pour PostgreSQL 9 sur O2Switch - force la version pour éviter attgenerated
         server_version: '9.6'
         driver: 'pdo_pgsql'
+        platform_service: 'App\Doctrine\PostgreSQL9Platform'
         mapping_types:
             enum: string
 
