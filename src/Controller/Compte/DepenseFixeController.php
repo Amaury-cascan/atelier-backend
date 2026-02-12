@@ -8,6 +8,7 @@ use App\Form\Compte\DepenseFixeType;
 use App\Repository\Compte\DepenseFixeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -125,5 +126,21 @@ final class DepenseFixeController extends AbstractController
             return $this->redirectToRoute('app_compte_exercice_show', ['id' => $exerciceId], Response::HTTP_SEE_OTHER);
         }
         return $this->redirectToRoute('app_compte_depense_fixe_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/toggle-prelevement', name: 'app_compte_depense_fixe_toggle_prelevement', methods: ['POST'])]
+    public function togglePrelevement(Request $request, DepenseFixe $depenseFixe, EntityManagerInterface $entityManager): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('toggle_prelevement_' . $depenseFixe->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['success' => false, 'message' => 'Token invalide'], 400);
+        }
+
+        $depenseFixe->setPrelevementPasse(!$depenseFixe->isPrelevementPasse());
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'prelevementPasse' => $depenseFixe->isPrelevementPasse()
+        ]);
     }
 }
