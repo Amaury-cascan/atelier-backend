@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
 #[Groups(['client'])]
@@ -35,6 +36,9 @@ class Client extends User
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $note = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $privacyPolicyAcceptedAt = null;
 
     public function __construct()
     {
@@ -182,6 +186,18 @@ class Client extends User
     public function setNote(?string $note): static
     {
         $this->note = $note;
+
+        return $this;
+    }
+
+    public function getPrivacyPolicyAcceptedAt(): ?\DateTimeInterface
+    {
+        return $this->privacyPolicyAcceptedAt;
+    }
+
+    public function setPrivacyPolicyAcceptedAt(?\DateTimeInterface $privacyPolicyAcceptedAt): static
+    {
+        $this->privacyPolicyAcceptedAt = $privacyPolicyAcceptedAt;
 
         return $this;
     }

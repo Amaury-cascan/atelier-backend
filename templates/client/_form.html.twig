@@ -160,6 +160,12 @@
         {{ form_errors(form.phoneNumber) }}
     </div>
 
+    <div class="form-group">
+        {{ form_label(form.Connu, 'Comment m\'avez-vous connue ?', {'attr': {'data-icon': '\f075'}}) }}
+        {{ form_widget(form.Connu, {'attr': {'placeholder': 'Ex: Instagram, recommandation...'}}) }}
+        {{ form_errors(form.Connu) }}
+    </div>
+
     {% if form.birthDate is defined %}
     <div class="form-group">
         {{ form_label(form.birthDate, 'Date de naissance', {'attr': {'data-icon': '\f1fd'}}) }}

@@ -32,12 +32,27 @@ class UserApiController extends AbstractController
         UserPasswordHasherInterface $passwordHasher
     ): Response {
         $jsonContent = $request->getContent();
+        $payload = json_decode($jsonContent, true);
+
+        if (!is_array($payload)) {
+            return $this->json(["error" => ["message" => "Requête invalide."]], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (empty($payload['privacyPolicyAccepted'])) {
+            return $this->json([
+                "error" => ["message" => "Vous devez accepter la politique de confidentialité pour créer un compte."]
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        unset($payload['privacyPolicyAccepted'], $payload['privacyPolicyAcceptedAt']);
 
         try {
-            $client = $serializer->deserialize($jsonContent, Client::class, 'json');
+            $client = $serializer->deserialize(json_encode($payload), Client::class, 'json');
         } catch (NotEncodableValueException $exception) {
             return $this->json([ "error" => ["message" => $exception->getMessage()] ], Response::HTTP_BAD_REQUEST);
         }
+
+        $client->setPrivacyPolicyAcceptedAt(new \DateTime());
 
         $errors = $validator->validate($client);
         if (count($errors) > 0) {

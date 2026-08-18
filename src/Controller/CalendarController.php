@@ -60,10 +60,10 @@ class CalendarController extends AbstractController
                 'start' => $appointment->getDate()->format('Y-m-d\TH:i:s'),
                 'end' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
                 'extendedProps' => [
-                    'clientName' => $appointment->getClient()->getName(),
-                    'clientFirstName' => $appointment->getClient()->getFirstName(),
+                    'clientName' => $appointment->getClient()?->getName(),
+                    'clientFirstName' => $appointment->getClient()?->getFirstName(),
                     'serviceId' => $appointment->getService()?->getId(),
-                    'clientId' => $appointment->getClient()->getId(),
+                    'clientId' => $appointment->getClient()?->getId(),
                     'serviceName' => $appointment->getService()?->getName(),
                     'price' => $appointment->getPrice(),
                     'duration' => $appointment->getService()?->getDuration(),

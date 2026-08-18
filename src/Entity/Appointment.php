@@ -29,9 +29,9 @@ class Appointment
     #[Groups(['appointmentLinked'])]
     private ?int $price = null;
 
-    #[ORM\ManyToOne(inversedBy: 'appointments')]
+    #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Client $client = null;
+    private ?User $client = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['appointmentLinked'])]
@@ -78,12 +78,12 @@ class Appointment
         return $this;
     }
 
-    public function getClient(): ?Client
+    public function getClient(): ?User
     {
         return $this->client;
     }
 
-    public function setClient(?Client $client): static
+    public function setClient(?User $client): static
     {
         $this->client = $client;
 

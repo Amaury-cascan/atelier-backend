@@ -55,10 +55,10 @@ class SendAppointmentRemindersCommand extends Command
         $successCount = 0;
         foreach ($appointments as $appointment) {
             $client = $appointment->getClient();
-            $clientName = $client->getFirstName() . ' ' . $client->getName();
             $service = $appointment->getService();
 
             if ($client && $service && $client->getEmail()) {
+                $clientName = $client->getFirstName() . ' ' . $client->getName();
                 try {
                     $this->emailService->sendAppointmentReminderEmail(
                         $client->getEmail(),
@@ -80,11 +80,10 @@ class SendAppointmentRemindersCommand extends Command
         $io->success($successCount . ' rappels ont été envoyés avec succès !');
         
 
-        // Envoyer le récapitulatif quotidien à plusieurs destinataires
+        // Récapitulatif quotidien : uniquement les boîtes du salon (pas le prestataire informatique).
         $recipients = [
-            'amaury.cascan@hotmail.fr',
             'latelierdemarie41@outlook.com',
-            'marie.pacreau14@outlook.fr'
+            'marie.pacreau14@outlook.fr',
         ];
 
         $summarySuccessCount = 0;

@@ -201,10 +201,6 @@ class PasswordResetApiController extends AbstractController
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Token valide.',
-                'data' => [
-                    'email' => $user->getEmail(),
-                    'expires_at' => $user->getResetTokenExpiresAt()->format('Y-m-d H:i:s')
-                ]
             ]);
 
         } catch (\Exception $e) {

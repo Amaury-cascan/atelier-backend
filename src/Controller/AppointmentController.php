@@ -27,10 +27,10 @@ class AppointmentController extends AbstractController
                 'start' => $appointment->getDate()->format('Y-m-d\TH:i:s'),
                 'end' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
                 'serviceId' => $appointment->getService()?->getId(),
-                'clientId' => $appointment->getClient()->getId(),
+                'clientId' => $appointment->getClient()?->getId(),
                 'extendedProps' => [
-                    'clientName' => $appointment->getClient()->getName(),
-                    'clientFirstName' => $appointment->getClient()->getFirstName(),
+                    'clientName' => $appointment->getClient()?->getName(),
+                    'clientFirstName' => $appointment->getClient()?->getFirstName(),
                     'serviceName' => $appointment->getService()?->getName(),
                     'price' => $appointment->getPrice(),
                 ]

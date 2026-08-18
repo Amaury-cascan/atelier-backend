@@ -2,12 +2,16 @@
 
 namespace App\Service;
 
+use App\Entity\Client;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 
 class EmailService
 {
+    private const PRIVACY_POLICY_URL = 'https://atelier-de-marie.com/politique-de-confidentialite';
+    private const CONTACT_EMAIL = 'latelierdemarie41@outlook.com';
+
     private MailerInterface $mailer;
     private string $fromEmail;
     private string $fromName;
@@ -17,6 +21,25 @@ class EmailService
         $this->mailer = $mailer;
         $this->fromEmail = $fromEmail;
         $this->fromName = $fromName;
+    }
+
+    private function privacyFooterHtml(): string
+    {
+        return "<hr style='border:none;border-top:1px solid #ddd;margin-top:24px'>"
+            . "<p style='font-size:12px;color:#666;line-height:1.5'>"
+            . "Vos données sont traitées par L'Atelier de Marie pour la gestion de votre compte et de vos rendez-vous. "
+            . "Pour en savoir plus et exercer vos droits : "
+            . "<a href='" . self::PRIVACY_POLICY_URL . "'>politique de confidentialité</a> "
+            . "ou " . self::CONTACT_EMAIL . "."
+            . "</p>";
+    }
+
+    private function privacyFooterText(): string
+    {
+        return "\n---\n"
+            . "Vos données sont traitées par L'Atelier de Marie pour la gestion de votre compte et de vos rendez-vous. "
+            . "Politique de confidentialité : " . self::PRIVACY_POLICY_URL . "\n"
+            . "Vos droits : " . self::CONTACT_EMAIL . "\n";
     }
 
     public function sendWelcomeEmail(string $to, string $username): void
@@ -33,6 +56,7 @@ class EmailService
                 "<p>À très bientôt !</p>" .
                 "<p><strong>L'atelier de Marie</strong><br>" .
                 "06.60.53.50.44</p>" .
+                $this->privacyFooterHtml() .
                 "<img src='https://www.backoffice.atelier-de-marie.com/images/1.ico' alt='Atelier de Marie' />"
             );
 
@@ -76,7 +100,8 @@ class EmailService
                 . "- Date et heure : " . $date . "\n\n"
                 . "Si vous souhaitez modifier ce rendez-vous, merci de contacter Marie au 06.60.53.50.44.\n\n"
                 . "À très bientôt à l'Atelier de Marie !\n\n"
-                . "https://atelier-de-marie.com\n\n"
+                . "https://atelier-de-marie.com\n"
+                . $this->privacyFooterText()
             );
 
         try {
@@ -124,7 +149,8 @@ class EmailService
                 "<p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email en toute sécurité.</p>" .
                 "<p>À très bientôt à l'Atelier de Marie !</p>" .
                 "<p>https://atelier-de-marie.com</p>" .
-                "<p>06.60.53.50.44</p>"
+                "<p>06.60.53.50.44</p>" .
+                $this->privacyFooterHtml()
             );
 
         try {
@@ -152,7 +178,8 @@ class EmailService
                 "</ul>" .
                 "<p>En cas d'empêchement, merci de prévenir Marie au plus vite au 06.60.53.50.44 afin de libérer le créneau.</p>" .
                 "<p>À très bientôt à l'Atelier de Marie !</p>" .
-                "<p>https://atelier-de-marie.com</p>"
+                "<p>https://atelier-de-marie.com</p>" .
+                $this->privacyFooterHtml()
             );
 
         try {
@@ -180,7 +207,7 @@ class EmailService
                 $appointmentsHtml .= '<strong>' . $appointmentTime . '</strong> - ';
                 $appointmentsHtml .= $client->getFirstName() . ' ' . $client->getName();
                 $appointmentsHtml .= ' (' . $client->getEmail() . ')';
-                if ($client->getPhoneNumber()) {
+                if ($client instanceof Client && $client->getPhoneNumber()) {
                     $appointmentsHtml .= ' - Tel: ' . $client->getPhoneNumber();
                 }
                 $appointmentsHtml .= '<br>Service: ' . $service->getName();

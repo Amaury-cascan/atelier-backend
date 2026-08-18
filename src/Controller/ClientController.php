@@ -2,18 +2,14 @@
 
 namespace App\Controller;
 
-use App\Entity\Client;
-use App\Entity\Picture;
-use App\Entity\ClientInformation;
 use App\Entity\Appointment;
+use App\Entity\Client;
 use App\Form\ClientType;
-use App\Form\ClientInformationType;
-use App\Repository\ClientInformationRepository;
 use App\Repository\ClientRepository;
 use App\Repository\ServiceRepository;
+use App\Service\PurgeInactiveClients;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -68,69 +64,18 @@ class ClientController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_client_show', methods: ['GET', 'POST'])]
-    public function show(Client $client, ClientInformationRepository $clientInformationRepository, ServiceRepository $serviceRepository, Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_client_show', methods: ['GET'])]
+    public function show(Client $client, ServiceRepository $serviceRepository): Response
     {
-        // Récupérer toutes les informations du client
-        $clientInformation = $clientInformationRepository->findBy(['client' => $client], ['date' => 'DESC']);
-
-        // Liste des prestations (services actifs) pour l'édition des RDV
         $services = $serviceRepository->findBy([], ['name' => 'ASC']);
 
-        // Récupérer les rendez-vous du client (triés par date décroissante)
         $appointments = $client->getAppointments()->toArray();
         usort($appointments, fn ($a, $b) => ($b->getDate() <=> $a->getDate()));
 
-        // Créer une nouvelle instance de ClientInformation
-        $newClientInformation = new ClientInformation();
-        $form = $this->createForm(ClientInformationType::class, $newClientInformation);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $imageFiles = $form->get('images')->getData();
-
-            if ($imageFiles) {
-                foreach ($imageFiles as $imageFile) {
-                    $fileName = uniqid() . '.' . $imageFile->guessExtension();
-
-                    try {
-                        $imageFile->move(
-                            $this->getParameter('images_client_directory'),
-                            $fileName
-                        );
-                    } catch (FileException $e) {
-                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image : ' . $e->getMessage());
-                        continue; // Ignore l'image en erreur et passe à la suivante
-                    }
-
-                    $picture = new Picture();
-                    $picture->setName($fileName);
-                    $picture->setClientInformation($newClientInformation);
-
-                    $entityManager->persist($picture);
-                }
-            }
-            // Associez l'information au client
-            $newClientInformation->setClient($client);
-
-            $entityManager->persist($newClientInformation);
-            $entityManager->flush();
-
-            // Optionnel : Message de confirmation
-            $this->addFlash('success', 'Les informations du client ont été ajoutées avec succès.');
-
-            // Rediriger vers la même page pour voir les changements
-            return $this->redirectToRoute('app_client_show', ['id' => $client->getId()], Response::HTTP_SEE_OTHER);
-        }
-
-        // Renvoyer la vue avec le client, ses RDV, ses informations et le formulaire
         return $this->render('client/show.html.twig', [
             'client' => $client,
             'appointments' => $appointments,
-            'clientInformation' => $clientInformation,
             'services' => $services,
-            'form' => $form->createView(),
         ]);
     }
 
@@ -289,11 +234,24 @@ class ClientController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_client_delete', methods: ['POST'])]
-    public function delete(Request $request, Client $client, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Client $client, PurgeInactiveClients $purgeInactiveClients): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$client->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($client);
-            $entityManager->flush();
+        if (!$this->isCsrfTokenValid('delete'.$client->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'La suppression a été refusée.');
+
+            return $this->redirectToRoute('app_client_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        try {
+            $reassigned = $purgeInactiveClients->deleteClient($client);
+            $this->addFlash(
+                'success',
+                $reassigned
+                    ? 'La cliente a été supprimée. Ses rendez-vous ont été rattachés au compte n°1.'
+                    : 'La cliente a été supprimée. Ses rendez-vous ont également été supprimés (aucun compte n°1).'
+            );
+        } catch (\DomainException $exception) {
+            $this->addFlash('error', $exception->getMessage());
         }
 
         return $this->redirectToRoute('app_client_index', [], Response::HTTP_SEE_OTHER);

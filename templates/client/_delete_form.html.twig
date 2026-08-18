@@ -1,4 +1,4 @@
-<form method="post" action="{{ path('app_client_delete', {'id': client.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce client ?');" class="client-delete-form">
+<form method="post" action="{{ path('app_client_delete', {'id': client.id}) }}" onsubmit="return confirm('Supprimer cette cliente ? Ses rendez-vous seront conservés sur le compte n°1 s\'il existe.');" class="client-delete-form">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ client.id) }}">
     <button type="submit" class="action-btn delete-btn">
         <i class="fas fa-trash"></i>

@@ -6,7 +6,6 @@ use App\Entity\Client;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 class ClientType extends AbstractType
 {
@@ -28,12 +27,6 @@ class ClientType extends AbstractType
             ])
             ->add('Connu', null, [
                 'label' => 'Comment m\'avez vous connue ?'
-            ])
-            ->add('etat', null, [
-                'label' => 'Etat des ongles'
-            ])
-            ->add('note', null, [
-                'label' => 'notes'
             ])
         ;
     }

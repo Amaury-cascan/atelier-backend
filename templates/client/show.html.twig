@@ -668,36 +668,16 @@
                 <div class="detail-value">{{ client.connu }}</div>
             </div>
             {% endif %}
-            
-            {% if client.etat %}
-            <div class="detail-item">
-                <div class="detail-label">
-                    <i class="fas fa-hand-paper"></i>
-                    État des ongles
-                </div>
-                <div class="detail-value">{{ client.etat }}</div>
-            </div>
-            {% endif %}
-            
-            {% if client.note %}
-            <div class="detail-item" style="grid-column: 1 / -1;">
-                <div class="detail-label">
-                    <i class="fas fa-sticky-note"></i>
-                    Notes
-                </div>
-                <div class="detail-value">{{ client.note }}</div>
-            </div>
-            {% endif %}
         </div>
     </div>
 
-    <!-- Historique client = RDV + Informations -->
+    <!-- Historique client = RDV -->
     <div class="history-section" data-animate="true">
         <h3 class="section-title">
             <i class="fas fa-history"></i>
             Historique client
         </h3>
-        <p class="section-subtitle">Rendez-vous et informations de prestations</p>
+        <p class="section-subtitle">Rendez-vous de la cliente</p>
 
         <!-- Rendez-vous -->
         <h4 class="history-subtitle"><i class="fas fa-calendar-check"></i> Rendez-vous</h4>

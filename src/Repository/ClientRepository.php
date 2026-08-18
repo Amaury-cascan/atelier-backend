@@ -21,6 +21,28 @@ class ClientRepository extends ServiceEntityRepository
         parent::__construct($registry, Client::class);
     }
 
+    /**
+     * Clientes dont le dernier rendez-vous est antérieur au seuil.
+     * Les comptes sans aucun rendez-vous sont exclus (impossible de dater l'inactivité).
+     *
+     * @return Client[]
+     */
+    public function findWithLastAppointmentBefore(\DateTimeInterface $threshold): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.id != :fallbackId')
+            ->andWhere('c.id IN (
+                SELECT IDENTITY(a.client)
+                FROM App\Entity\Appointment a
+                GROUP BY a.client
+                HAVING MAX(a.date) < :threshold
+            )')
+            ->setParameter('fallbackId', 1)
+            ->setParameter('threshold', $threshold)
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Client[] Returns an array of Client objects
 //     */

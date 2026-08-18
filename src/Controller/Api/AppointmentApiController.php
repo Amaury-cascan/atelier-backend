@@ -24,14 +24,13 @@ class AppointmentApiController extends AbstractController
         // Récupérer tous les rendez-vous
         $appointments = $entityManager->getRepository(Appointment::class)->findAll();
 
-        // Transformer les rendez-vous pour ne retourner que les dates et les heures
+        // Retourne uniquement les créneaux occupés (sans identifiant client)
+        // pour permettre au front d'éviter les doubles réservations.
         $appointmentsArray = array_map(function($appointment) {
             return [
                 'date' => $appointment->getDate()->format('Y-m-d H:i:s'),
                 'endDate' => $appointment->getEndDate()->format('Y-m-d H:i:s'),
                 'service' => $appointment->getService()?->getName(),
-                'price' => $appointment->getPrice(),
-                'user' => $appointment->getClient()->getId(),
             ];
         }, $appointments);
 
