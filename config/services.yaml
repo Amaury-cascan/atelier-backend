@@ -27,6 +27,10 @@ services:
             $fromEmail: '%env(MAILER_FROM_EMAIL)%'
             $fromName: '%env(MAILER_FROM_NAME)%'
 
+    App\Service\ImageUploader:
+        arguments:
+            $targetDirectory: '%images_service_directory%'
+
     # Platform PostgreSQL 9 pour éviter attgenerated
     App\Doctrine\PostgreSQL9Platform:
         class: App\Doctrine\PostgreSQL9Platform

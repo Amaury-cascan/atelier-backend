@@ -2,33 +2,36 @@
 
 namespace App\Controller\Api;
 
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Security\Core\User\UserInterface;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class MeApiController extends AbstractController
 {
-    #[Route('api/me', name: 'app_api_me')]
-    public function me(TokenStorageInterface $tokenStorage): JsonResponse
+    #[Route('/api/me', name: 'app_api_me', methods: ['GET'])]
+    public function me(): JsonResponse
     {
-        // Récupération du token depuis TokenStorageInterface
-        $token = $tokenStorage->getToken();
-        // Si pas de token, on renvoie une erreur
-        if ($token === null || !$token->getUser() instanceof UserInterface) {
-            return $this->json([
-                'error' => 'Unauthorized'
-            ], Response::HTTP_UNAUTHORIZED);
+        $user = $this->getUser();
+        if (!$user instanceof UserInterface) {
+            return $this->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // On récupère l'utilisateur
-        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json([
+                'email' => $user->getUserIdentifier(),
+                'roles' => $user->getRoles(),
+            ]);
+        }
 
-        // On renvoie directement l'objet utilisateur
-        return $this->json($user, Response::HTTP_OK, [], [
-            "groups" => ["user", "serviceLinked"],
+        return $this->json([
+            'id' => $user->getId(),
+            'name' => $user->getName(),
+            'firstName' => $user->getFirstName(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles(),
         ]);
     }
 }
