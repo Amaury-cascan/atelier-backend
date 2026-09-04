@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Security;
 use DateInterval;
 
 #[Route('/api/appointment')]
@@ -96,20 +95,23 @@ class AppointmentApiController extends AbstractController
     }
 
     #[Route('/user', name: 'app_user_appointments', methods: ['GET'])]
-    public function getUserAppointments(EntityManagerInterface $entityManager, Security $security): JsonResponse
+    public function getUserAppointments(EntityManagerInterface $entityManager): JsonResponse
     {
-        $user = $security->getUser();
-        if (!$user) {
-            return $this->json(['success' => false, 'message' => 'Utilisateur non connecté'], 401);
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['success' => false, 'message' => 'Utilisateur non connecté'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $appointments = $entityManager->getRepository(Appointment::class)->findBy(['client' => $user]);
+        $appointments = $entityManager->getRepository(Appointment::class)->findBy(
+            ['client' => $user],
+            ['date' => 'ASC']
+        );
 
-        $appointmentsArray = array_map(function($appointment) {
+        $appointmentsArray = array_map(static function (Appointment $appointment) {
             return [
                 'id' => $appointment->getId(),
-                'date' => $appointment->getDate()->format('Y-m-d\TH:i:s'),
-                'endDate' => $appointment->getEndDate()->format('Y-m-d\TH:i:s'),
+                'date' => $appointment->getDate()?->format('Y-m-d\TH:i:s'),
+                'endDate' => $appointment->getEndDate()?->format('Y-m-d\TH:i:s'),
                 'serviceName' => $appointment->getService()?->getName(),
                 'serviceId' => $appointment->getService()?->getId(),
                 'price' => $appointment->getPrice(),
@@ -118,7 +120,7 @@ class AppointmentApiController extends AbstractController
 
         return $this->json([
             'success' => true,
-            'appointments' => $appointmentsArray
+            'appointments' => $appointmentsArray,
         ]);
     }
 
