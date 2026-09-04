@@ -42,6 +42,11 @@ security:
 
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/services, roles: PUBLIC_ACCESS }
+        - { path: ^/api/categories, roles: PUBLIC_ACCESS }
+        - { path: ^/api/picture-presentation, roles: PUBLIC_ACCESS }
+        - { path: ^/api/appointment/list, roles: PUBLIC_ACCESS }
+        - { path: ^/api/signup, roles: PUBLIC_ACCESS }
         - { path: ^/api/admin, roles: ROLE_ADMIN }
         - { path: ^/administration, roles: ROLE_ADMIN }
 

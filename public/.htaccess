@@ -38,11 +38,6 @@ DirectoryIndex index.php
     RewriteCond %{HTTP:Authorization} .+
     RewriteRule ^ - [E=HTTP_AUTHORIZATION:%0]
 
-    # Force HTTPS (typo %{REQUEST_URI} cassait la Location → 301/307 + CORS)
-    RewriteCond %{HTTP:X-Forwarded-Proto} !https
-    RewriteCond %{HTTPS} !on
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
     # Redirect to URI without front controller to prevent duplicate content
     # (with and without `/index.php`). Only do this redirect on the initial
     # rewrite by Apache and not on subsequent cycles. Otherwise we would get an
@@ -69,7 +64,7 @@ DirectoryIndex index.php
         # When mod_rewrite is not available, we instruct a temporary redirect of
         # the start page to the front controller explicitly so that the website
         # and the generated links can still be used.
-        RedirectMatch 307 ^/$ /index.php/
+        RedirectMatch 301 ^/$ /index.php/
         # RedirectTemp cannot be used instead
     </IfModule>
 </IfModule>
