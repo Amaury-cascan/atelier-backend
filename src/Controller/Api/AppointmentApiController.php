@@ -5,6 +5,8 @@ namespace App\Controller\Api;
 use App\Entity\Appointment;
 use App\Entity\Service;
 use App\Entity\User;
+use App\Repository\AppointmentRepository;
+use App\Service\BookAppointment;
 use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,11 +19,17 @@ use DateInterval;
 #[Route('/api/appointment')]
 class AppointmentApiController extends AbstractController
 {
+    /** Code retourné au front quand le créneau demandé n'est plus libre. */
+    public const SLOT_UNAVAILABLE = 'SLOT_UNAVAILABLE';
+
     #[Route('/list', name: 'app_appointment_list', methods: ['GET'])]
-    public function listAppointments(EntityManagerInterface $entityManager): JsonResponse
+    public function listAppointments(AppointmentRepository $appointmentRepository): JsonResponse
     {
-        // Récupérer tous les rendez-vous
-        $appointments = $entityManager->getRepository(Appointment::class)->findAll();
+        // Seuls les rendez-vous non terminés intéressent le calendrier de réservation :
+        // inutile d'exposer publiquement tout l'historique, et la charge reste constante.
+        $appointments = $appointmentRepository->findUpcoming(
+            new \DateTimeImmutable('today', new \DateTimeZone('Europe/Paris'))
+        );
 
         // Retourne uniquement les créneaux occupés (sans identifiant client)
         // pour permettre au front d'éviter les doubles réservations.
@@ -40,15 +48,23 @@ class AppointmentApiController extends AbstractController
         ]);
     }
     #[Route('/create', name: 'app_appointment_api_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager, EmailService $emailService): JsonResponse
-    {
+    public function create(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        EmailService $emailService,
+        BookAppointment $bookAppointment,
+    ): JsonResponse {
         $data = json_decode($request->getContent(), true);
         // Validation des données
         if (empty($data['date']) || empty($data['serviceId']) || empty($data['clientId'])) {
             return new JsonResponse(['success' => false, 'message' => 'Données manquantes'], 400);
         }
 
-        $startDate = new \DateTime($data['date']);
+        try {
+            $startDate = new \DateTimeImmutable((string) $data['date']);
+        } catch (\Exception) {
+            return new JsonResponse(['success' => false, 'message' => 'Date invalide'], 400);
+        }
 
         $service = $entityManager->getRepository(Service::class)->find($data['serviceId']);
         $user = $entityManager->getRepository(User::class)->find($data['clientId']);
@@ -57,18 +73,17 @@ class AppointmentApiController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Service ou Utilisateur introuvable'], 404);
         }
 
-        $appointment = new Appointment();
-        $appointment->setDate($startDate);
-        $appointment->setService($service);
-        $appointment->setClient($user);
-        $appointment->setPrice($service->getPrice());
+        $result = $bookAppointment->execute($service, $user, $startDate);
 
-        $endDate = clone $startDate;
-        $endDate->add(new DateInterval('PT' . $service->getDuration() . 'M'));
-        $appointment->setEndDate($endDate);
+        if (!$result->isBooked()) {
+            return new JsonResponse([
+                'success' => false,
+                'code' => self::SLOT_UNAVAILABLE,
+                'message' => 'Ce créneau vient d\'être réservé. Merci d\'en choisir un autre.',
+            ], Response::HTTP_CONFLICT);
+        }
 
-        $entityManager->persist($appointment);
-        $entityManager->flush();
+        $appointment = $result->appointment;
 
         try {
             // Utilisation du nouveau service EmailService

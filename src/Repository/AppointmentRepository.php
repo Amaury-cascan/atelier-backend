@@ -40,6 +40,49 @@ class AppointmentRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Rendez-vous chevauchant la plage [$start, $end[.
+     *
+     * Deux plages se chevauchent dès que l'une commence avant la fin de l'autre
+     * et finit après son début ; les créneaux qui se touchent (fin = début) sont
+     * donc bien considérés comme compatibles.
+     *
+     * @return Appointment[]
+     */
+    public function findOverlapping(\DateTimeInterface $start, \DateTimeInterface $end, ?int $excludedId = null): array
+    {
+        $qb = $this->createQueryBuilder('a')
+            ->andWhere('a.date < :end')
+            ->andWhere('a.endDate > :start')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('a.date', 'ASC');
+
+        if ($excludedId !== null) {
+            $qb->andWhere('a.id <> :excludedId')
+                ->setParameter('excludedId', $excludedId);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Rendez-vous qui ne sont pas encore terminés, pour alimenter le calendrier public.
+     *
+     * @return Appointment[]
+     */
+    public function findUpcoming(\DateTimeInterface $from): array
+    {
+        return $this->createQueryBuilder('a')
+            ->leftJoin('a.service', 's')
+            ->addSelect('s')
+            ->andWhere('a.endDate >= :from')
+            ->setParameter('from', $from)
+            ->orderBy('a.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Appointment[] Returns an array of Appointment objects
 //     */

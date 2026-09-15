@@ -18,6 +18,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/admin/appointments')]
 class AdminAppointmentApiController extends AbstractController
 {
+    /**
+     * Un rendez-vous dont la fin précède le début n'occupe aucun créneau :
+     * il laisserait une cliente réserver par-dessus sans s'en apercevoir.
+     */
+    private const INVALID_RANGE_MESSAGE = "L'heure de fin doit être postérieure à l'heure de début.";
+
     public function __construct(
         private readonly AppointmentRepository $appointmentRepository,
         private readonly ServiceRepository $serviceRepository,
@@ -69,11 +75,19 @@ class AdminAppointmentApiController extends AbstractController
         }
 
         $tz = new \DateTimeZone('Europe/Paris');
-        $start = new \DateTimeImmutable((string) $data['date'], $tz);
-        if (!empty($data['endDate'])) {
-            $end = new \DateTimeImmutable((string) $data['endDate'], $tz);
-        } else {
-            $end = $start->modify('+' . max(5, (int) $service->getDuration()) . ' minutes');
+        try {
+            $start = new \DateTimeImmutable((string) $data['date'], $tz);
+            if (!empty($data['endDate'])) {
+                $end = new \DateTimeImmutable((string) $data['endDate'], $tz);
+            } else {
+                $end = $start->modify('+' . max(5, (int) $service->getDuration()) . ' minutes');
+            }
+        } catch (\Exception) {
+            return $this->json(['success' => false, 'message' => 'Date invalide.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($end <= $start) {
+            return $this->json(['success' => false, 'message' => self::INVALID_RANGE_MESSAGE], Response::HTTP_BAD_REQUEST);
         }
 
         $appointment = new Appointment();
@@ -95,30 +109,56 @@ class AdminAppointmentApiController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
         $tz = new \DateTimeZone('Europe/Paris');
 
+        $service = null;
         if (!empty($data['serviceId'])) {
             $service = $this->serviceRepository->find($data['serviceId']);
             if (!$service instanceof Service) {
                 return $this->json(['success' => false, 'message' => 'Service introuvable.'], Response::HTTP_BAD_REQUEST);
             }
-            $appointment->setService($service);
         }
+
+        $client = null;
         if (!empty($data['clientId'])) {
             $client = $this->clientRepository->find($data['clientId']);
             if (!$client instanceof Client) {
                 return $this->json(['success' => false, 'message' => 'Cliente introuvable.'], Response::HTTP_BAD_REQUEST);
             }
+        }
+
+        // La nouvelle plage est calculée puis validée avant toute modification de
+        // l'entité, pour ne jamais laisser le rendez-vous dans un état incohérent.
+        $effectiveService = $service ?? $appointment->getService();
+        try {
+            $start = !empty($data['date'])
+                ? new \DateTimeImmutable((string) $data['date'], $tz)
+                : \DateTimeImmutable::createFromInterface($appointment->getDate());
+
+            $end = null;
+            if (!empty($data['endDate'])) {
+                $end = new \DateTimeImmutable((string) $data['endDate'], $tz);
+            } elseif (!empty($data['date']) && $effectiveService instanceof Service) {
+                $end = $start->modify('+' . max(5, (int) $effectiveService->getDuration()) . ' minutes');
+            }
+        } catch (\Exception) {
+            return $this->json(['success' => false, 'message' => 'Date invalide.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $effectiveEnd = $end ?? \DateTimeImmutable::createFromInterface($appointment->getEndDate());
+        if ($effectiveEnd <= $start) {
+            return $this->json(['success' => false, 'message' => self::INVALID_RANGE_MESSAGE], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($service instanceof Service) {
+            $appointment->setService($service);
+        }
+        if ($client instanceof Client) {
             $appointment->setClient($client);
         }
         if (!empty($data['date'])) {
-            $appointment->setDate(\DateTime::createFromImmutable(new \DateTimeImmutable((string) $data['date'], $tz)));
+            $appointment->setDate(\DateTime::createFromImmutable($start));
         }
-        if (!empty($data['endDate'])) {
-            $appointment->setEndDate(\DateTime::createFromImmutable(new \DateTimeImmutable((string) $data['endDate'], $tz)));
-        } elseif (!empty($data['date']) && $appointment->getService()) {
-            $start = \DateTimeImmutable::createFromMutable($appointment->getDate());
-            $appointment->setEndDate(\DateTime::createFromImmutable(
-                $start->modify('+' . max(5, (int) $appointment->getService()->getDuration()) . ' minutes')
-            ));
+        if ($end !== null) {
+            $appointment->setEndDate(\DateTime::createFromImmutable($end));
         }
         if (array_key_exists('price', $data) && $data['price'] !== null) {
             $appointment->setPrice((int) $data['price']);
