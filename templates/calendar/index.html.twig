@@ -1848,6 +1848,43 @@
         font-size: 0.8em !important;
     }
 }
+.week-day.is-closed { background: #f3f0ec; opacity: 0.92; }
+.week-day-status {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b6560;
+    margin-top: 2px;
+}
+.week-closed-note {
+    font-size: 0.75rem;
+    color: #6b6560;
+    padding: 6px 4px;
+    font-style: italic;
+}
+.week-blocked {
+    background: repeating-linear-gradient(-45deg, rgba(180,74,74,0.12), rgba(180,74,74,0.12) 4px, rgba(180,74,74,0.2) 4px, rgba(180,74,74,0.2) 8px);
+    color: #9a3d3d;
+    border-radius: 6px;
+    padding: 4px 6px;
+    margin-bottom: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+.month-day.is-closed { background: #f3f0ec; }
+.month-day.other-month { opacity: 0.45; }
+.month-day-closed-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #6b6560;
+    text-transform: uppercase;
+}
+.month-day-blocked-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #9a3d3d;
+}
 </style>
 {% endblock %}
 
@@ -1860,6 +1897,61 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentDate = new Date();
     let currentView = 'day';
     let appointments = [];
+    let scheduleSnapshot = { versions: [], weekly: [], exceptions: [], blockedSlots: [] };
+
+    function dateKey(date) {
+        const d = new Date(date);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
+    function resolveDaySchedule(date) {
+        const key = dateKey(date);
+        const jsDay = new Date(date).getDay();
+        const exception = (scheduleSnapshot.exceptions || []).find(e => e.date === key);
+        let kind, ranges, label;
+        if (exception) {
+            kind = exception.kind;
+            ranges = kind === 'open' ? (exception.ranges || []) : [];
+            label = exception.label || (kind === 'external' ? 'Extérieur' : 'Fermé');
+        } else {
+            const versions = [...(scheduleSnapshot.versions || [])]
+                .filter(v => v.effectiveFrom <= key)
+                .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom));
+            const weekly = (versions[0] && versions[0].weekly) || scheduleSnapshot.weekly || [];
+            const day = weekly.find(d => d.weekday === jsDay) || { kind: 'closed', ranges: [], label: 'Fermé' };
+            kind = day.kind;
+            ranges = kind === 'open' ? (day.ranges || []) : [];
+            label = day.label || (kind === 'external' ? 'Extérieur' : (kind === 'open' ? 'Ouvert' : 'Fermé'));
+        }
+        return { kind, ranges, label, closed: kind !== 'open', special: kind === 'external' };
+    }
+
+    function blockedForDate(date) {
+        const key = dateKey(date);
+        const result = [];
+        for (const block of (scheduleSnapshot.blockedSlots || [])) {
+            const start = block.start.slice(0, 10);
+            const end = block.end.slice(0, 10);
+            if (end < key || start > key) continue;
+            let startMin = 0;
+            let endMin = 24 * 60;
+            if (start === key) {
+                const [hh, mm] = block.start.slice(11, 16).split(':').map(Number);
+                startMin = hh * 60 + mm;
+            }
+            if (end === key) {
+                const [hh, mm] = block.end.slice(11, 16).split(':').map(Number);
+                endMin = hh * 60 + mm;
+            }
+            if (endMin > startMin) {
+                result.push({ startMin, endMin, reason: block.reason || 'Bloqué' });
+            }
+        }
+        return result;
+    }
     let services = [];
     let clients = [];
     let touchStartX = 0;
@@ -2092,33 +2184,50 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const container = document.getElementById('dayAppointments');
         const dayAppointments = getDayAppointments(currentDate);
+        const daySchedule = resolveDaySchedule(currentDate);
+        const blocks = blockedForDate(currentDate);
+
+        if (daySchedule.closed) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-store-slash"></i>
+                    </div>
+                    <div class="empty-title">${daySchedule.special ? 'Prestation extérieure' : 'Salon fermé'}</div>
+                    <div class="empty-subtitle">${daySchedule.label}</div>
+                    ${dayAppointments.length ? `<div class="empty-subtitle" style="margin-top:12px">${dayAppointments.length} RDV ce jour</div>` : ''}
+                </div>
+                ${dayAppointments.length ? dayAppointments.map(apt => renderAppointmentCard(apt)).join('') : ''}
+            `;
+            setupAppointmentEvents();
+            return;
+        }
         
-        
-        if (dayAppointments.length === 0) {
+        if (dayAppointments.length === 0 && blocks.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">
                         <i class="fas fa-calendar-day"></i>
                     </div>
                     <div class="empty-title">Aucun rendez-vous</div>
-                    <div class="empty-subtitle">Votre journée est libre</div>
+                    <div class="empty-subtitle">${daySchedule.label}</div>
                 </div>
             `;
             return;
         }
 
         // Calculer la plage horaire nécessaire
-        const timeRange = calculateTimeRange(dayAppointments);
+        const timeRange = calculateTimeRange(dayAppointments, blocks, daySchedule.ranges);
         
         // Créer la structure de timeline
-        container.innerHTML = createTimelineStructure(timeRange, dayAppointments);
+        container.innerHTML = createTimelineStructure(timeRange, dayAppointments, blocks);
         
         // Ajouter les event listeners pour les RDV
         setupAppointmentEvents();
     }
 
     // Créer la structure HTML de la timeline avec RDV positionnés
-    function createTimelineStructure(timeRange, appointments) {
+    function createTimelineStructure(timeRange, appointments, blocks = []) {
         const HOUR_HEIGHT = 80; // Hauteur d'une heure en pixels
         const totalHours = timeRange.end - timeRange.start + 1;
         const totalHeight = totalHours * HOUR_HEIGHT;
@@ -2137,6 +2246,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
         }
+
+        // Créneaux bloqués
+        blocks.forEach(block => {
+            const startHour = Math.floor(block.startMin / 60);
+            const startMinutes = block.startMin % 60;
+            const durationHours = (block.endMin - block.startMin) / 60;
+            const startOffset = (startHour - timeRange.start) + (startMinutes / 60);
+            if (startOffset + durationHours < 0 || startOffset > totalHours) return;
+            const top = Math.max(0, startOffset) * HOUR_HEIGHT;
+            const height = Math.max(18, durationHours * HOUR_HEIGHT - 2);
+            const reason = (block.reason || 'Bloqué').replace(/</g, '&lt;');
+            html += `
+                <div class="blocked-timeline-block"
+                     title="${reason}"
+                     style="position: absolute; top: ${top}px; height: ${height}px; left: 70px; right: 10px;
+                            background: repeating-linear-gradient(-45deg, rgba(180,74,74,0.12), rgba(180,74,74,0.12) 6px, rgba(180,74,74,0.22) 6px, rgba(180,74,74,0.22) 12px);
+                            border: 1px dashed rgba(154,61,61,0.45); border-radius: 8px; padding: 6px 8px;
+                            color: #9a3d3d; font-size: 0.78em; font-weight: 700; pointer-events: none; z-index: 1;">
+                    ${reason}
+                </div>
+            `;
+        });
         
         // Ajouter les RDV positionnés
         appointments.forEach(apt => {
@@ -2241,11 +2372,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Calculer la plage horaire nécessaire pour afficher tous les RDV
-    function calculateTimeRange(appointments) {
-        if (appointments.length === 0) {
-            return { start: 9, end: 18 }; // Défaut 9h-18h
-        }
-
+    function calculateTimeRange(appointments, blocks = [], ranges = []) {
         let earliestStart = 24;
         let latestEnd = 0;
 
@@ -2257,6 +2384,20 @@ document.addEventListener('DOMContentLoaded', function() {
             earliestStart = Math.min(earliestStart, startHour);
             latestEnd = Math.max(latestEnd, endMinutes > 0 ? endHour + 1 : endHour);
         });
+
+        blocks.forEach(block => {
+            earliestStart = Math.min(earliestStart, Math.floor(block.startMin / 60));
+            latestEnd = Math.max(latestEnd, Math.ceil(block.endMin / 60));
+        });
+
+        ranges.forEach(range => {
+            earliestStart = Math.min(earliestStart, Math.floor(range.startMin / 60));
+            latestEnd = Math.max(latestEnd, Math.ceil(range.endMin / 60));
+        });
+
+        if (earliestStart === 24) {
+            return { start: 9, end: 18 };
+        }
 
         // Ajouter une marge d'une heure avant et après
         return {
@@ -2307,47 +2448,42 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderWeekView() {
         const container = document.getElementById('weekGrid');
         const weekStart = getWeekStart(currentDate);
-        
-        // Mise à jour de l'affichage de la semaine
-        updateWeekDisplay();
-        
-        const weekDays = [];
-        
-        // Vérifier si la semaine contient le 24/12/2025 ou le 31/12/2025
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        const date2412 = new Date(2025, 11, 24); // 11 = décembre (mois indexé à 0)
-        const date3112 = new Date(2025, 11, 31);
-        
-        const contains2412 = weekStart <= date2412 && date2412 <= weekEnd;
-        const contains3112 = weekStart <= date3112 && date3112 <= weekEnd;
-        const includeWednesday = contains2412 || contains3112;
 
+        updateWeekDisplay();
+
+        const weekDays = [];
         for (let i = 0; i < 7; i++) {
             const day = new Date(weekStart);
             day.setDate(weekStart.getDate() + i);
-
-            // Nouvelle logique : lundi (1), vendredi (5) et samedi (6)
-            // + mercredi (3) pour les semaines contenant le 24/12 ou 31/12
-            const dow = day.getDay(); // 0 = dimanche, 1 = lundi, ...
-            if (dow === 1 || dow === 5 || dow === 6 || (includeWednesday && dow === 3)) {
-                weekDays.push(day);
-            }
+            weekDays.push(day);
         }
-        const gridColumns = weekDays.length; // nombre de colonnes à afficher
+        const gridColumns = weekDays.length;
 
         let html = `<div class="week-header" style="grid-template-columns: repeat(${gridColumns}, 1fr);">`;
         weekDays.forEach(day => {
             const isToday = day.toDateString() === new Date().toDateString();
             const dayAppointments = getDayAppointments(day);
-            
+            const daySchedule = resolveDaySchedule(day);
+            const blocks = blockedForDate(day);
+            const closedClass = daySchedule.closed ? 'is-closed' : '';
+            const statusLabel = daySchedule.closed
+                ? (daySchedule.special ? 'Ext.' : 'Fermé')
+                : (blocks.length ? `${blocks.length} bloqué${blocks.length > 1 ? 's' : ''}` : '');
+
             html += `
-                <div class="week-day ${isToday ? 'today' : ''}" data-date="${day.toISOString()}">
+                <div class="week-day ${isToday ? 'today' : ''} ${closedClass}" data-date="${day.toISOString()}">
                     <div class="week-day-header">
                         <div class="week-day-name">${day.toLocaleDateString('fr-FR', { weekday: 'short' })}</div>
                         <div class="week-day-number">${day.getDate()}</div>
+                        ${statusLabel ? `<div class="week-day-status">${statusLabel}</div>` : ''}
                     </div>
                     <div class="week-day-appointments">
+                        ${daySchedule.closed ? `<div class="week-closed-note">${daySchedule.label}</div>` : ''}
+                        ${!daySchedule.closed ? blocks.map(b => `
+                            <div class="week-blocked" title="${(b.reason || 'Bloqué').replace(/"/g, '&quot;')}">
+                                ${String(Math.floor(b.startMin / 60)).padStart(2, '0')}:${String(b.startMin % 60).padStart(2, '0')} · ${b.reason || 'Bloqué'}
+                            </div>
+                        `).join('') : ''}
                         ${dayAppointments.slice(0, 3).map(apt => `
                             <div class="week-appointment ${serviceColors[apt.extendedProps.serviceId] || ''}" data-id="${apt.id}">
                                 <div class="week-apt-time">${new Date(apt.start).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris'})}</div>
@@ -2362,8 +2498,6 @@ document.addEventListener('DOMContentLoaded', function() {
         html += '</div>';
 
         container.innerHTML = html;
-        
-        // Ajouter les event listeners pour les RDV
         setupAppointmentEvents();
     }
 
@@ -2396,93 +2530,41 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('monthTitle').textContent = 
             currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
         
-        // Première date du calendrier (peut être du mois précédent)
-        const firstDay = new Date(year, month, 1);
-        const startDate = getWeekStart(firstDay);
-        
         let html = '';
 
         const dayHeaders = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-        const weekStart = getWeekStart(currentDate);
-
-        // Sécuriser weekStart
-        const weekStartDate = new Date(weekStart);
-
-        // Vérifier si on est en décembre 2025 avec les jours 24 ou 31
-        const isDecember2025 = year === 2025 && month === 11; // 11 = décembre (mois indexé à 0)
-        const includeWednesday = isDecember2025;
-
-        let headersToDisplay;
-
-        // Après : Lun (0), Ven (4), Sam (5) + Mer (2) si décembre 2025
-        if (includeWednesday) {
-            headersToDisplay = [dayHeaders[0], dayHeaders[2], dayHeaders[4], dayHeaders[5]];
-        } else {
-            headersToDisplay = [dayHeaders[0], dayHeaders[4], dayHeaders[5]];
-        }
-        
-        const gridColumns = headersToDisplay.length; // nombre de colonnes à afficher
-        document.getElementById('monthGrid').style.gridTemplateColumns = `repeat(${gridColumns}, 1fr)`;
-        headersToDisplay.forEach(day => {
+        document.getElementById('monthGrid').style.gridTemplateColumns = 'repeat(7, 1fr)';
+        dayHeaders.forEach(day => {
             html += `<div class="month-day-header">${day}</div>`;
         });
 
-
-        // Récupérer le nombre de jours du mois
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const cutDate = new Date(2025, 8, 1); // 1 septembre 2025 (mois 0-indexé)
-        
-        // Déterminer le premier jour du mois et son jour de semaine
         const firstDayOfMonth = new Date(year, month, 1);
-        const firstDayOfWeek = firstDayOfMonth.getDay(); // 0=dim, 1=lun, etc.
-        
-        // Déterminer quels jours afficher selon la période
-        let allowedDays;
-        if (firstDayOfMonth < cutDate) {
-            // Avant septembre : mardi (2), mercredi (3), jeudi (4), vendredi (5), samedi (6)
-            allowedDays = [2, 3, 4, 5, 6];
-        } else {
-            // Après septembre : lundi (1), vendredi (5), samedi (6) + mercredi (3) si décembre 2025
-            if (includeWednesday) {
-                allowedDays = [1, 3, 5, 6];
-            } else {
-                allowedDays = [1, 5, 6];
-            }
-        }
-        
-        // Calculer les espaces vides au début pour aligner le calendrier
-        let startOffset = 0;
-        for (let day of allowedDays) {
-            if (day === firstDayOfWeek) break;
-            if (day < firstDayOfWeek || (firstDayOfWeek === 0 && allowedDays.includes(day))) {
-                startOffset++;
-            }
-        }
-        
-        // Ajouter les espaces vides au début
-        for (let i = 0; i < startOffset; i++) {
-            html += `<div class="month-day empty"></div>`;
-        }
+        const startDate = getWeekStart(firstDayOfMonth);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const lastDayOfMonth = new Date(year, month, daysInMonth);
+        const endDate = getWeekStart(lastDayOfMonth);
+        endDate.setDate(endDate.getDate() + 6);
 
-        // Générer les jours du mois
-        for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
-            const currentDay = new Date(year, month, dayNum);
-            const dayOfWeek = currentDay.getDay(); // 0=dim, 1=lun, 2=mar, ..., 6=sam
-
-            // Vérifier si ce jour doit être affiché
-            if (!allowedDays.includes(dayOfWeek)) continue;
-
+        for (let cursor = new Date(startDate); cursor <= endDate; cursor.setDate(cursor.getDate() + 1)) {
+            const currentDay = new Date(cursor);
+            const inMonth = currentDay.getMonth() === month;
             const isToday = currentDay.toDateString() === new Date().toDateString();
-            const dayAppointments = getDayAppointments(currentDay);
+            const dayAppointments = inMonth ? getDayAppointments(currentDay) : [];
+            const daySchedule = resolveDaySchedule(currentDay);
+            const blocks = inMonth ? blockedForDate(currentDay) : [];
 
             const classes = [
                 'month-day',
-                isToday ? 'today' : ''
-            ].filter(c => c).join(' ');
+                inMonth ? '' : 'other-month',
+                isToday ? 'today' : '',
+                daySchedule.closed ? 'is-closed' : '',
+            ].filter(Boolean).join(' ');
 
             html += `
         <div class="${classes}" data-date="${currentDay.toISOString()}">
             <div class="month-day-number">${currentDay.getDate()}</div>
+            ${daySchedule.closed ? `<div class="month-day-closed-label">${daySchedule.special ? 'Ext.' : 'Fermé'}</div>` : ''}
+            ${!daySchedule.closed && blocks.length ? `<div class="month-day-blocked-label">${blocks.length} bloqué${blocks.length > 1 ? 's' : ''}</div>` : ''}
             <div class="month-appointments">
                 ${dayAppointments.slice(0, 2).map(apt => `
                     <div class="month-appointment ${serviceColors[apt.extendedProps.serviceId] || ''}" data-id="${apt.id}">
@@ -2494,8 +2576,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     `;
         }
-
-
 
         container.innerHTML = html;
         
@@ -3351,7 +3431,8 @@ document.addEventListener('DOMContentLoaded', function() {
         Promise.all([
             loadAppointments(),
             loadServices(),
-            loadClients()
+            loadClients(),
+            loadSchedule()
         ]).then(() => {
     
             renderDayView();
@@ -3359,6 +3440,22 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Erreur lors du chargement des données:', error);
             showToast('Erreur lors du chargement des données', 'error');
         });
+    }
+
+    function loadSchedule() {
+        return fetch('{{ path('app_calendar_schedule') }}')
+            .then(response => response.json())
+            .then(data => {
+                scheduleSnapshot = {
+                    versions: data.versions || [],
+                    weekly: data.weekly || [],
+                    exceptions: data.exceptions || [],
+                    blockedSlots: data.blockedSlots || [],
+                };
+            })
+            .catch(error => {
+                console.error('Erreur chargement horaires:', error);
+            });
     }
 
     function loadAppointments() {

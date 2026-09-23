@@ -5,15 +5,23 @@ use App\Entity\Appointment;
 use App\Repository\AppointmentRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\ClientRepository;
+use App\Service\AvailabilityService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/administration/calendrier')]
+#[IsGranted('ROLE_ADMIN')]
 class CalendarController extends AbstractController
 {
+    public function __construct(
+        private readonly AvailabilityService $availabilityService,
+    ) {
+    }
+
     #[Route('/', name: 'app_calendar')]
     public function index(AppointmentRepository $appointmentRepository)
     {
@@ -44,6 +52,17 @@ class CalendarController extends AbstractController
             'currentWeekEnd' => $currentWeekEnd,
             'weekDays' => $weekDays,
             'appointmentsThisWeek' => $appointmentsThisWeek,
+        ]);
+    }
+
+    #[Route('/schedule', name: 'app_calendar_schedule', methods: ['GET'])]
+    public function getSchedule(): JsonResponse
+    {
+        $from = (new \DateTimeImmutable('today', new \DateTimeZone('Europe/Paris')))->modify('-60 days');
+
+        return $this->json([
+            'success' => true,
+            ...$this->availabilityService->getScheduleSnapshot($from),
         ]);
     }
 
