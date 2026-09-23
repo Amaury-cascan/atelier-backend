@@ -1,0 +1,268 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Horaires{% endblock %}
+
+{% block stylesheets %}
+<style>
+.sch-header {
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.1), rgba(166, 139, 91, 0.05));
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.sch-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #6F5B47;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sch-subtitle { margin: 0.5rem 0 0; color: #6b6560; max-width: 42rem; }
+.sch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.92rem;
+}
+.sch-btn--primary {
+    background: linear-gradient(135deg, #8B7355, #6F5B47);
+    color: #fff;
+}
+.sch-btn--primary:hover { color: #fff; opacity: 0.95; }
+.sch-btn--ghost {
+    background: #fff;
+    color: #6F5B47;
+    border: 1px solid rgba(139, 115, 85, 0.25);
+}
+.sch-btn--danger {
+    background: transparent;
+    color: #c94a4a;
+    border: 1px solid rgba(201, 74, 74, 0.3);
+    padding: 8px 12px;
+}
+.sch-btn--sm { padding: 8px 12px; font-size: 0.85rem; }
+
+.sch-block {
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(139, 115, 85, 0.12);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+}
+.sch-block h2 { margin: 0 0 4px; font-size: 1.2rem; color: #4a433c; }
+.sch-block .sch-block-desc { margin: 0 0 1.25rem; color: #6b6560; font-size: 0.9rem; }
+.sch-block-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.sch-version {
+    border: 1px solid #e8e2da;
+    border-radius: 14px;
+    padding: 1rem 1.15rem;
+    margin-bottom: 12px;
+    background: #fff;
+}
+.sch-version--active {
+    border-color: #7a8f6e;
+    box-shadow: 0 0 0 1px rgba(122, 143, 110, 0.25);
+}
+.sch-version-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.sch-version-from {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #6b6560;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.sch-version-head h3 { margin: 2px 0 8px; font-size: 1.05rem; }
+.sch-tag {
+    display: inline-block;
+    background: #e8f0e6;
+    color: #3d5a3a;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+.sch-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-start; }
+.sch-week { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sch-week li { display: grid; grid-template-columns: 110px 1fr; gap: 10px; font-size: 0.9rem; }
+.sch-wd { color: #6b6560; }
+.sch-open { color: #3d5a3a; }
+.sch-closed { color: #8a7f76; }
+.sch-external { color: #8a6a3a; font-style: italic; }
+
+.sch-list { list-style: none; margin: 0; padding: 0; }
+.sch-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e8e2da;
+}
+.sch-list li:last-child { border-bottom: none; }
+.sch-list strong { display: block; margin-bottom: 2px; }
+.sch-muted { color: #6b6560; font-size: 0.85rem; }
+.sch-empty { color: #6b6560; font-size: 0.9rem; padding: 8px 0; }
+
+@media (max-width: 700px) {
+    .sch-week li { grid-template-columns: 90px 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="sch-header">
+    <div>
+        <h1 class="sch-title"><i class="fas fa-clock"></i> Horaires</h1>
+        <p class="sch-subtitle">
+            Grilles à date d’effet, exceptions de jour et créneaux bloqués.
+            La réservation publique suit ces règles.
+        </p>
+    </div>
+    <a href="{{ path('app_schedule_version_new') }}" class="sch-btn sch-btn--primary">
+        <i class="fas fa-plus"></i> Nouvelle grille
+    </a>
+</div>
+
+<section class="sch-block">
+    <h2>Grilles hebdomadaires</h2>
+    <p class="sch-block-desc">Chaque grille s’applique à partir de sa date, jusqu’à la suivante.</p>
+
+    {% if versions is empty %}
+        <p class="sch-empty">Aucune grille — lance la migration backend si besoin.</p>
+    {% endif %}
+
+    {% for v in versions %}
+        <article class="sch-version{% if v.id == activeVersionId %} sch-version--active{% endif %}">
+            <header class="sch-version-head">
+                <div>
+                    <p class="sch-version-from">À partir du {{ v.effectiveFrom|date('d/m/Y') }}</p>
+                    <h3>{{ v.name ?: 'Sans nom' }}</h3>
+                    {% if v.id == activeVersionId %}
+                        <span class="sch-tag">Active aujourd’hui</span>
+                    {% endif %}
+                </div>
+                <div class="sch-actions">
+                    <a href="{{ path('app_schedule_version_edit', {id: v.id}) }}" class="sch-btn sch-btn--ghost sch-btn--sm" title="Modifier">
+                        <i class="fas fa-pen"></i>
+                    </a>
+                    {% if versions|length > 1 %}
+                        <form method="post" action="{{ path('app_schedule_version_delete', {id: v.id}) }}" onsubmit="return confirm('Supprimer cette grille ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_version' ~ v.id) }}">
+                            <button type="submit" class="sch-btn sch-btn--danger sch-btn--sm" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </header>
+            <ul class="sch-week">
+                {% for day in v.weekly %}
+                    <li>
+                        <span class="sch-wd">{{ dayLabels[day.weekday] }}</span>
+                        <span class="sch-{{ day.kind }}">{{ day.label }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </article>
+    {% endfor %}
+</section>
+
+<section class="sch-block">
+    <div class="sch-block-head">
+        <div>
+            <h2>Exceptions de jour</h2>
+            <p class="sch-block-desc" style="margin-bottom:0">Fermer, ouvrir ou modifier un jour précis.</p>
+        </div>
+        <a href="{{ path('app_schedule_exception_new') }}" class="sch-btn sch-btn--ghost sch-btn--sm">
+            <i class="fas fa-plus"></i> Ajouter
+        </a>
+    </div>
+
+    {% if exceptions is empty %}
+        <p class="sch-empty">Aucune exception.</p>
+    {% else %}
+        <ul class="sch-list">
+            {% for ex in exceptions %}
+                <li>
+                    <div>
+                        <strong>{{ ex.date|date('d/m/Y') }}</strong>
+                        <span class="sch-{{ ex.kind }}">{{ ex.label }}</span>
+                    </div>
+                    <div class="sch-actions">
+                        <a href="{{ path('app_schedule_exception_edit', {id: ex.id}) }}" class="sch-btn sch-btn--ghost sch-btn--sm">
+                            <i class="fas fa-pen"></i>
+                        </a>
+                        <form method="post" action="{{ path('app_schedule_exception_delete', {id: ex.id}) }}" onsubmit="return confirm('Supprimer cette exception ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_exception' ~ ex.id) }}">
+                            <button type="submit" class="sch-btn sch-btn--danger sch-btn--sm"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</section>
+
+<section class="sch-block">
+    <div class="sch-block-head">
+        <div>
+            <h2>Créneaux bloqués</h2>
+            <p class="sch-block-desc" style="margin-bottom:0">Plage libre retirée de la réservation (formation, urgence…).</p>
+        </div>
+        <a href="{{ path('app_schedule_block_new') }}" class="sch-btn sch-btn--ghost sch-btn--sm">
+            <i class="fas fa-ban"></i> Bloquer
+        </a>
+    </div>
+
+    {% if blockedSlots is empty %}
+        <p class="sch-empty">Aucun créneau bloqué.</p>
+    {% else %}
+        <ul class="sch-list">
+            {% for b in blockedSlots %}
+                <li>
+                    <div>
+                        <strong>{{ b.start|date('d/m/Y H:i') }} → {{ b.end|date('d/m/Y H:i') }}</strong>
+                        <span class="sch-muted">{{ b.reason ?: 'Sans motif' }}</span>
+                    </div>
+                    <div class="sch-actions">
+                        <a href="{{ path('app_schedule_block_edit', {id: b.id}) }}" class="sch-btn sch-btn--ghost sch-btn--sm">
+                            <i class="fas fa-pen"></i>
+                        </a>
+                        <form method="post" action="{{ path('app_schedule_block_delete', {id: b.id}) }}" onsubmit="return confirm('Supprimer ce créneau bloqué ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_block' ~ b.id) }}">
+                            <button type="submit" class="sch-btn sch-btn--danger sch-btn--sm"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</section>
+{% endblock %}
