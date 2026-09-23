@@ -46,6 +46,7 @@ security:
         - { path: ^/api/categories, roles: PUBLIC_ACCESS }
         - { path: ^/api/picture-presentation, roles: PUBLIC_ACCESS }
         - { path: ^/api/appointment/list, roles: PUBLIC_ACCESS }
+        - { path: ^/api/schedule, roles: PUBLIC_ACCESS }
         - { path: ^/api/signup, roles: PUBLIC_ACCESS }
         - { path: ^/api/admin, roles: ROLE_ADMIN }
         - { path: ^/administration, roles: ROLE_ADMIN }

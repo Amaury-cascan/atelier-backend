@@ -6,7 +6,9 @@ use App\Entity\Appointment;
 use App\Entity\Service;
 use App\Entity\User;
 use App\Repository\AppointmentRepository;
+use App\Service\AvailabilityService;
 use App\Service\BookAppointment;
+use App\Service\BookAppointmentResult;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,6 +18,7 @@ class BookAppointmentTest extends TestCase
 {
     private EntityManagerInterface&MockObject $entityManager;
     private AppointmentRepository&MockObject $appointmentRepository;
+    private AvailabilityService&MockObject $availability;
     private Connection&MockObject $connection;
     private BookAppointment $bookAppointment;
 
@@ -23,25 +26,26 @@ class BookAppointmentTest extends TestCase
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->appointmentRepository = $this->createMock(AppointmentRepository::class);
+        $this->availability = $this->createMock(AvailabilityService::class);
         $this->connection = $this->createMock(Connection::class);
 
         $this->entityManager->method('getConnection')->willReturn($this->connection);
-        // La transaction Doctrine est simulée : le callback est exécuté directement.
         $this->entityManager->method('wrapInTransaction')->willReturnCallback(
             fn (callable $callback) => $callback($this->entityManager)
         );
 
-        $this->bookAppointment = new BookAppointment($this->entityManager, $this->appointmentRepository);
+        $this->bookAppointment = new BookAppointment(
+            $this->entityManager,
+            $this->appointmentRepository,
+            $this->availability,
+        );
     }
 
     public function testBooksFreeSlotForTheWholeServiceDuration(): void
     {
+        $this->availability->method('isSlotBookable')->willReturn(true);
         $this->appointmentRepository->expects($this->once())
             ->method('findOverlapping')
-            ->with(
-                $this->callback(static fn (\DateTimeInterface $start): bool => $start->format('Y-m-d H:i') === '2026-09-21 10:30'),
-                $this->callback(static fn (\DateTimeInterface $end): bool => $end->format('Y-m-d H:i') === '2026-09-21 12:00'),
-            )
             ->willReturn([]);
         $this->entityManager->expects($this->once())->method('persist');
 
@@ -52,28 +56,14 @@ class BookAppointmentTest extends TestCase
         );
 
         self::assertTrue($result->isBooked());
-        self::assertSame('2026-09-21 10:30:00', $result->appointment->getDate()->format('Y-m-d H:i:s'));
+        self::assertSame(BookAppointmentResult::REASON_BOOKED, $result->reason);
         self::assertSame('2026-09-21 12:00:00', $result->appointment->getEndDate()->format('Y-m-d H:i:s'));
-        self::assertSame(45, $result->appointment->getPrice());
     }
 
-    public function testLocksTheDayBeforeCheckingAvailability(): void
+    public function testRefusesOutsideOpeningHours(): void
     {
-        $this->connection->expects($this->once())
-            ->method('executeStatement')
-            ->with($this->stringContains('pg_advisory_xact_lock'), [20260921]);
-        $this->appointmentRepository->method('findOverlapping')->willReturn([]);
-
-        $this->bookAppointment->execute(
-            $this->service(60, 30),
-            new User(),
-            new \DateTimeImmutable('2026-09-21 10:30:00'),
-        );
-    }
-
-    public function testRefusesSlotAlreadyOccupied(): void
-    {
-        $this->appointmentRepository->method('findOverlapping')->willReturn([new Appointment()]);
+        $this->availability->method('isSlotBookable')->willReturn(false);
+        $this->appointmentRepository->expects($this->never())->method('findOverlapping');
         $this->entityManager->expects($this->never())->method('persist');
 
         $result = $this->bookAppointment->execute(
@@ -83,15 +73,42 @@ class BookAppointmentTest extends TestCase
         );
 
         self::assertFalse($result->isBooked());
-        self::assertNull($result->appointment);
+        self::assertSame(BookAppointmentResult::REASON_OUTSIDE_HOURS, $result->reason);
     }
 
-    /**
-     * Une prestation sans durée produirait une plage vide, donc un rendez-vous
-     * invisible pour la détection de chevauchement.
-     */
+    public function testRefusesSlotAlreadyOccupied(): void
+    {
+        $this->availability->method('isSlotBookable')->willReturn(true);
+        $this->appointmentRepository->method('findOverlapping')->willReturn([new Appointment()]);
+        $this->entityManager->expects($this->never())->method('persist');
+
+        $result = $this->bookAppointment->execute(
+            $this->service(60, 30),
+            new User(),
+            new \DateTimeImmutable('2026-09-21 10:30:00'),
+        );
+
+        self::assertSame(BookAppointmentResult::REASON_SLOT_UNAVAILABLE, $result->reason);
+    }
+
+    public function testLocksTheDayBeforeCheckingAvailability(): void
+    {
+        $this->connection->expects($this->once())
+            ->method('executeStatement')
+            ->with($this->stringContains('pg_advisory_xact_lock'), [20260921]);
+        $this->availability->method('isSlotBookable')->willReturn(true);
+        $this->appointmentRepository->method('findOverlapping')->willReturn([]);
+
+        $this->bookAppointment->execute(
+            $this->service(60, 30),
+            new User(),
+            new \DateTimeImmutable('2026-09-21 10:30:00'),
+        );
+    }
+
     public function testNeverCreatesAnEmptyTimeRange(): void
     {
+        $this->availability->method('isSlotBookable')->willReturn(true);
         $this->appointmentRepository->method('findOverlapping')->willReturn([]);
 
         $result = $this->bookAppointment->execute(

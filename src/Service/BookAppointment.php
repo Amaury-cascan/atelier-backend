@@ -11,9 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * Réservation d'un créneau par une cliente.
  *
- * La disponibilité est vérifiée côté serveur, à l'intérieur d'une transaction
- * verrouillée sur la journée concernée : c'est la seule garantie fiable, le
- * calendrier du navigateur pouvant toujours travailler sur des données périmées.
+ * Vérifie horaires d'ouverture + créneaux bloqués, puis chevauchement RDV,
+ * dans une transaction verrouillée sur la journée.
  */
 class BookAppointment
 {
@@ -22,6 +21,7 @@ class BookAppointment
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly AppointmentRepository $appointmentRepository,
+        private readonly AvailabilityService $availabilityService,
     ) {
     }
 
@@ -32,8 +32,12 @@ class BookAppointment
         $endDate = $startDate->modify(sprintf('+%d minutes', $duration));
 
         return $this->entityManager->wrapInTransaction(
-            function (EntityManagerInterface $entityManager) use ($service, $client, $startDate, $endDate): BookAppointmentResult {
+            function (EntityManagerInterface $entityManager) use ($service, $client, $startDate, $endDate, $duration): BookAppointmentResult {
                 $this->lockDay($entityManager, $startDate);
+
+                if (!$this->availabilityService->isSlotBookable($startDate, $duration)) {
+                    return BookAppointmentResult::outsideHours();
+                }
 
                 if ($this->appointmentRepository->findOverlapping($startDate, $endDate) !== []) {
                     return BookAppointmentResult::slotUnavailable();
@@ -53,14 +57,6 @@ class BookAppointment
         );
     }
 
-    /**
-     * Sérialise les réservations d'une même journée.
-     *
-     * Le verrou consultatif PostgreSQL est tenu jusqu'à la fin de la transaction :
-     * deux requêtes simultanées sur le même créneau ne peuvent donc pas constater
-     * toutes les deux qu'il est libre. La granularité à la journée suffit ici
-     * (un seul poste de travail) et garde la contention négligeable.
-     */
     private function lockDay(EntityManagerInterface $entityManager, \DateTimeImmutable $day): void
     {
         $entityManager->getConnection()->executeStatement(

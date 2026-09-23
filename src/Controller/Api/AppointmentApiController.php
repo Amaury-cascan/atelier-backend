@@ -7,6 +7,7 @@ use App\Entity\Service;
 use App\Entity\User;
 use App\Repository\AppointmentRepository;
 use App\Service\BookAppointment;
+use App\Service\BookAppointmentResult;
 use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,9 @@ class AppointmentApiController extends AbstractController
 {
     /** Code retourné au front quand le créneau demandé n'est plus libre. */
     public const SLOT_UNAVAILABLE = 'SLOT_UNAVAILABLE';
+
+    /** Code retourné quand le créneau est hors horaires / bloqué. */
+    public const OUTSIDE_HOURS = 'OUTSIDE_HOURS';
 
     #[Route('/list', name: 'app_appointment_list', methods: ['GET'])]
     public function listAppointments(AppointmentRepository $appointmentRepository): JsonResponse
@@ -76,6 +80,14 @@ class AppointmentApiController extends AbstractController
         $result = $bookAppointment->execute($service, $user, $startDate);
 
         if (!$result->isBooked()) {
+            if ($result->reason === BookAppointmentResult::REASON_OUTSIDE_HOURS) {
+                return new JsonResponse([
+                    'success' => false,
+                    'code' => self::OUTSIDE_HOURS,
+                    'message' => 'Ce créneau n\'est pas ouvert à la réservation.',
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
             return new JsonResponse([
                 'success' => false,
                 'code' => self::SLOT_UNAVAILABLE,
