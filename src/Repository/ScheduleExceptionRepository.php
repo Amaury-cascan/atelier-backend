@@ -18,9 +18,7 @@ class ScheduleExceptionRepository extends ServiceEntityRepository
 
     public function findOneByDate(\DateTimeInterface $date): ?ScheduleException
     {
-        $day = \DateTimeImmutable::createFromInterface($date)->setTime(0, 0);
-
-        return $this->findOneBy(['date' => $day]);
+        return $this->findOneBy(['date' => $this->asParisDate($date)]);
     }
 
     /**
@@ -28,11 +26,9 @@ class ScheduleExceptionRepository extends ServiceEntityRepository
      */
     public function findFrom(\DateTimeInterface $from): array
     {
-        $day = \DateTimeImmutable::createFromInterface($from)->setTime(0, 0);
-
         return $this->createQueryBuilder('e')
             ->andWhere('e.date >= :from')
-            ->setParameter('from', $day)
+            ->setParameter('from', $this->asParisDate($from))
             ->orderBy('e.date', 'ASC')
             ->getQuery()
             ->getResult();
@@ -43,16 +39,22 @@ class ScheduleExceptionRepository extends ServiceEntityRepository
      */
     public function findBetween(\DateTimeInterface $from, \DateTimeInterface $to): array
     {
-        $fromDay = \DateTimeImmutable::createFromInterface($from)->setTime(0, 0);
-        $toDay = \DateTimeImmutable::createFromInterface($to)->setTime(0, 0);
-
         return $this->createQueryBuilder('e')
             ->andWhere('e.date >= :from')
             ->andWhere('e.date <= :to')
-            ->setParameter('from', $fromDay)
-            ->setParameter('to', $toDay)
+            ->setParameter('from', $this->asParisDate($from))
+            ->setParameter('to', $this->asParisDate($to))
             ->orderBy('e.date', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /** Date civile Europe/Paris pour colonnes DATE. */
+    private function asParisDate(\DateTimeInterface $date): \DateTimeImmutable
+    {
+        $paris = \DateTimeImmutable::createFromInterface($date)
+            ->setTimezone(new \DateTimeZone('Europe/Paris'));
+
+        return new \DateTimeImmutable($paris->format('Y-m-d'));
     }
 }

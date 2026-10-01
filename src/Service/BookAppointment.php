@@ -27,7 +27,11 @@ class BookAppointment
 
     public function execute(Service $service, User $client, \DateTimeInterface $start): BookAppointmentResult
     {
-        $startDate = \DateTimeImmutable::createFromInterface($start);
+        // Digits = heure murale salon (le front envoie YYYY-MM-DDTHH:mm:ss sans Z).
+        // AvailabilityService::asParisWallClock réinterprète ces digits en Europe/Paris.
+        $startDate = new \DateTimeImmutable(
+            \DateTimeImmutable::createFromInterface($start)->format('Y-m-d H:i:s')
+        );
         $duration = max(self::MIN_DURATION_MINUTES, (int) $service->getDuration());
         $endDate = $startDate->modify(sprintf('+%d minutes', $duration));
 
